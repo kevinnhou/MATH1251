@@ -1,0 +1,17 @@
+---
+description: Math-env MDX authoring for notes (tags, slugs, of/see/Recall).
+globs: content/**/*.mdx
+alwaysApply: false
+---
+
+# Math-env MDX
+
+When editing notes under `content/docs`, follow `.cursor/skills/notes/syntax.md`. Do not write `<Prose>`, `<KindFilter>`, or `id`.
+
+- Root children only: `Definition`, `Theorem`, `Lemma`, `Proposition`, `Corollary`, `Method`, `Example`, `Proof`, and `<Recall of="slug" />`. Do not nest them.
+- Attributes are static strings. Slugs match `^[a-z][a-z0-9-]*$` and are unique site-wide.
+- `slug` is required on Definition, Theorem, Lemma, Proposition, Corollary, and Method.
+- `of` = uses / instance / proves. `see` = sibling, contrast, or other formulation. Sparse. Comma-separated slugs, no empties.
+- First `###` inside an env is the title. Omit it on `Proof`. `Proof` takes `of` the fact and has no `<Statement>`.
+- `<Statement>` is the canonical claim (graph preview). Notes go outside it.
+- `difficulty` only on `Example`: `routine`, `exam`, or `challenge`.

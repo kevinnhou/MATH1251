@@ -1,0 +1,6 @@
+{
+  "title": "Calculus",
+  "root": true,
+  "icon": "ChartNoAxesGantt",
+  "pages": ["index"]
+}

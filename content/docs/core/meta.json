@@ -1,0 +1,6 @@
+{
+  "title": "CORE",
+  "root": true,
+  "icon": "Layers",
+  "pages": ["index"]
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "root": true,
+  "extends": ["ultracite/biome/core", "ultracite/biome/next"],
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab"
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "a11y": {
+        "noNoninteractiveElementInteractions": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off"
+      },
+      "performance": {
+        "noNamespaceImport": "off",
+        "noBarrelFile": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "info"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "fix": "safe",
+          "options": {
+            "functions": ["clsx", "cva", "cn"]
+          }
+        }
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.ts", "**/*.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noJsxPropsBind": "off"
+          },
+          "suspicious": {
+            "noUnnecessaryConditions": "off"
+          }
+        }
+      }
+    }
+  ]
+}

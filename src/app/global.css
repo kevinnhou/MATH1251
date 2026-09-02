@@ -1,0 +1,258 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+:root {
+	--graph-module-algebra: #ffadad;
+	--graph-module-calculus: #a8c7e8;
+	--graph-module-core: #74828a;
+	--graph-node-default: #74828a;
+}
+
+.dark {
+	--graph-module-algebra: #af7178;
+	--graph-module-calculus: #7a93ab;
+	--graph-module-core: #74828a;
+	--graph-node-default: #74828a;
+}
+
+* {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+	display: none;
+}
+
+.fd-scroll-container:has(> a > div > .tab-icon) {
+	background: var(--color-fd-popover);
+	border-color: var(--color-fd-border);
+	box-shadow: none;
+	backdrop-filter: none;
+}
+
+.tab-option {
+	background-color: var(--color-fd-popover);
+}
+
+button:has(> div > .tab-icon) > div:has(> .tab-icon),
+a:has(> div > .tab-icon) > div:has(> .tab-icon) {
+	width: 2.25rem;
+	min-width: 2.25rem;
+}
+
+.tab-option > div:nth-child(2) > p:first-child {
+	font-family: var(--font-geist-mono), monospace;
+	font-style: italic;
+	font-weight: 400;
+}
+
+button:has(> div > .tab-icon) > div:nth-child(2) > p:first-child {
+	font-family: var(--font-geist-mono), monospace;
+	font-style: italic;
+	font-weight: 400;
+}
+
+html > body[data-scroll-locked] {
+	--removed-body-scroll-bar-size: 0px !important;
+	margin-right: 0px !important;
+}
+
+.prose .math-env-body > :is(h1, h2, h3, h4, h5, h6):first-of-type {
+	margin-top: 0;
+	margin-bottom: 0.65rem;
+	font-size: 0.95rem;
+	font-style: normal;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.35;
+	letter-spacing: -0.03em;
+}
+
+.prose
+	.math-env[data-math-style="theory"]
+	.math-env-body
+	> :is(h1, h2, h3, h4, h5, h6):first-of-type {
+	font-weight: 700;
+}
+
+.math-env-statement {
+	font-size: 0.95rem;
+	line-height: 1.55;
+}
+
+.math-env-statement p {
+	margin: 0;
+}
+
+.math-env-statement p + p {
+	margin-top: 0.5rem;
+}
+
+.math-env-statement :is(ul, ol) {
+	padding-left: 1.5rem;
+	margin: 0.5rem 0;
+}
+
+.math-env-statement li + li {
+	margin-top: 0.25rem;
+}
+
+.math-env-statement :is(ul, ol) :is(ul, ol) {
+	margin: 0.25rem 0 0;
+}
+
+.math-env-footnotes ol {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.math-env-footnotes .font-mono {
+	font-family: var(--font-geist-mono), monospace;
+}
+
+[data-graph-prose] {
+	max-width: min(100%, 48rem);
+}
+
+@keyframes terminal-pane-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes terminal-pane-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+[data-terminal-pane-target="output"]
+	[data-terminal-pane="tree"]
+	[data-terminal-cascade] {
+	pointer-events: none;
+	animation: terminal-pane-out 160ms ease both;
+}
+
+[data-terminal-pane-target="output"] [data-terminal-cascade="3"] {
+	animation-delay: 70ms;
+}
+
+[data-terminal-pane-target="output"] [data-terminal-pane="output"] {
+	animation: terminal-pane-in 180ms ease 80ms both;
+}
+
+[data-terminal-pane-target="tree"][data-terminal-had-output]
+	[data-terminal-pane="tree"]
+	[data-terminal-cascade] {
+	animation: terminal-pane-in 160ms ease both;
+}
+
+[data-terminal-pane-target="tree"] [data-terminal-pane="output"] {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-terminal-pane-target="output"]
+		[data-terminal-pane="tree"]
+		[data-terminal-cascade],
+	[data-terminal-pane-target="output"] [data-terminal-pane="output"],
+	[data-terminal-pane-target="tree"][data-terminal-had-output]
+		[data-terminal-pane="tree"]
+		[data-terminal-cascade] {
+		animation: none !important;
+	}
+}
+
+.md-fragment-chip .katex {
+	font-size: 0.95em;
+}
+
+.katex-display {
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.md-fragment-inline {
+	min-width: 0;
+}
+
+.md-fragment-inline .katex {
+	font-size: 1em;
+}
+
+.md-fragment-inline .katex-display {
+	margin: 0;
+}
+
+.md-fragment-compact .katex {
+	font-size: 0.85em;
+}
+
+.md-fragment-compact .katex-display {
+	max-width: 100%;
+	margin-block: 0.25rem;
+	margin-inline: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.prose :is(h1, h2, h3, h4, h5, h6) {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.prose :is(h1, h2, h3, h4, h5, h6) > a[href^="#"] {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.prose :is(h1, h2, h3, h4, h5, h6) .katex-display {
+	margin: 0;
+}
+
+:is(#nd-toc, [data-toc]) a {
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-wrap: anywhere;
+}
+
+:is(#nd-toc, [data-toc]) .katex {
+	font-size: 0.85em;
+}
+
+.math-env-statement table,
+.md-fragment-block table {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+}
+
+.math-env-statement th,
+.math-env-statement td,
+.md-fragment-block th,
+.md-fragment-block td {
+	padding: 0.2rem 0.5rem;
+	border: 1px solid var(--color-fd-border);
+}
+
+[data-graph-label] .katex-display {
+	margin: 0;
+}
+
+[data-graph-label] .md-fragment-inline .katex,
+[data-sidebar] .md-fragment-inline .katex {
+	font-size: 0.95em;
+}
