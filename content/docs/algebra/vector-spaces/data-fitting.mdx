@@ -1,0 +1,403 @@
+---
+title: Data fitting and polynomial interpolation
+description: Approximate data with a least-squares line, or fit distinct inputs exactly with polynomial coordinates.
+tags: [algebra]
+ideas: [data-fitting, polynomial-interpolation, coordinates]
+---
+
+This page fits functions to data in two ways. A least-squares line approximates the data and polynomial interpolation fits it exactly by solving for coordinates in a polynomial basis.
+
+## Approximation versus exact interpolation
+
+<Recall of="coordinate-vector" />
+
+<Recall of="basis" />
+
+<Recall of="span" />
+
+Data fitting starts with prescribed pairs $(t_i,y_i)$ and asks for a function whose values describe the data. The inputs $t_i$ may be times or another variable, the outputs $y_i$ may be measured quantities and the inputs need not be equally spaced.
+
+An approximation uses a function that is close to the data, while interpolation requires an exact fit at every supplied input. Exact fitting is developed
+below as [polynomial interpolation](#interpolation-in-a-standard-basis).
+[Taylor polynomials](/calculus/taylor-series/taylor-polynomials) are a
+different construction, matching derivative data at one centre.
+
+## Least squares as a projection
+
+Least squares is an [orthogonal projection](/algebra/linear-transformations/geometric-examples)
+of the data vector onto a space of model values. Projection is developed
+formally in the next chapter, so the normal equations below are derived
+directly by minimising a function of the line's two coefficients.
+
+<Method slug="least-squares-line-fit" see="polynomial-interpolation">
+
+### Fit a straight line by least squares
+
+<Statement>
+
+For real data $(t_i,y_i)\in\mathbb R^2$, form
+$$
+M=
+\begin{pmatrix}
+t_1&1\\
+t_2&1\\
+\vdots&\vdots\\
+t_n&1
+\end{pmatrix},
+\qquad
+Y=
+\begin{pmatrix}
+y_1\\y_2\\\vdots\\y_n
+\end{pmatrix}.
+$$
+If at least two input values are distinct, the least-squares straight-line
+fit $y=mt+c$ has the unique coefficient vector
+$$
+\begin{pmatrix}m\\c\end{pmatrix}
+=(M^{\mathsf T}M)^{-1}M^{\mathsf T}Y.
+$$
+
+</Statement>
+
+For a candidate line $y=mt+c$, the vector of predicted values at the inputs
+is
+$$
+M\begin{pmatrix}m\\c\end{pmatrix}.
+$$
+The columns of $M$ contain the sampled values of $t$ and $1$, so multiplying
+them by $m$ and $c$ produces the line's predicted values. The line need not
+pass through every data point.
+
+The fitted value vector $M\binom{m}{c}$ lies in the [column space](/algebra/vector-spaces/spans)
+$$
+\operatorname{col}(M)=\operatorname{span}\left\{
+\begin{pmatrix}t_1\\\vdots\\t_n\end{pmatrix},
+\begin{pmatrix}1\\\vdots\\1\end{pmatrix}
+\right\}.
+$$
+Least squares chooses $m$ and $c$ to minimise the sum of squared vertical
+errors
+$$
+E(m,c)=\sum_{i=1}^n(y_i-mt_i-c)^2
+=\left\|Y-M\begin{pmatrix}m\\c\end{pmatrix}\right\|^2,
+$$
+where $\|\cdot\|$ is the usual Euclidean norm on $\mathbb R^n$. The problem
+is therefore to find the point of $\operatorname{col}(M)$ closest to $Y$; the
+formula in the statement is the coordinate calculation for that projection.
+
+At a minimum, differentiating with respect to $m$ and $c$ gives
+$$
+\sum_{i=1}^n t_i(y_i-mt_i-c)=0,
+\qquad
+\sum_{i=1}^n(y_i-mt_i-c)=0.
+$$
+These are exactly the two entries of
+$$
+M^{\mathsf T}\left(Y-M\binom{m}{c}\right)=0,
+\qquad
+M^{\mathsf T}M\binom{m}{c}=M^{\mathsf T}Y.
+$$
+Thus the residual
+$$
+Y-M\binom{m}{c}
+$$
+is perpendicular to both columns of $M$, hence to their span. If $x_*$
+solves the normal equations and $x$ is any other coefficient vector, this
+perpendicularity gives
+$$
+\|Y-Mx\|^2=\|Y-Mx_*\|^2+\|M(x-x_*)\|^2.
+$$
+So $Mx_*$ is the closest model vector to $Y$.
+
+When two input values are distinct, $at_i+b=0$ for every $i$ forces
+$a=b=0$, so the columns of $M$ are independent. Hence $M^{\mathsf T}M$ is
+invertible and the minimising coefficient vector is unique. Multiplying the
+normal equations by $(M^{\mathsf T}M)^{-1}$ gives the coefficient formula in
+the statement.
+
+</Method>
+
+<Example slug="least-squares-line-example" of="least-squares-line-fit" difficulty="routine">
+
+### A least-squares line
+
+For $(0,2)$, $(3,4)$ and $(4,4)$,
+$$
+M=
+\begin{pmatrix}
+0&1\\
+3&1\\
+4&1
+\end{pmatrix},
+\qquad
+Y=
+\begin{pmatrix}
+2\\4\\4
+\end{pmatrix}.
+$$
+Here
+$$
+M^{\mathsf T}M=
+\begin{pmatrix}25&7\\7&3\end{pmatrix},
+\qquad
+M^{\mathsf T}Y=\binom{28}{10}.
+$$
+The determinant of $M^{\mathsf T}M$ is $26$ and solving the normal
+equations gives
+$$
+\begin{pmatrix}m\\c\end{pmatrix}
+=\frac1{26}
+\begin{pmatrix}3&-7\\-7&25\end{pmatrix}
+\binom{28}{10}
+=\begin{pmatrix}7/13\\27/13\end{pmatrix}.
+$$
+Thus the best-fit line is
+$$
+y=\frac{7}{13}t+\frac{27}{13}.
+$$
+It does not pass through all three data points; it minimises their total
+squared vertical error.
+
+</Example>
+
+## Interpolation in a standard basis
+
+Exact fitting becomes a [coordinate](/algebra/vector-spaces/coordinates-and-bases) problem when the chosen functions form a [basis](/algebra/vector-spaces/basis-and-dimension) of a polynomial space.
+The data are real, so $P_k$ means $P_k(\mathbb R)$ in this section.
+
+<Definition slug="polynomial-interpolation" of="coordinate-vector,basis,span">
+
+### Polynomial interpolation
+
+<Statement>
+
+Given $n$ distinct inputs $t_1,\ldots,t_n$ and prescribed outputs $y_1,\ldots,y_n$, *polynomial interpolation* finds the polynomial $f\in P_{n-1}$ satisfying
+$$
+f(t_i)=y_i,\qquad i=1,\ldots,n.
+$$
+Using the standard basis
+$$
+B=(1,t,t^2,\ldots,t^{n-1}),
+$$
+write
+$$
+f(t)=a_0+a_1t+\cdots+a_{n-1}t^{n-1}.
+$$
+The coefficients form the coordinate vector
+$$
+[f]_B=
+\begin{pmatrix}
+a_0\\a_1\\\vdots\\a_{n-1}
+\end{pmatrix}.
+$$
+
+</Statement>
+
+The interpolation conditions become a linear system for this coordinate vector.
+
+</Definition>
+
+<Method slug="vandermonde-interpolation" of="polynomial-interpolation" see="lagrange-interpolation">
+
+### Interpolate in the standard polynomial basis
+
+<Statement>
+
+To find the coordinate vector of the interpolating polynomial in $B=(1,t,\ldots,t^{n-1})$:
+
+1. Form the Vandermonde matrix
+$$
+A=
+\begin{pmatrix}
+1&t_1&t_1^2&\cdots&t_1^{n-1}\\
+1&t_2&t_2^2&\cdots&t_2^{n-1}\\
+\vdots&\vdots&\vdots&&\vdots\\
+1&t_n&t_n^2&\cdots&t_n^{n-1}
+\end{pmatrix}
+$$
+and the data vector $y=(y_1,\ldots,y_n)^T$.
+2. Solve
+$$
+Ax=y.
+$$
+3. Read the solution
+$$
+x=
+\begin{pmatrix}
+a_0\\a_1\\\vdots\\a_{n-1}
+\end{pmatrix}
+=[f]_B
+$$
+as the coordinates of the interpolating polynomial.
+
+</Statement>
+
+The $i$th row imposes the condition $f(t_i)=y_i$. Because the inputs are distinct, these conditions determine exactly one coordinate vector.
+
+</Method>
+
+<Theorem slug="distinct-inputs-unique-interpolation" of="vandermonde-interpolation,polynomial-interpolation">
+
+### Distinct inputs give a unique interpolant
+
+<Statement>
+
+If $t_1,\ldots,t_n$ are distinct, the columns of the Vandermonde matrix are linearly independent and span $\mathbb R^n$. Hence $Ax=y$ has a unique solution for every data vector $y$, so there is exactly one polynomial in $P_{n-1}$ satisfying
+$$
+f(t_i)=y_i,\qquad i=1,\ldots,n.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="distinct-inputs-unique-interpolation">
+
+Suppose a linear combination of the columns is zero. Its coefficients define
+$$
+p(t)=\lambda_1+\lambda_2t+\cdots+\lambda_nt^{n-1},
+$$
+and the zero combination says $p(t_i)=0$ for every $i$. By the factor
+theorem, each distinct root contributes a factor $(t-t_i)$, so a non-zero
+polynomial of degree at most $n-1$ cannot have all $n$ roots. Hence every
+$\lambda_i$ is zero. The $n$ columns are independent in $\mathbb R^n$,
+so they also span $\mathbb R^n$, giving a unique solution to $Ax=y$.
+
+</Proof>
+
+## Interpolation in a basis adapted to the data
+
+The same interpolating polynomial has simpler coordinates in a basis whose
+polynomials each pick out one data input.
+
+<Definition slug="lagrange-polynomial" of="polynomial-interpolation">
+
+### Lagrange polynomials
+
+<Statement>
+
+For distinct inputs $t_1,\ldots,t_n$, the $j$th Lagrange polynomial is
+$$
+\ell_j(t)=\prod_{\substack{k=1\\k\ne j}}^n
+\frac{t-t_k}{t_j-t_k},
+\qquad j=1,\ldots,n.
+$$
+It has degree at most $n-1$ and satisfies
+$$
+\ell_j(t_j)=1,
+\qquad
+\ell_j(t_k)=0\quad\text{when }k\ne j.
+$$
+
+</Statement>
+
+Each factor $t-t_k$ makes $\ell_j$ zero at one other input, while dividing
+by $t_j-t_k$ makes that factor equal to $1$ at $t_j$. Distinct inputs
+ensure that no denominator is zero.
+
+</Definition>
+
+<Theorem slug="lagrange-basis" of="lagrange-polynomial,basis">
+
+### The Lagrange polynomials form a basis
+
+<Statement>
+
+The set
+$$
+L=(\ell_1,\ldots,\ell_n)
+$$
+is a basis for $P_{n-1}$.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="lagrange-basis">
+
+If
+$$
+\lambda_1\ell_1(t)+\cdots+\lambda_n\ell_n(t)=0,
+$$
+evaluate at $t=t_k$. Every term vanishes except $\lambda_k\ell_k(t_k)=\lambda_k$, so $\lambda_k=0$. This holds for every $k$, so the Lagrange polynomials are linearly independent; with $n$ polynomials in $P_{n-1}$, they form a basis.
+
+</Proof>
+
+<Method slug="lagrange-interpolation" of="lagrange-basis,polynomial-interpolation" see="vandermonde-interpolation">
+
+### Interpolate in the Lagrange basis
+
+<Statement>
+
+For data $(t_j,y_j)$, construct the Lagrange polynomials and set
+$$
+f(t)=\sum_{j=1}^n y_j\ell_j(t).
+$$
+Then $f(t_i)=y_i$ for every $i$, which gives the interpolating polynomial.
+
+</Statement>
+
+The data values are the coordinates in the Lagrange basis, while $a_0,\ldots,a_{n-1}$ are the coordinates of the same polynomial in the standard basis:
+$$
+[f]_L=
+\begin{pmatrix}
+y_1\\\vdots\\y_n
+\end{pmatrix},
+\qquad
+[f]_B=
+\begin{pmatrix}
+a_0\\\vdots\\a_{n-1}
+\end{pmatrix}.
+$$
+The coordinate vector changes with the basis; the polynomial $f$ does not.
+
+</Method>
+
+<Example slug="interpolation-root-example" of="lagrange-interpolation" difficulty="exam">
+
+### Estimating a root from an interpolant
+
+For
+$$
+g(x)=x-9^{-x},
+$$
+use the inputs $0,\frac12,1$. The data values are
+$$
+g(0)=-1,\qquad g\left(\frac12\right)=\frac16,\qquad g(1)=\frac89.
+$$
+The corresponding Lagrange polynomials are
+$$
+\ell_1(t)=2\left(t-\frac12\right)(t-1),\qquad
+\ell_2(t)=-4t(t-1),\qquad
+\ell_3(t)=2t\left(t-\frac12\right).
+$$
+Therefore
+$$
+\begin{aligned}
+p(t)
+&=-\ell_1(t)+\frac16\ell_2(t)+\frac89\ell_3(t)\\
+&=-1+\frac{25}{9}t-\frac89t^2.
+\end{aligned}
+$$
+Solving $p(t)=0$ gives
+$$
+8t^2-25t+9=0,
+\qquad
+t=\frac{25\pm\sqrt{337}}{16}.
+$$
+The root of the interpolating polynomial in the data range is
+$$
+t\approx 0.415.
+$$
+This root is chosen because the sampled values change sign between $0$
+and $\frac12$; the other quadratic root lies outside the data interval.
+It approximates the root of $g$ itself, which is about $0.408004$.
+Interpolation is exact at the sampled values, not at a zero between sample
+points.
+
+</Example>
+
+Interpolation is exact at the supplied inputs, but accuracy between the
+inputs is a separate question and extrapolation beyond them can be poor. For
+equally spaced inputs, high-degree interpolants can develop large
+oscillations near the ends of the interval; this is Runge's phenomenon.

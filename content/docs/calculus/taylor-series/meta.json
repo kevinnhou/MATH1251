@@ -1,0 +1,14 @@
+{
+  "title": "Taylor series, sequences and infinite series",
+  "pagesIndex": "index",
+  "pages": [
+    "taylor-polynomials",
+    "taylors-theorem",
+    "sequences-and-limits",
+    "infinite-series",
+    "convergence-tests",
+    "taylor-series",
+    "power-series",
+    "seen"
+  ]
+}

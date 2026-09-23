@@ -12,6 +12,9 @@
     "test": "bun test",
     "types:check": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.test.json"
   },
+  "overrides": {
+    "katex": "$katex"
+  },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "beautiful-mermaid": "^1.1.3",

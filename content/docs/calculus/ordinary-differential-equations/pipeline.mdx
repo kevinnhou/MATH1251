@@ -1,0 +1,55 @@
+---
+title: Choosing an ODE method
+description: A checklist for classifying a first- or second-order ODE and choosing a method to solve it.
+tags: [calculus]
+ideas: [problem-solving, differential-equations, method-selection]
+---
+
+This page gathers the chapter's methods into one checklist. Each method needs a particular structure, so the first job is to classify the equation: first-order equations go to [first-order methods](/calculus/ordinary-differential-equations/first-order-equations), second-order constant-coefficient equations to [characteristic roots and forcing](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) and anything else to [numerical solutions](/calculus/ordinary-differential-equations/numerical-solutions).
+
+Every method also has hypotheses. They fix the interval, branches and special solutions that must be checked, as set out in [existence, uniqueness and linear operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators).
+
+## The checklist
+
+<Method slug="choose-ode-method">
+
+### Classify and solve an ODE
+
+<Statement>
+
+For a first- or second-order ODE:
+
+1. Classify the order, linearity and domain restrictions.
+2. If it is first order, test separability: can all $y$ terms be placed with
+   $dy$ and all $x$ terms with $dx$?
+3. If a first-order equation is linear, normalise it and use an integrating factor for
+   $$
+   y'+p(x)y=q(x).
+   $$
+4. If it has the form $M\,dx+N\,dy=0$, test exactness by comparing $M_y$
+   and $N_x$ on a suitable domain, then construct a potential when the test
+   applies.
+5. If a first-order equation has none of these structures, look for a
+   substitution: $y/x$ suggests $y=xv$, while a power $y^n$ suggests a
+   Bernoulli substitution. A substitution helps when the new derivative can
+   be written using terms already present.
+6. For a second-order equation, check whether it is linear with constant
+   coefficients. If so, solve the characteristic equation and read the root
+   type. For a forcing term that is polynomial, exponential or trigonometric,
+   find one particular solution by undetermined coefficients, correcting the
+   trial for resonance.
+7. If no analytic method applies, use a direction field and a numerical
+   scheme. Euler is the tangent-line method; Heun improves it by averaging a
+   predicted pair of endpoint slopes.
+8. Substitute the result back into the original equation and recheck the
+   initial or boundary conditions.
+
+</Statement>
+
+The final check matters after division, substitution or differentiation. Division can remove equilibrium solutions, a substitution can restrict the domain or split the problem into separate branches and differentiating an integral equation can introduce functions that do not satisfy the original equation.
+
+</Method>
+
+The workflow does not guarantee an elementary solution. At every stage, keep
+track of the interval on which coefficients, denominators, logarithms and
+radicals are defined.

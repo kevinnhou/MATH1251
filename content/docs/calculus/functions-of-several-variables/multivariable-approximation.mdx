@@ -1,0 +1,329 @@
+---
+title: Multivariable approximation
+description: Read tangent planes as first-order models and construct higher-order Taylor polynomials.
+tags: [calculus]
+ideas: [linear-approximation, hessian, multivariable-taylor]
+---
+
+This page reads the [tangent
+plane](/calculus/functions-of-several-variables/geometry-and-approximation) as
+the first-order Taylor approximation of a function and then adds terms of
+higher degree. The tangent plane captures change that is linear in the
+displacement from the base point. It is usually enough for a nearby estimate,
+but a higher-order Taylor polynomial is needed when the first-order change
+cancels or when curvature controls the error.
+
+The construction extends the one-variable [Taylor
+polynomial](/calculus/taylor-series/taylor-polynomials): the term
+$\frac12f''(a)(x-a)^2$ becomes the quadratic form
+$\frac12\mathbf h^{\mathsf T}H_f(\mathbf a)\mathbf h$, so the
+[Hessian](/calculus/functions-of-several-variables/local-extrema) is the
+multivariable curvature matrix.
+
+## Linear approximation and the tangent-plane model
+
+<Method slug="multivariable-linear-approximation" of="graph-tangent-plane">
+
+### Approximate a function linearly
+
+<Statement>
+
+For a differentiable $f:\mathbb{R}^2\to\mathbb{R}$ and a base point
+$\mathbf{a}=(x_0,y_0)$, approximate nearby values by
+
+$$
+f(\mathbf{x})
+\approx
+f(\mathbf{a})
++\nabla f(\mathbf{a})\cdot(\mathbf{x}-\mathbf{a}).
+$$
+
+To use the approximation, evaluate $f$ and its first partial derivatives at
+$\mathbf{a}$, then substitute the displacement $\mathbf{x}-\mathbf{a}$.
+
+</Statement>
+
+The expression is the equation of the tangent plane with the output written
+as a function of the input. Differentiability means that the omitted error,
+divided by $\|\mathbf{x}-\mathbf{a}\|$, tends to zero as
+$\mathbf{x}\to\mathbf{a}$. Thus one linear model works for changes in every
+direction, not just along the coordinate axes.
+
+</Method>
+
+<Example slug="quadratic-linear-approximation" of="multivariable-linear-approximation" difficulty="routine">
+
+### Linearise $(x-y)^2$
+
+Let
+
+$$
+f(x,y)=x^2+y^2-2xy=(x-y)^2.
+$$
+
+At $(1,3)$,
+
+$$
+f(1,3)=4,
+\qquad
+f_x=2x-2y,
+\qquad
+f_y=2y-2x,
+$$
+
+so
+
+$$
+f_x(1,3)=-4,
+\qquad
+f_y(1,3)=4.
+$$
+
+The tangent-plane approximation is
+
+$$
+\begin{aligned}
+L(x,y)
+&=4-4(x-1)+4(y-3)\\
+&=-4x+4y-4.
+\end{aligned}
+$$
+
+Thus, close to $(1,3)$,
+
+$$
+{(x-y)^2\approx -4x+4y-4}.
+$$
+
+Writing $x=1+h$ and $y=3+k$ shows exactly what the linear model omits:
+
+$$
+f(1+h,3+k)=4-4h+4k+(h-k)^2.
+$$
+
+The approximation keeps the constant and first-degree terms and discards the
+quadratic error $(h-k)^2$. This also shows why the estimate improves faster
+than the displacement as $(h,k)\to(0,0)$.
+
+</Example>
+
+## Higher-order terms record curvature
+
+To record curvature and interactions between coordinate changes, we keep
+monomials up to a chosen total degree and collect the second-order derivatives
+in a matrix.
+
+<Definition slug="total-degree">
+
+### Total degree
+
+<Statement>
+
+The total degree of the monomial $x^ny^m$ is $n+m$. The total degree of a
+polynomial is the largest total degree among its monomial terms.
+
+</Statement>
+
+For example, in
+
+$$
+p(x,y)=1+x-y+x^2-xy+x^3y^2,
+$$
+
+the term $x^3y^2$ has total degree $5$, so $\deg p=5$. This is the degree
+used when deciding which terms belong in a multivariable Taylor polynomial.
+
+</Definition>
+
+<Definition slug="multivariable-hessian">
+
+### Hessian matrix
+
+<Statement>
+
+For $f:\mathbb{R}^2\to\mathbb{R}$, the Hessian at
+$\mathbf{x}_0=(x_0,y_0)$ is
+
+$$
+H_f(\mathbf{x}_0)
+=
+\begin{pmatrix}
+f_{xx}(\mathbf{x}_0)&f_{xy}(\mathbf{x}_0)\\
+f_{yx}(\mathbf{x}_0)&f_{yy}(\mathbf{x}_0)
+\end{pmatrix}.
+$$
+
+</Statement>
+
+When the mixed partials are continuous, $f_{xy}=f_{yx}$, so the Hessian is
+symmetric. It records the second-order changes omitted by the linear
+approximation and its determinant classifies [stationary points](/calculus/functions-of-several-variables/local-extrema) through the quadratic part of the local Taylor model.
+
+</Definition>
+
+<Definition slug="taylor-polynomial-several-variables" of="multivariable-linear-approximation,multivariable-hessian">
+
+### Taylor polynomial through degree three
+
+<Statement>
+
+Let $\mathbf{a}=(x_0,y_0)$,
+$h_x=x-x_0$ and $h_y=y-y_0$. If $f$ has continuous partial
+derivatives through order three near $\mathbf{a}$, its Taylor polynomial through total degree
+three is
+
+$$
+\begin{aligned}
+T_3(x,y)
+={}&f(\mathbf{a})
++f_x(\mathbf{a})h_x
++f_y(\mathbf{a})h_y\\
+&+\frac{1}{2!}
+\left(
+f_{xx}(\mathbf{a})h_x^2
++2f_{xy}(\mathbf{a})h_xh_y
++f_{yy}(\mathbf{a})h_y^2
+\right)\\
+&+\frac{1}{3!}
+\left(
+f_{xxx}(\mathbf{a})h_x^3
++3f_{xxy}(\mathbf{a})h_x^2h_y
++3f_{xyy}(\mathbf{a})h_xh_y^2
++f_{yyy}(\mathbf{a})h_y^3
+\right).
+\end{aligned}
+$$
+
+The degree-two part can be written with the Hessian as
+
+$$
+T_2(\mathbf{x})
+=
+f(\mathbf{a})
++\nabla f(\mathbf{a})\cdot(\mathbf{x}-\mathbf{a})
++\frac12
+(\mathbf{x}-\mathbf{a})^{\mathsf T}
+H_f(\mathbf{a})
+(\mathbf{x}-\mathbf{a}).
+$$
+
+</Statement>
+
+The quadratic and cubic parts refine the tangent-plane model by the terms of
+total degree two and three.
+
+To see where the mixed coefficients come from, apply the one-variable Taylor
+formula to $g(t)=f(\mathbf{a}+t\mathbf h)$. Then
+$g''(0)=f_{xx}h_x^2+2f_{xy}h_xh_y+f_{yy}h_y^2$;
+the two mixed terms arise by differentiating once in each coordinate.
+The cubic coefficients count the three orders in which two $x$-derivatives
+and one $y$-derivative can occur, or vice versa.
+
+Under the stated $C^3$ assumption, the omitted remainder satisfies
+
+$$
+f(\mathbf a+\mathbf h)=T_3(\mathbf a+\mathbf h)+o(\|\mathbf h\|^3)
+\qquad(\mathbf h\to\mathbf0).
+$$
+
+If $f$ is $C^4$ near $\mathbf a$, the remainder improves to
+$O(\|\mathbf h\|^4)$ for sufficiently small $\mathbf h$.
+
+</Definition>
+
+## Construct multivariable Taylor polynomials
+
+<Method slug="construct-multivariable-taylor-polynomial" of="taylor-polynomial-several-variables">
+
+### Construct a multivariable Taylor polynomial
+
+<Statement>
+
+To construct the Taylor polynomial through degree $n\le3$ about
+$\mathbf{a}$:
+
+1. choose the centre and the required total degree;
+2. calculate the partial derivatives through that order;
+3. evaluate them at $\mathbf{a}$;
+4. retain the terms through total degree $n$ in the formula above.
+
+</Statement>
+
+The result agrees with $f$ at $\mathbf{a}$ and matches the relevant partial
+derivatives there. It is a local approximation, not generally an identity on
+the whole domain.
+
+</Method>
+
+<Example slug="exponential-difference-taylor" of="construct-multivariable-taylor-polynomial" difficulty="routine">
+
+### $e^{x-y}$ near the origin
+
+Let
+
+$$
+f(x,y)=e^{x-y}.
+$$
+
+Set $u=x-y$. The one-variable exponential expansion in $u$ gives
+
+$$
+{
+T_3(x,y)
+=1+(x-y)+\frac{(x-y)^2}{2}
++\frac{(x-y)^3}{6}
+}.
+$$
+
+Each power $(x-y)^k$ has total degree $k$, so truncating the series in $u$
+after $u^3$ keeps exactly the terms of total degree at most three.
+
+</Example>
+
+<Example slug="polynomial-taylor-exact" of="construct-multivariable-taylor-polynomial" difficulty="routine">
+
+### A function that is already a polynomial
+
+For
+
+$$
+f(x,y)=x^2y,
+$$
+
+the function has total degree three. Hence its Taylor polynomial through
+degree three about $(0,0)$ is exact:
+
+$$
+{T_3(x,y)=x^2y}.
+$$
+
+The derivative construction gives the same result: all lower-degree terms
+vanish at the origin and the third-order term reproduces $x^2y$.
+
+</Example>
+
+<Example slug="three-variable-exponential-taylor" of="construct-multivariable-taylor-polynomial" difficulty="routine">
+
+### An exponential of three variables
+
+For
+
+$$
+f(x,y,z)=e^{x+y+z}
+$$
+
+near $(0,0,0)$, set $s=x+y+z$. The degree-two Taylor polynomial is
+
+$$
+{
+T_2(x,y,z)
+=1+(x+y+z)+\frac12(x+y+z)^2
+}.
+$$
+
+The total degree counts the total number of factors drawn from all coordinate
+increments, so the same construction works in any number of variables.
+
+</Example>
+
+Like the one-variable [Taylor polynomials](/calculus/taylor-series/taylor-polynomials), this construction matches derivatives at one centre; [interpolation](/algebra/vector-spaces/data-fitting) instead matches values at distinct nodes. When the gradient vanishes, the quadratic part above becomes the leading term that classifies [stationary points](/calculus/functions-of-several-variables/local-extrema).

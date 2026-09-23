@@ -1,0 +1,314 @@
+---
+title: Basis and dimension
+description: Independent spanning sets, the common size of bases and counting tests.
+tags: [algebra]
+ideas: [basis, dimension, span, linear-independence]
+---
+
+A basis is a set that both spans and is independent, so every vector has exactly one representation in it. This page proves that all bases of a space have the same size, defines that size as the dimension and uses dimension to recognise bases by counting.
+
+## Bases give unique representations
+
+<Recall of="span" />
+
+<Recall of="linear-independence" />
+
+<Definition slug="basis" of="span,linear-independence">
+
+### Basis
+
+<Statement>
+
+A set $B$ in a vector space $V$ is a *basis* for $V$ if it is linearly independent and spans $V$.
+
+</Statement>
+
+Spanning gives a representation for every vector in $V$ and independence
+makes it unique, as shown in [linear
+independence](/algebra/vector-spaces/linear-independence). A basis is
+therefore a generating set with no redundant direction: removing any basis
+vector destroys spanning.
+
+For an infinite set, span still uses finite linear combinations and
+independence means that every finite subset is independent. The calculations
+below use finite bases.
+
+</Definition>
+
+<Theorem slug="basis-unique-representation" of="basis,independence-unique-representation">
+
+### Representation in a basis
+
+<Statement>
+
+If $B=\{u_1,\ldots,u_n\}$ is a basis for $V$, then every vector $v\in V$ has a unique representation
+$$
+v=\lambda_1u_1+\cdots+\lambda_nu_n,
+\qquad \lambda_1,\ldots,\lambda_n\in F.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="basis-unique-representation">
+
+Because $B$ spans $V$, at least one representation of $v$ exists. If
+
+$$
+v=\lambda_1u_1+\cdots+\lambda_nu_n
+=\mu_1u_1+\cdots+\mu_nu_n,
+$$
+
+then subtracting the two expressions gives
+
+$$
+(\lambda_1-\mu_1)u_1+\cdots+(\lambda_n-\mu_n)u_n=0.
+$$
+
+Independence of $B$ forces every $\lambda_j-\mu_j$ to be zero, so the
+representation is unique.
+
+</Proof>
+
+<Example slug="basis-of-r3" of="basis,homogeneous-independence-test" difficulty="routine">
+
+### A basis of $\mathbb R^3$
+
+Consider
+$$
+B=\left\{
+\begin{pmatrix}1\\0\\2\end{pmatrix},
+\begin{pmatrix}0\\-1\\1\end{pmatrix},
+\begin{pmatrix}-2\\1\\0\end{pmatrix}
+\right\}.
+$$
+The matrix with these vectors as columns row reduces to $I_3$, so its columns are linearly independent and span $\mathbb R^3$. Thus $B$ is a basis for $\mathbb R^3$.
+
+</Example>
+
+<Example slug="basis-for-a-span" of="basis,homogeneous-independence-test,span" difficulty="routine">
+
+### A basis for a generated subspace
+
+Let
+$$
+S=\left\{
+\begin{pmatrix}1\\2\end{pmatrix},
+\begin{pmatrix}-2\\1\end{pmatrix},
+\begin{pmatrix}1\\1\end{pmatrix},
+\begin{pmatrix}-1\\-2\end{pmatrix}
+\right\}.
+$$
+The first two columns are leading columns when the matrix formed from $S$ is row reduced. They are independent and the remaining vectors are redundant, so
+$$
+\left\{
+\begin{pmatrix}1\\2\end{pmatrix},
+\begin{pmatrix}-2\\1\end{pmatrix}
+\right\}
+$$
+is a basis for $\operatorname{span}(S)$.
+
+</Example>
+
+<Example slug="polynomial-basis-p1" of="basis,span,linear-independence" difficulty="routine">
+
+### A basis of $P_1$
+
+For $p=a_0+a_1x$, write
+$$
+p=\lambda_1(1+x)+\lambda_2(x+2).
+$$
+Equating coefficients gives
+$$
+\lambda_1+2\lambda_2=a_0,
+\qquad
+\lambda_1+\lambda_2=a_1.
+$$
+The coefficient matrix has determinant $-1$, so this system has a unique
+solution for every $a_0,a_1$. Therefore $\{1+x,x+2\}$ spans $P_1$ and is
+linearly independent, so it is a basis.
+
+</Example>
+
+## Why dimension is well defined
+
+A spanning set can never be smaller than an independent set in the same space. This single comparison shows that all bases have the same size.
+
+<Theorem slug="span-independent-counting" of="span,linear-independence">
+
+### Spanning sets count against independent sets
+
+<Statement>
+
+Let $S$ and $L$ be finite subsets of a vector space $V$. If $\operatorname{span}(S)=V$ and $L$ is linearly independent, then
+$$
+|S|\geq |L|.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="span-independent-counting">
+
+Because $S$ spans $V$, each vector of $L$ is a linear combination
+$\ell_j=\sum_i a_{ij}s_i$ of the vectors in $S$. Suppose $|L|>|S|$. The
+coefficient matrix $A=(a_{ij})$ then has more columns than rows, so
+$Ac=0$ has a non-zero solution $c=(c_\ell)_{\ell\in L}$. This relation lifts
+to $\sum_j c_j\ell_j=\sum_i(\sum_j a_{ij}c_j)s_i=0$, that is,
+
+$$
+\sum_{\ell\in L}c_\ell\ell=0,
+$$
+
+which contradicts the linear independence of $L$. Hence $|S|\geq|L|$.
+
+</Proof>
+
+<Theorem slug="basis-cardinality" of="basis,span-independent-counting">
+
+### All bases have the same size
+
+<Statement>
+
+Any two finite bases of a vector space contain the same number of vectors.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="basis-cardinality">
+
+If $B_1$ and $B_2$ are bases, the counting theorem gives
+$|B_1|\geq|B_2|$ by taking $B_1$ as the spanning set and $B_2$ as the
+independent set. Reversing their roles gives $|B_2|\geq|B_1|$, so the
+cardinalities are equal.
+
+</Proof>
+
+This result covers every basis of a space with a finite basis $B_0$, because
+no basis of such a space can be infinite. An infinite basis would contain a
+finite subset $L$ with more than $|B_0|$ vectors. That subset is
+independent, while $B_0$ spans $V$, which contradicts the counting theorem.
+
+<Definition slug="dimension" of="basis,basis-cardinality">
+
+### Dimension
+
+<Statement>
+
+If a vector space $V$ has a finite basis, then $V$ is *finite-dimensional* and its *dimension*, denoted $\dim(V)$, is the common number of vectors in all bases of $V$.
+
+</Statement>
+
+The zero vector space has the empty basis, so $\dim(\{0\})=0$.
+If $V$ has no finite basis, it is called *infinite-dimensional*. For example,
+$P(\mathbb R)$ is infinite-dimensional: no finite list of polynomials can
+span polynomials of arbitrarily high degree.
+
+</Definition>
+
+## Using dimension to recognise a basis
+
+Once the dimension is known, a set with the right number of vectors needs
+only one of the two basis checks.
+
+<Theorem slug="dimension-counting" of="basis,dimension,span,linear-independence">
+
+### Counting with dimension
+
+<Statement>
+
+Let $V$ be finite-dimensional.
+
+1. If a set $S$ of $n$ vectors spans $V$, then $n\geq\dim(V)$. If $n=\dim(V)$, then $S$ is a basis.
+2. If a set $S$ of $m$ vectors is linearly independent in $V$, then $m\leq\dim(V)$. If $m=\dim(V)$, then $S$ is a basis.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="dimension-counting">
+
+Compare $S$ with a basis $B$ of $V$ in the preceding counting theorem.
+When $S$ spans, taking $S$ as the spanning set and $B$ as the independent
+set gives $|S|\ge|B|=\dim(V)$. If equality holds but $S$ is dependent,
+one vector can be removed without changing its span. That would give a
+spanning set with fewer than $\dim(V)$ vectors, a contradiction.
+
+When $S$ is independent, take $B$ as the spanning set and $S$ as the
+independent set to get $|S|\le\dim(V)$. If equality holds but $S$ does
+not span, adjoining a vector outside its span gives an independent set
+with more than $\dim(V)$ vectors, again a contradiction.
+
+</Proof>
+
+<Corollary slug="basis-two-out-of-three" of="basis,dimension-counting">
+
+### Two properties and the dimension are enough
+
+<Statement>
+
+For a set $S$ of $n$ vectors in a finite-dimensional vector space $V$, any two of the following imply that $S$ is a basis for $V$:
+
+- $S$ is linearly independent;
+- $S$ spans $V$;
+- $n=\dim(V)$.
+
+</Statement>
+
+</Corollary>
+
+<Example slug="standard-space-dimensions" of="dimension" difficulty="routine">
+
+### Standard bases and dimensions
+
+The standard basis of $\mathbb R^2$ is
+$$
+\left\{
+\begin{pmatrix}1\\0\end{pmatrix},
+\begin{pmatrix}0\\1\end{pmatrix}
+\right\}.
+$$
+The standard polynomial basis is $\{1,x,\ldots,x^n\}$ for $P_n(\mathbb R)$.
+For $M_{2\times2}(\mathbb R)$, the standard matrix basis is
+$$
+\left\{
+\begin{pmatrix}1&0\\0&0\end{pmatrix},
+\begin{pmatrix}0&1\\0&0\end{pmatrix},
+\begin{pmatrix}0&0\\1&0\end{pmatrix},
+\begin{pmatrix}0&0\\0&1\end{pmatrix}
+\right\}.
+$$
+More generally, the standard bases give
+$$
+\dim(\mathbb R^n)=n,
+\qquad
+\dim(P_n(\mathbb R))=n+1,
+\qquad
+\dim(M_{m\times n}(\mathbb R))=mn.
+$$
+Each count is the number of free coefficients: a polynomial in
+$P_n(\mathbb R)$ has $n+1$ coefficients and an $m\times n$ matrix has one
+for each of its $mn$ entries.
+
+</Example>
+
+<Example slug="too-few-polynomials" of="dimension-counting" difficulty="routine">
+
+### Counting prevents spanning
+
+Two polynomials cannot span $P_2(\mathbb R)$, because
+$$
+2<\dim(P_2(\mathbb R))=3.
+$$
+Likewise, three polynomials in $P_1(\mathbb R)$ must be linearly dependent,
+since
+$$
+3>\dim(P_1(\mathbb R))=2.
+$$
+
+</Example>
+
+[Coordinates and bases](/algebra/vector-spaces/coordinates-and-bases) constructs bases from data and records the unique coefficients.

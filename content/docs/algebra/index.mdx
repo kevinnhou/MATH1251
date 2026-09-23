@@ -1,6 +1,49 @@
 ---
 title: Algebra
-description: MATH1251 Algebra
+description: Complex numbers, vector spaces, linear transformations and eigenvalues, from arithmetic to the dynamics of linear systems.
+tags: [algebra]
+ideas: [complex-numbers, vector-spaces, linear-transformations, eigenvalues]
 ---
 
-See [CORE](/core).
+Algebra studies linear structure: vectors built by linear combination, maps
+that preserve linear combinations and the coordinates that turn both into
+lists and matrices. The strand works over a scalar field $F$, usually
+$\mathbb R$ for geometric examples and $\mathbb C$ when complex roots or
+eigenvalues are needed.
+
+## Chapters
+
+1. [Complex numbers](/algebra/complex-numbers): arithmetic and polar form in
+   $\mathbb C$, polynomial roots and roots as modes of discrete and
+   continuous systems.
+2. [Vector spaces](/algebra/vector-spaces): one setting for $F^n$, polynomial
+   spaces $P_n(F)$ and matrix spaces $M_{m\times n}(F)$, developed through
+   subspaces, span, independence, bases and coordinates and ending with
+   interpolation.
+3. [Linear transformations](/algebra/linear-transformations): maps that
+   preserve linear combinations, read through their geometry, kernel and
+   image and, in finite dimensions, as matrices once bases are chosen.
+4. [Eigenvalues](/algebra/eigenvalues): invariant directions and
+   diagonalisation, including when a matrix is not diagonalisable over the
+   chosen field, applied to matrix powers, [linear ODE
+   systems](/algebra/eigenvalues/linear-ode-systems) and [Markov
+   chains](/algebra/eigenvalues/markov-systems).
+
+## Links to Calculus
+
+- **Polynomial spaces:** [interpolation](/algebra/vector-spaces/data-fitting)
+  and [Taylor models](/calculus/taylor-series/taylor-polynomials) are both
+  coordinate problems in a polynomial space.
+- **Kernels:** the [kernel](/algebra/linear-transformations/kernel-image-rank)
+  of a linear map describes every solution of a homogeneous equation and
+  every solution of a forced equation once one particular solution is known.
+  This covers matrix equations and [linear
+  ODEs](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators)
+  alike.
+- **Characteristic roots:** [complex characteristic
+  roots](/algebra/complex-numbers/stability-of-systems) describe the growth,
+  decay and oscillation of recurrences and of the [differential
+  equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)
+  in Calculus.
+
+See [Core](/core) for how the two strands fit together.

@@ -1,0 +1,349 @@
+---
+title: Geometric examples
+description: Matrix maps, scaling, reflections, rotations, dot products, projections and a translation non-example.
+tags: [algebra]
+ideas: [linear-maps, geometry, matrices, projections]
+---
+
+This page reads linear maps geometrically, through the points, lines and directions they move in $\mathbb R^2$ and $\mathbb R^3$. It first shows that linear maps between these spaces are exactly matrix maps, then works through scaling, reflections, rotations and projections.
+
+<Recall of="linear-map" />
+
+## Matrix maps and standard coordinates
+
+Multiplication by a fixed matrix is a linear map. In standard coordinates, the columns of the matrix are the images of the standard basis vectors.
+
+<Theorem slug="matrix-map-linear" of="linear-map">
+
+### Matrix maps are linear
+
+<Statement>
+
+For every $m\times n$ matrix $A$, the map
+
+$$
+T_A:\mathbb R^n\to\mathbb R^m,\qquad T_A(x)=Ax
+$$
+
+is linear.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="matrix-map-linear">
+
+For $x,y\in\mathbb R^n$ and $\lambda\in\mathbb R$,
+$$
+T_A(x+y)=A(x+y)=Ax+Ay=T_A(x)+T_A(y),
+$$
+and
+$$
+T_A(\lambda x)=A(\lambda x)=\lambda Ax=\lambda T_A(x).
+$$
+Thus $T_A$ satisfies both conditions in the definition of a linear map.
+
+</Proof>
+
+<Example of="matrix-map-linear" difficulty="routine">
+
+### Reading a matrix map in coordinates
+
+For
+
+$$
+A=
+\begin{pmatrix}
+a_{11}&a_{12}&a_{13}\\
+a_{21}&a_{22}&a_{23}
+\end{pmatrix},
+$$
+
+the associated map $T_A:\mathbb R^3\to\mathbb R^2$ is
+
+$$
+T_A\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+\begin{pmatrix}
+a_{11}x_1+a_{12}x_2+a_{13}x_3\\
+a_{21}x_1+a_{22}x_2+a_{23}x_3
+\end{pmatrix}.
+$$
+
+The matrix columns give the images of the standard basis vectors, so the coordinate formula is determined by those three images.
+
+</Example>
+
+The converse also holds: by the [basis-data principle](/algebra/linear-transformations/linear-transformations), every linear map $\mathbb R^n\to\mathbb R^m$ is a matrix map.
+
+<Theorem slug="standard-basis-matrix" of="linear-map,finite-linear-combination-preservation" see="matrix-map-linear">
+
+### The matrix of a linear map on standard coordinates
+
+<Statement>
+
+Let $T:\mathbb R^n\to\mathbb R^m$ be a linear map and let $e_1,\ldots,e_n$ be the standard basis vectors of $\mathbb R^n$. If $A$ is the $m\times n$ matrix whose $j$th column is $T(e_j)$, then
+
+$$
+T(x)=Ax
+$$
+
+for every $x\in\mathbb R^n$. Thus every linear map from $\mathbb R^n$ to $\mathbb R^m$ is represented by a matrix.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="standard-basis-matrix">
+
+Write $x=x_1e_1+\cdots+x_ne_n$. Preservation of finite linear combinations gives
+$$
+T(x)=x_1T(e_1)+\cdots+x_nT(e_n).
+$$
+These vectors are exactly the columns of $A$, so the right-hand side is $Ax$.
+
+</Proof>
+
+<Example of="standard-basis-matrix" difficulty="routine">
+
+### Constructing the matrix from a formula
+
+Suppose
+
+$$
+T\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+\begin{pmatrix}x_2+x_3\\x_1+x_2\end{pmatrix}.
+$$
+
+Evaluating at the standard basis vectors gives
+
+$$
+T\begin{pmatrix}1\\0\\0\end{pmatrix}
+=
+\begin{pmatrix}0\\1\end{pmatrix},
+\qquad
+T\begin{pmatrix}0\\1\\0\end{pmatrix}
+=
+\begin{pmatrix}1\\1\end{pmatrix},
+\qquad
+T\begin{pmatrix}0\\0\\1\end{pmatrix}
+=
+\begin{pmatrix}1\\0\end{pmatrix}.
+$$
+
+Therefore
+
+$$
+A=
+\begin{pmatrix}
+0&1&1\\
+1&1&0
+\end{pmatrix},
+$$
+
+whose columns reproduce the given coordinate formula.
+
+</Example>
+
+[Matrix representations](/algebra/linear-transformations/matrix-representations) extends this construction to arbitrary bases. Changing the basis changes the entries of the matrix, but not the underlying map.
+
+## Scaling and reflections
+
+Diagonal matrices show how separate coordinate directions can be stretched or reversed.
+
+<Example of="matrix-map-linear" difficulty="routine">
+
+### Scaling in $\mathbb R^2$
+
+For fixed positive factors $\lambda_x,\lambda_y$, the map
+
+$$
+\begin{pmatrix}x\\y\end{pmatrix}
+\longmapsto
+\begin{pmatrix}\lambda_xx\\\lambda_yy\end{pmatrix}
+$$
+
+has matrix
+
+$$
+\begin{pmatrix}
+\lambda_x&0\\
+0&\lambda_y
+\end{pmatrix}.
+$$
+
+The two coordinate directions are scaled independently. Each axis is sent to
+itself: $(x,0)$ is sent to $(\lambda_xx,0)$ and $(0,y)$ to $(0,\lambda_yy)$.
+Any other line through the origin is sent to a line through the origin, but
+its slope can change unless $\lambda_x=\lambda_y$.
+
+</Example>
+
+<Example of="matrix-map-linear" difficulty="routine">
+
+### Reflections in $\mathbb R^2$
+
+Reflection in the $x$-axis and reflection in the $y$-axis are respectively
+
+$$
+\begin{pmatrix}x\\y\end{pmatrix}
+\longmapsto
+\begin{pmatrix}x\\-y\end{pmatrix},
+\qquad
+\begin{pmatrix}x\\y\end{pmatrix}
+\longmapsto
+\begin{pmatrix}-x\\y\end{pmatrix},
+$$
+
+with matrices
+
+$$
+\begin{pmatrix}1&0\\0&-1\end{pmatrix},
+\qquad
+\begin{pmatrix}-1&0\\0&1\end{pmatrix}.
+$$
+
+</Example>
+
+## Rotations
+
+A rotation turns every vector through the same angle about the origin and it is linear.
+
+<Example of="matrix-map-linear" difficulty="routine">
+
+### Rotation about the origin
+
+Write $(x,y)=(r\cos\varphi,r\sin\varphi)$. A counterclockwise rotation through $\theta$ sends the angle $\varphi$ to $\varphi+\theta$. The angle-addition identities give
+
+$$
+\begin{pmatrix}x\\y\end{pmatrix}
+\longmapsto
+\begin{pmatrix}
+\cos\theta&-\sin\theta\\
+\sin\theta&\cos\theta
+\end{pmatrix}
+\begin{pmatrix}x\\y\end{pmatrix}.
+$$
+
+Explicitly,
+$$
+r\cos(\varphi+\theta)=r\cos\varphi\cos\theta-r\sin\varphi\sin\theta
+=x\cos\theta-y\sin\theta,
+$$
+and similarly the second coordinate is
+$x\sin\theta+y\cos\theta$. So the signs and the placement of $\sin\theta$ in
+the matrix are forced by these identities, not a convention to memorise.
+
+The first column is the image of $(1,0)^T$, namely $(\cos\theta,\sin\theta)^T$ and the second is the image of $(0,1)^T$, namely $(-\sin\theta,\cos\theta)^T$.
+
+Under the identification $\mathbb C\cong\mathbb R^2$, write
+$z=x+iy=re^{i\varphi}$. Multiplication by $e^{i\theta}$ gives
+
+$$
+e^{i\theta}z
+=re^{i(\varphi+\theta)}
+=(x\cos\theta-y\sin\theta)
++i(x\sin\theta+y\cos\theta),
+$$
+
+so the real and imaginary parts are the two coordinates produced by the
+rotation matrix. [Polar form](/algebra/complex-numbers/polar-form) and the
+matrix describe the same rotation.
+
+</Example>
+
+<Example of="matrix-map-linear" difficulty="routine">
+
+### Reflection in a line through the origin
+
+More generally, reflection in a line through the origin making angle $\phi$ with the positive $x$-axis has matrix
+
+$$
+\begin{pmatrix}
+\cos(2\phi)&\sin(2\phi)\\
+\sin(2\phi)&-\cos(2\phi)
+\end{pmatrix}.
+$$
+
+Setting $\phi=0$ gives reflection in the $x$-axis, while $\phi=\pi/2$ gives reflection in the $y$-axis.
+
+To derive the formula, observe that a vector at angle $\theta$ reflects to
+angle $2\phi-\theta$. Applying the cosine and sine subtraction identities to
+this new angle produces the two rows of the matrix.
+
+</Example>
+
+## Dot products and projections
+
+The codomain need not have the same dimension as the domain. A dot product produces a scalar, while projection produces a vector on a fixed line.
+
+<Example of="linear-map" difficulty="routine">
+
+### A dot-product map
+
+Fix $u\in\mathbb R^n$ and define
+
+$$
+T_u:\mathbb R^n\to\mathbb R,\qquad T_u(x)=u\cdot x.
+$$
+
+Bilinearity of the dot product gives
+
+$$
+T_u(x+y)=u\cdot(x+y)=u\cdot x+u\cdot y=T_u(x)+T_u(y),
+$$
+$$
+T_u(\lambda x)=u\cdot(\lambda x)=\lambda(u\cdot x)=\lambda T_u(x).
+$$
+
+Thus taking the dot product with a fixed vector is a linear map.
+
+</Example>
+
+<Example of="linear-map" difficulty="routine">
+
+### Projection onto a line
+
+For $u\ne0$, the projection of $x\in\mathbb R^n$ onto the line spanned by $u$ is
+
+$$
+\operatorname{proj}_u x=\frac{x\cdot u}{u\cdot u}\,u.
+$$
+
+To see this, write the projected vector as $cu$. The residual $x-cu$ must be
+perpendicular to $u$ and solving $(x-cu)\cdot u=0$ gives
+$c=(x\cdot u)/(u\cdot u)$. The condition $u\ne0$ makes the denominator
+positive.
+
+The projection map $P_u:\mathbb R^n\to\mathbb R^n$ is therefore
+
+$$
+P_u(x)=\frac{x\cdot u}{u\cdot u}\,u.
+$$
+
+Since $u\cdot u$ is a fixed non-zero scalar, bilinearity gives
+
+$$
+P_u(x+y)=P_u(x)+P_u(y),
+\qquad
+P_u(\lambda x)=\lambda P_u(x).
+$$
+
+Hence projection onto a fixed line through the origin is a linear map.
+
+For orthogonal projection onto a subspace $H$, every vector in $H$ is fixed
+and every vector in $H^\perp$ is sent to zero. When those subspaces are
+non-zero, they are eigenspaces for eigenvalues $1$ and $0$ respectively;
+this links projection geometry to
+[eigenvalues](/algebra/eigenvalues/eigenvalues-and-eigenvectors).
+
+</Example>
+
+Translation looks like these geometric maps but is not linear. For a fixed non-zero vector $a$, the map $T(x)=x+a$ satisfies $T(0)=a\ne0$ and, in general,
+
+$$
+T(\lambda x)=\lambda x+a\ne\lambda x+\lambda a=\lambda T(x).
+$$
+
+[Kernel, image and rank](/algebra/linear-transformations/kernel-image-rank) turns next to the vectors a map sends to $0$ and the outputs it can produce.

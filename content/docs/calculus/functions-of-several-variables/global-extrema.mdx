@@ -1,0 +1,294 @@
+---
+title: Global extrema
+description: The extreme-value theorem and a complete interior-and-boundary workflow for absolute extrema.
+tags: [calculus]
+ideas: [global-extrema, boundary-analysis, optimisation]
+---
+
+This page finds the absolute maximum and minimum of a function on a region.
+Unlike a local test, an absolute extremum compares every point of the domain,
+so the boundary of the region enters the calculation. On a closed and bounded
+region the extreme-value theorem guarantees that both extrema exist; interior
+candidates come from the [stationary
+points](/calculus/functions-of-several-variables/local-extrema) and each
+boundary piece gives a lower-dimensional optimisation problem.
+
+## Closed and bounded regions
+
+<Definition slug="closed-bounded-region">
+
+### Closed and bounded region
+
+<Statement>
+
+A region $D\subseteq\mathbb{R}^2$ is **closed** if it contains its boundary
+$\partial D$ and **bounded** if it fits inside a sufficiently large disk:
+there is an $R>0$ such that $\|\mathbf{x}\|\le R$ for every
+$\mathbf{x}\in D$.
+
+</Statement>
+
+An **interior point** has a neighbourhood contained entirely in $D$. A
+**boundary point** has every neighbourhood meeting both $D$ and its
+complement; the set of boundary points is written $\partial D$.
+
+The closed unit disk
+
+$$
+\{(x,y):x^2+y^2\le1\}
+$$
+
+contains its boundary, the unit circle $x^2+y^2=1$. An open disk omits that
+circle and is not closed.
+
+</Definition>
+
+<Theorem slug="multivariable-extreme-value-theorem" of="closed-bounded-region">
+
+### The multivariable extreme-value theorem
+
+<Statement>
+
+If $f$ is continuous on a nonempty closed and bounded region
+$D\subseteq\mathbb{R}^2$, then $f$ attains an absolute maximum and an absolute
+minimum on $D$.
+
+</Statement>
+
+An absolute extremum can occur at an interior critical point or anywhere on
+the boundary $\partial D$. The theorem guarantees existence, but it does not
+identify the candidates. The boundary is usually an infinite set, so it must
+be treated as a lower-dimensional optimisation problem.
+
+If either closedness or boundedness fails, an extremum need not be attained;
+for example, $f(x,y)=x$ on the open unit disk has supremum $1$ but no maximum.
+
+</Theorem>
+
+## The candidate workflow
+
+<Method slug="absolute-extrema-workflow" of="multivariable-extreme-value-theorem">
+
+### Find absolute extrema on a closed bounded region
+
+<Statement>
+
+For a continuous $f$ on a nonempty closed and bounded region $D$, use the
+following workflow, checking differentiability wherever a derivative is used:
+
+1. find all stationary points in the differentiable interior of $D$ and
+   separately record any interior points where $f$ is not differentiable;
+2. restrict $f$ to each boundary piece;
+3. find critical points of every restricted function, including endpoints and
+   corners;
+4. evaluate $f$ at every candidate;
+5. compare the resulting values.
+
+</Statement>
+
+Neither part of the search can be skipped: a boundary point can have a larger
+or smaller value than every interior critical point and a corner may not be
+detected by a one-variable derivative.
+
+</Method>
+
+<Method slug="boundary-parametrisation" of="absolute-extrema-workflow">
+
+### Analyse a boundary by parameterisation
+
+<Statement>
+
+To analyse a differentiable boundary curve, parameterise it as
+
+$$
+\mathbf{r}(t)=(x(t),y(t))
+$$
+
+and optimise the one-variable function
+
+$$
+\phi(t)=f(x(t),y(t)).
+$$
+
+Include all parameter endpoints when the boundary is a segment or a
+piecewise-smooth curve and include corners separately.
+
+</Statement>
+
+Parameterisation converts the boundary part of a two-variable problem into
+one-variable calculus. When the boundary is naturally a level curve $g=0$,
+[Lagrange
+multipliers](/calculus/functions-of-several-variables/constrained-extrema)
+solve the boundary problem without a parameterisation.
+
+</Method>
+
+<Example slug="rectangle-absolute-extrema" of="absolute-extrema-workflow" difficulty="exam">
+
+### Extrema on a rectangle
+
+Find the maximum and minimum of
+
+$$
+f(x,y)=x^2-x^2y+3y^2
+$$
+
+on
+
+$$
+D=\{(x,y):-1\le x\le1,\ -1\le y\le1\}.
+$$
+
+For interior candidates,
+
+$$
+f_x=2x(1-y),
+\qquad
+f_y=-x^2+6y.
+$$
+
+The equations $f_x=f_y=0$ give either $x=0$, hence $y=0$, or $y=1$, hence
+$x^2=6$, which is outside the rectangle. The only interior candidate is
+$(0,0)$, with
+
+$$
+f(0,0)=0.
+$$
+
+On the vertical edges $x=\pm1$,
+
+$$
+f(\pm1,y)=1-y+3y^2.
+$$
+
+The derivative is $-1+6y$, so the edge critical point is $y=1/6$, where
+
+$$
+f\left(\pm1,\frac16\right)
+=1-\frac16+3\left(\frac16\right)^2
+=\frac{11}{12}.
+$$
+
+The edge endpoints give
+
+$$
+f(\pm1,-1)=5,
+\qquad
+f(\pm1,1)=3.
+$$
+
+On the horizontal edges,
+
+$$
+f(x,1)=3,
+\qquad
+f(x,-1)=2x^2+3.
+$$
+
+The latter has minimum $3$ at $x=0$ and maximum $5$ at $x=\pm1$. Comparing
+all candidates gives
+
+$$
+{\min_D f=0\text{ at }(0,0)}
+$$
+
+and
+
+$$
+{\max_D f=5\text{ at }(1,-1)\text{ and }(-1,-1)}.
+$$
+
+The minimum is interior, while the maximum occurs at corners.
+
+</Example>
+
+<Example slug="disk-absolute-extrema" of="absolute-extrema-workflow,boundary-parametrisation" difficulty="exam">
+
+### Extrema on the closed unit disk
+
+Let
+
+$$
+f(x,y)=x^2+4xy+y^2
+$$
+
+on
+
+$$
+D=\{(x,y):x^2+y^2\le1\}.
+$$
+
+The interior gradient is
+
+$$
+\nabla f
+=
+\begin{pmatrix}
+2x+4y\\
+4x+2y
+\end{pmatrix}.
+$$
+
+Solving $\nabla f=\mathbf{0}$ gives $(0,0)$, with $f(0,0)=0$.
+
+The boundary is the unit circle. Parameterise it by
+
+$$
+x=\cos t,
+\qquad
+y=\sin t.
+$$
+
+Then
+
+$$
+\begin{aligned}
+f(\cos t,\sin t)
+&=\cos^2t+4\cos t\sin t+\sin^2t\\
+&=1+2\sin(2t).
+\end{aligned}
+$$
+
+Since $-1\le\sin(2t)\le1$,
+
+$$
+-1\le f(\cos t,\sin t)\le3.
+$$
+
+The maximum $3$ occurs at
+
+$$
+\left(\frac1{\sqrt2},\frac1{\sqrt2}\right),
+\qquad
+\left(-\frac1{\sqrt2},-\frac1{\sqrt2}\right),
+$$
+
+and the minimum $-1$ occurs at
+
+$$
+\left(\frac1{\sqrt2},-\frac1{\sqrt2}\right),
+\qquad
+\left(-\frac1{\sqrt2},\frac1{\sqrt2}\right).
+$$
+
+Comparing with the interior value gives
+
+$$
+{\max_D f=3}
+$$
+
+at the two same-sign boundary points and
+
+$$
+{\min_D f=-1}
+$$
+
+at the two opposite-sign boundary points.
+
+</Example>
+
+The boundary calculation can also be done without a parameter by treating
+$x^2+y^2=1$ as a constraint. The [constrained
+extrema](/calculus/functions-of-several-variables/constrained-extrema) page
+develops this method, in which a gradient-parallel condition replaces the
+parameter derivative.

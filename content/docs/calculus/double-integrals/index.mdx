@@ -1,0 +1,69 @@
+---
+title: Double integrals
+description: Riemann sums, iterated integrals, coordinate changes and applications of integration over planar regions.
+tags: [calculus]
+ideas: [double-integrals, multivariable-integration, jacobian, centroid]
+---
+
+A double integral $\iint_\Omega f(x,y)\,dA$ accumulates a quantity over a
+planar region $\Omega$ by adding contributions of the form
+$\text{density}\times\text{area}$. Depending on what $f$ represents, the result
+is a signed volume, a mass, a population or a probability. The chapter assumes
+one-variable integration and the
+[multivariable function](/calculus/functions-of-several-variables/geometry-and-approximation)
+viewpoint.
+
+## Lessons
+
+1. [Double integrals and Riemann sums](/calculus/double-integrals/double-integrals-and-riemann-sums):
+   defines the integral over a rectangle as a limit of sums and gives the
+   upper-and-lower-sum test for integrability.
+2. [Fubini and iterated integrals](/calculus/double-integrals/fubini-and-iterated-integrals):
+   computes the integral on a rectangle by adding one-variable cross-sections,
+   in either order.
+3. [Regions and order of integration](/calculus/double-integrals/regions-and-order-of-integration):
+   extends slicing to regions bounded by curves and shows how to reverse or
+   split the order.
+4. [Change of variables and polar coordinates](/calculus/double-integrals/change-of-variables-and-polar-coordinates):
+   reshapes the region or integrand, with the Jacobian determinant recording
+   how area stretches.
+5. [Mass, centroids and probability](/calculus/double-integrals/mass-centroids-and-probability):
+   integrates a density to find mass, centres of mass and expected values.
+6. [Euler's Basel sum](/calculus/double-integrals/basel-sum): combines a
+   series, a linear change of variables and symmetry to prove
+   $\sum 1/n^2=\pi^2/6$.
+7. [Seen questions](/calculus/double-integrals/seen): exam questions on
+   integrability, upper sums and a change of variables on an elliptical region.
+
+## Where it leads
+
+This last Calculus chapter extends the substitution rule
+$du=g'(x)\,dx$ from [integration techniques](/calculus/integration-techniques)
+to two variables; the absolute Jacobian determinant is also the area-scaling
+factor of a [linear map's
+matrix](/algebra/linear-transformations/matrix-representations) in Algebra.
+Normalised densities turn the same integrals into continuous probability
+models.
+
+## Vocabulary checkpoints
+
+- **Double and iterated integrals:** a [double
+  integral](/calculus/double-integrals/double-integrals-and-riemann-sums)
+  accumulates over a region; an [iterated
+  integral](/calculus/double-integrals/fubini-and-iterated-integrals) computes
+  it by slicing.
+- **Order and region:** [changing the
+  order](/calculus/double-integrals/regions-and-order-of-integration) changes
+  the bounds, not the region.
+- **Jacobian matrix and determinant:** in a [coordinate
+  change](/calculus/double-integrals/change-of-variables-and-polar-coordinates),
+  the matrix is the local linear approximation and the absolute value of its
+  determinant is the area-scaling factor.
+- **Density and integral:** in [mass and
+  probability](/calculus/double-integrals/mass-centroids-and-probability), a
+  density is a rate per unit area; its integral is the total mass or
+  probability.
+- **Region notation:** $D$ usually denotes a function's domain, $R$ a rectangle
+  and $\Omega$ the region of integration. $\partial\Omega$ is the boundary of
+  $\Omega$, while $\partial$ applied to a function means partial
+  differentiation.

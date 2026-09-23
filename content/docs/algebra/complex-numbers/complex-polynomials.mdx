@@ -1,0 +1,399 @@
+---
+title: Complex polynomials
+description: Complex coefficients, roots, factorisation and real factors.
+tags: [algebra]
+ideas: [complex-polynomials, roots, factorisation]
+---
+
+This page studies polynomials whose coefficients come from [complex arithmetic](/algebra/complex-numbers/complex-arithmetic). It asks which polynomials have roots in $\mathbb C$ and how those roots determine the factors. The central result is that every non-constant complex polynomial splits into linear factors.
+
+## Polynomial language
+
+<Recall of="complex-number" />
+
+<Definition slug="complex-polynomial" of="complex-number">
+
+### Complex polynomial
+
+<Statement>
+
+A *complex polynomial* is a function $p:\mathbb C\to\mathbb C$ of the form
+$$
+p(z)=a_0+a_1z+a_2z^2+\cdots+a_nz^n,
+\qquad a_0,\ldots,a_n\in\mathbb C,
+$$
+for a non-negative integer $n$.
+
+</Statement>
+
+The coefficients may be real or non-real. The word *polynomial* restricts the
+exponents of the variable to non-negative integers, not the kinds of numbers
+allowed as coefficients.
+
+</Definition>
+
+<Definition slug="polynomial-degree" of="complex-polynomial">
+
+### Degree
+
+<Statement>
+
+For a non-zero polynomial
+$$
+p(z)=\sum_{k=0}^n a_kz^k,
+$$
+the *degree* of $p$ is the largest integer $k$ for which $a_k\ne0$. The zero polynomial has undefined degree.
+
+</Statement>
+
+</Definition>
+
+<Example slug="complex-polynomial-classification" of="complex-polynomial,polynomial-degree" difficulty="routine">
+
+### Classify and find degrees
+
+The expressions
+$$
+0,\quad z,\quad z^{999},\quad 1+35z^4,\quad
+i+\sqrt2\,iz^4+\pi z
+$$
+are complex polynomials. The non-zero polynomials $z$, $z^{999}$, $1+35z^4$ and $i+\sqrt2\,iz^4+\pi z$ have degrees $1$, $999$, $4$ and $4$, respectively. The zero polynomial has undefined degree.
+
+An expression containing a fractional power such as $z^{1/2}$ is not a
+polynomial in $z$. By contrast, numbers such as $2+3i$ and $(1-7i)^{17}$
+are allowed as coefficients: only the powers of the variable must be
+non-negative integers.
+
+</Example>
+
+<Definition slug="polynomial-root" of="complex-polynomial">
+
+### Polynomial root
+
+<Statement>
+
+A number $\alpha\in\mathbb C$ is a *root* of $p$ if
+$$
+p(\alpha)=0.
+$$
+
+</Statement>
+
+</Definition>
+
+<Definition slug="polynomial-factor" of="complex-polynomial">
+
+### Polynomial factor
+
+<Statement>
+
+A polynomial $p_1$ is a *factor* of $p$ if there is a polynomial $p_2$ such
+that
+$$
+p(z)=p_1(z)p_2(z)
+$$
+for every $z\in\mathbb C$.
+
+</Statement>
+
+</Definition>
+
+<Example slug="quadratic-complex-roots" of="polynomial-root,polynomial-factor" difficulty="routine">
+
+### Find and use roots
+
+For $p(z)=z^2+1$,
+$$
+p(i)=i^2+1=0,
+$$
+so $i$ is a root. Direct substitution also gives $p(-i)=0$. The
+factor theorem below explains why these roots yield the factorisation
+$$
+z^2+1=(z-i)(z+i)
+$$
+into linear factors. The same polynomial has no real root: for real $x$,
+$x^2+1>0$.
+
+</Example>
+
+<Definition slug="root-multiplicity" of="polynomial-root,polynomial-factor">
+
+### Root multiplicity
+
+<Statement>
+
+For a non-zero polynomial $p$, a root $\alpha$ has *multiplicity* $k\ge1$ if
+$(z-\alpha)^k$ is a factor of $p$ but $(z-\alpha)^{k+1}$ is not.
+
+</Statement>
+
+</Definition>
+
+<Example slug="root-multiplicity-two" of="root-multiplicity" difficulty="routine">
+
+### Multiplicity two
+
+For $p(z)=(z-1)^2$, the root $1$ has multiplicity two: $(z-1)^2$ is a factor of $p$ but $(z-1)^3$ is not.
+
+Multiplicity records repetition in a factorisation. It is not the number of
+different solutions: this polynomial has one distinct root, counted twice
+when roots are counted with multiplicity.
+
+</Example>
+
+## Roots and factors
+
+<Theorem slug="remainder-theorem" of="polynomial-root">
+
+### Remainder theorem
+
+<Statement>
+
+When $p(z)$ is divided by $z-\alpha$, the remainder is the complex number $p(\alpha)$.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="remainder-theorem">
+
+Polynomial division gives
+$$
+p(z)=(z-\alpha)q(z)+r,
+$$
+with a constant remainder $r$. At $z=\alpha$, the first term vanishes, leaving $p(\alpha)=r$.
+
+</Proof>
+
+<Theorem slug="factor-theorem" of="polynomial-root,polynomial-factor,remainder-theorem">
+
+### Factor theorem
+
+<Statement>
+
+A number $\alpha\in\mathbb C$ is a root of $p$ if and only if $z-\alpha$ is a factor of $p(z)$.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="factor-theorem">
+
+If $p(\alpha)=0$, polynomial division gives
+$$
+p(z)=(z-\alpha)q(z)+p(\alpha)=(z-\alpha)q(z),
+$$
+so $z-\alpha$ is a factor. Conversely, if $p(z)=(z-\alpha)q(z)$, then $p(\alpha)=0$.
+
+</Proof>
+
+<Theorem slug="polynomial-coefficient-uniqueness" of="complex-polynomial,factor-theorem">
+
+### Uniqueness of polynomial coefficients
+
+<Statement>
+
+Two complex polynomials agree for every $z\in\mathbb C$ if and only if their corresponding coefficients are equal. In particular, a complex polynomial is zero for every $z$ if and only if all its coefficients are zero.
+
+</Statement>
+
+This is why identities between polynomial functions can be checked
+coefficient by coefficient.
+
+To see why, subtract the two polynomials. If the result were a non-zero
+polynomial of degree $d$, it could have at most $d$ distinct roots: each root
+supplies a linear factor by the factor theorem. After dividing out
+$z-\alpha$, any other root $\beta\ne\alpha$ remains a root of the quotient,
+so we can repeat this step at most $d$ times. It therefore cannot vanish at
+every complex number.
+
+</Theorem>
+
+<Theorem slug="fundamental-theorem-of-algebra" of="complex-polynomial">
+
+### Fundamental theorem of algebra
+
+<Statement>
+
+Every complex polynomial of degree $n\ge1$ has at least one complex root.
+
+</Statement>
+
+The theorem is stated without proof. It guarantees that a root exists, not a
+formula for finding it.
+
+Applying the factor theorem to that root and then repeating with the
+quotient, gives the full factorisation below. This is what is special about
+$\mathbb C$: over $\mathbb R$, a polynomial such as $z^2+1$ cannot be
+factored into real linear factors.
+
+</Theorem>
+
+## Factorisation over $\mathbb C$
+
+<Theorem slug="complex-factorisation" of="fundamental-theorem-of-algebra,factor-theorem">
+
+### Factorisation over the complex numbers
+
+<Statement>
+
+Every complex polynomial of degree $n\ge1$ can be written
+$$
+p(z)=a(z-\alpha_1)(z-\alpha_2)\cdots(z-\alpha_n),
+$$
+where $a$ is the coefficient of $z^n$ and the $\alpha_j\in\mathbb C$ are roots, counted with multiplicity.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="complex-factorisation">
+
+Proceed by induction on the degree. A degree-one polynomial already has the required form. Suppose the result holds for degree $m$. If $p$ has degree $m+1$, the fundamental theorem of algebra supplies a root $\alpha_1$. The factor theorem gives
+$$
+p(z)=(z-\alpha_1)q(z)
+$$
+for a polynomial $q$ of degree $m$. Apply the induction hypothesis to $q$ and multiply the factors.
+
+</Proof>
+
+<Corollary slug="complex-root-count" of="complex-factorisation">
+
+### Count roots with multiplicity
+
+<Statement>
+
+A complex polynomial of degree $n\ge1$ has exactly $n$ complex roots counted
+with multiplicity.
+
+</Statement>
+
+The factorisation theorem gives $n$ linear factors. Conversely, if
+$p(\beta)=0$, then
+$$
+0=a(\beta-\alpha_1)\cdots(\beta-\alpha_n),
+$$
+so $\beta$ equals one of the $\alpha_j$. Thus the list has no missing roots,
+and repeated factors record multiplicity.
+
+“Exactly $n$ roots” does not mean $n$ distinct values: $(z-1)^2$ has two
+roots counted with multiplicity, but only one distinct root.
+
+</Corollary>
+
+<Example slug="quadratic-factorisation" of="complex-factorisation" difficulty="routine">
+
+### Factorise a quadratic
+
+For $p(z)=z^2+z+1$, the quadratic formula gives
+$$
+z=\frac{-1\pm\sqrt{-3}}2
+= -\frac12\pm\frac{\sqrt3}{2}i.
+$$
+Therefore
+$$
+z^2+z+1
+=\left(z+\frac12-\frac{\sqrt3}{2}i\right)
+\left(z+\frac12+\frac{\sqrt3}{2}i\right).
+$$
+
+</Example>
+
+<Example slug="eighth-root-factorisation" of="complex-factorisation,complex-nth-roots" difficulty="exam">
+
+### Factorise $z^8-1$
+
+The roots satisfy $z^8=1$, so the eighth roots of unity give
+$$
+\alpha_k=e^{2\pi ik/8},\qquad k=0,1,\ldots,7.
+$$
+Hence
+$$
+z^8-1=\prod_{k=0}^{7}\left(z-e^{2\pi ik/8}\right)
+$$
+over $\mathbb C$.
+
+</Example>
+
+## Returning to real factors
+
+A *real polynomial* is one whose coefficients all lie in $\mathbb R$, even
+when the variable takes complex values. Its non-real roots occur in conjugate
+pairs, so its complex factorisation can be regrouped into real factors.
+
+<Proposition slug="conjugate-root-theorem" of="complex-polynomial,complex-conjugate">
+
+### Conjugate roots for real coefficients
+
+<Statement>
+
+If $p$ has real coefficients and $\alpha$ is a root of multiplicity $k$,
+then $\overline\alpha$ is also a root of multiplicity $k$.
+
+</Statement>
+
+The condition on the coefficients is essential: conjugation must leave every coefficient unchanged before it can pass through the polynomial.
+
+</Proposition>
+
+<Proof of="conjugate-root-theorem">
+
+Write $p(z)=\sum_{j=0}^n a_jz^j$ with $a_j\in\mathbb R$. If $p(\alpha)=0$, then
+$$
+p(\overline\alpha)
+=\sum_{j=0}^n a_j\overline\alpha^{\,j}
+=\sum_{j=0}^n\overline{a_j\alpha^j}
+=\overline{p(\alpha)}
+=0.
+$$
+For multiplicity, write $p(z)=(z-\alpha)^kq(z)$ with $q(\alpha)\ne0$.
+Since $p$ has real coefficients, conjugating this factorisation gives
+$p(z)=(z-\overline\alpha)^k\widetilde q(z)$, where
+$\widetilde q(z)=\overline{q(\overline z)}$ and
+$\widetilde q(\overline\alpha)=\overline{q(\alpha)}\ne0$. Thus the
+conjugate root has exactly the same multiplicity.
+
+</Proof>
+
+<Proposition slug="real-linear-quadratic-factorisation" of="conjugate-root-theorem,complex-factorisation">
+
+### Real linear and quadratic factors
+
+<Statement>
+
+Every non-zero polynomial with real coefficients can be written as a non-zero
+real constant times a product of real linear factors and real quadratic
+factors.
+
+</Statement>
+
+Every non-real root occurs with its conjugate. Pairing the corresponding factors gives
+$$
+(z-\alpha)(z-\overline\alpha)
+=z^2-2\operatorname{Re}(\alpha)z+|\alpha|^2,
+$$
+whose coefficients are real. Real roots already provide real linear factors.
+The quadratic factors obtained from non-real roots have negative discriminant,
+so they do not split further over $\mathbb R$.
+
+</Proposition>
+
+<Example slug="real-factorisation-of-eighth-roots" of="real-linear-quadratic-factorisation" difficulty="exam">
+
+### Factorise $x^8-1$ over the reals
+
+The real roots are $1$ and $-1$. Pairing the remaining eighth roots with their conjugates gives
+$$
+\begin{aligned}
+x^8-1
+&=(x-1)(x+1)(x^2+1)\\
+&\quad{}\times\left(x^2-\sqrt2\,x+1\right)
+\left(x^2+\sqrt2\,x+1\right).
+\end{aligned}
+$$
+
+The complex factorisation and the real factorisation describe the same polynomial; the latter groups conjugate roots into quadratic factors.
+
+</Example>
+
+The characteristic equation of a linear recurrence or differential equation is a complex polynomial. [Stability of systems](/algebra/complex-numbers/stability-of-systems) reads growth, decay and oscillation from its roots; the continuous case is the [second-order constant-coefficient](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) method from Calculus.

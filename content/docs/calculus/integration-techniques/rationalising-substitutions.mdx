@@ -1,0 +1,152 @@
+---
+title: Rationalising substitutions
+description: Changes of variable that turn an integrand with surds into a rational function.
+tags: [calculus]
+ideas: [substitution, rational-functions]
+---
+
+A rationalising substitution changes the variable so that an integrand with
+surds or exponentials becomes rational, after which the [partial-fraction
+methods](/calculus/integration-techniques/rational-functions) apply. A typical
+choice is a root $u$ that clears all rational powers of one base, or an
+exponential substitution such as $u=e^{x/2}$. Not every algebraic integrand
+can be rationalised by a single substitution, so check the transformed
+integrand before committing to the method.
+
+## Rationalising the integrand
+
+<Method slug="rationalising-substitution" of="integrate-rational" see="trig-hyperbolic-substitution">
+
+### Rationalise an integrand containing surds
+
+<Statement>
+
+For an integrand whose roots are rational powers of a common expression (or
+whose exponential exponents are rationally related so that $u=e^{cx}$ makes
+them rational powers), choose a new variable that makes the integrand
+rational. If the result is improper, divide; then decompose into partial
+fractions and integrate.
+
+</Statement>
+
+Replacing the radical is not enough. After rewriting both the integrand and
+$dx$, every occurrence of the new variable must have an integer exponent;
+only then do polynomial division and partial fractions apply. Forgetting to
+rewrite $dx$ in terms of $du$ gives the wrong powers of $u$.
+
+When several rational powers of $x$ appear, set $x=u^N$ where $N$ is a common
+multiple of their denominators, so every power becomes an integer power of
+$u$. Work on an interval where the original real powers and the chosen inverse
+are defined; when $N$ is even, $x=u^N$ covers only $x\ge0$.
+
+The [trigonometric and hyperbolic table](/calculus/integration-techniques/trigonometric-and-hyperbolic-substitutions)
+clears $\sqrt{a^2\pm x^2}$ and $\sqrt{x^2-a^2}$ by a named identity. Use a
+rationalising substitution for a surd that is not one of those three shapes.
+
+</Method>
+
+<Recall of="partial-fractions" />
+
+<Recall of="integrate-rational" />
+
+## Fractional powers of $x$
+
+The simplest rationalising substitution is a root of $x$, $u=x^{1/N}$, which makes every fractional power an integer power of $u$.
+
+<Example slug="int-one-plus-x-quarter" of="rationalising-substitution" difficulty="exam">
+
+### $\int\frac{dx}{1+x^{1/4}}$
+
+For the real principal fourth root, take $x\ge0$ and work on an interval
+with $x>0$ when differentiating the antiderivative.
+
+Let $I=\int\frac{dx}{1+x^{1/4}}$. Set $u=x^{1/4}$, or $u^4=x$, so $dx=4u^3\, du$. Then
+
+$$
+I=\int\frac{4u^3}{1+u}\, du=4\int\frac{1+u^3-1}{1+u}\, du.
+$$
+
+The sum of cubes is $1+u^3=(1+u)(1-u+u^2)$, hence
+
+$$
+\begin{aligned}
+I&=4\int\frac{(1+u)(1-u+u^2)-1}{1+u}\, du\\
+&=4\int\left(1-u+u^2-\frac{1}{1+u}\right)\, du\\
+&=4u-2u^2+\frac{4}{3}u^3-4\ln|1+u|+C\\
+&=4x^{1/4}-2\sqrt{x}+\frac{4}{3}x^{3/4}-4\ln\bigl|1+x^{1/4}\bigr|+C.
+\end{aligned}
+$$
+
+</Example>
+
+## Exponential substitutions
+
+For a surd built from an exponential, choose $u$ so that the expression under
+the root becomes a polynomial in $u$.
+
+<Example slug="int-sqrt-e2x-minus-1" of="rationalising-substitution" difficulty="exam">
+
+### $\int\frac{dx}{\sqrt{e^{2x}-1}}$
+
+For real values, the radicand requires $x\ge0$, but the denominator vanishes
+at $x=0$. Thus the integrand and its antiderivative are considered on $x>0$.
+
+Let $I=\int\frac{dx}{\sqrt{e^{2x}-1}}$. Set
+$u=\sqrt{e^{2x}-1}>0$, so the denominator becomes $u$ and
+$e^{2x}=u^2+1$. Differentiating $u^2=e^{2x}-1$ gives
+$2u\,du=2e^{2x}\,dx$. Hence
+
+$$
+2u\, du=2(u^2+1)\, dx\implies dx=\frac{u}{u^2+1}\, du.
+$$
+
+$$
+I=\int\frac{1}{u}\cdot\frac{u}{u^2+1}\, du=\int\frac{1}{u^2+1}\, du=\tan^{-1}u+C=\tan^{-1}\bigl(\sqrt{e^{2x}-1}\bigr)+C.
+$$
+
+</Example>
+
+Setting $u^2$ equal to a positive expression clears every half-integer power
+of that expression at once, since each becomes an integer power of $u$.
+
+<Example slug="int-one-plus-e-neg-x" of="rationalising-substitution" difficulty="exam">
+
+### $\int\frac{dx}{(1+e^{-x})^{3/2}}$
+
+Let $I=\int\frac{dx}{(1+e^{-x})^{3/2}}$. Set $u^2=1+e^{-x}$. Differentiating gives $2u\, du=-e^{-x}\, dx$. Since $e^{-x}=u^2-1$, one has $-e^{-x}=1-u^2$, so
+
+$$
+2u\, du=(1-u^2)\, dx\implies dx=\frac{2u}{1-u^2}\, du.
+$$
+
+Here $u=\sqrt{1+e^{-x}}>1$ for every real $x$. Hence
+$(1+e^{-x})^{3/2}=(u^2)^{3/2}=u^3$ and
+$1-u^2=(1-u)(1+u)$. Thus
+
+$$
+I=\int\frac{2u}{(1-u)(1+u)u^3}\, du=-2\int\frac{1}{(u-1)(u+1)u^2}\, du,
+$$
+
+the minus sign coming from $1-u=-(u-1)$. Decompose
+
+$$
+\frac{1}{(u-1)(u+1)u^2}=\frac{A}{u}+\frac{B}{u^2}+\frac{C}{u-1}+\frac{D}{u+1}.
+$$
+
+Clearing the denominator,
+
+$$
+1=Au(u-1)(u+1)+B(u-1)(u+1)+Cu^2(u+1)+Du^2(u-1).
+$$
+
+Setting $u=0$ gives $B=-1$. Setting $u=1$ gives $C=\frac12$. Setting $u=-1$ gives $D=-\frac12$. Setting $u=2$ gives $1=6A+3B+12C+4D$, hence $A=0$. Thus
+
+$$
+\begin{aligned}
+I&=2\int\frac{1}{u^2}\, du-\int\frac{1}{u-1}\, du+\int\frac{1}{u+1}\, du\\
+&=-\frac{2}{u}-\ln|u-1|+\ln|u+1|+C\\
+&=-\frac{2}{\sqrt{1+e^{-x}}}-\ln\bigl|\sqrt{1+e^{-x}}-1\bigr|+\ln\bigl|\sqrt{1+e^{-x}}+1\bigr|+C.
+\end{aligned}
+$$
+
+</Example>

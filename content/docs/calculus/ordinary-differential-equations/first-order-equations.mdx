@@ -1,0 +1,732 @@
+---
+title: First-order methods
+description: Separable, linear, exact and transformable first-order ODE methods.
+tags: [calculus]
+ideas: [first-order-equations, differential-equations]
+---
+
+This page solves first-order equations by recognising a structure that can be
+integrated directly: separable, linear or exact. Substitutions handle
+equations that reduce to one of these three.
+
+The three tests are independent rather than mutually exclusive, so one
+equation can pass more than one. The
+[method-selection workflow](/calculus/ordinary-differential-equations/pipeline)
+gives the order in which to try them and the equations produced in
+[modelling with first-order equations](/calculus/ordinary-differential-equations/first-order-modelling)
+need the same check.
+
+## Separable equations
+
+<Definition slug="separable-equation">
+
+### Separable equation
+
+<Statement>
+
+A first-order ODE is separable when it can be written as
+
+$$
+\frac{dy}{dx}=f(x)g(y).
+$$
+
+</Statement>
+
+On an interval where $g(y)\neq0$, the variables can be placed on opposite sides. Zeros of $g$ must be checked before division because they may give constant solutions that the separated calculation does not contain.
+
+</Definition>
+
+<Method slug="separation-of-variables" of="separable-equation">
+
+### Separation of variables
+
+<Statement>
+
+To solve $\frac{dy}{dx}=f(x)g(y)$ on a branch where $g(y)\neq0$:
+
+1. Write $\frac{dy}{g(y)}=f(x)\,dx$.
+2. Integrate both sides:
+   $$
+   \int\frac{dy}{g(y)}=\int f(x)\,dx+C.
+   $$
+3. Apply initial or boundary data and state the interval or branch on which the result is valid.
+4. Check separately any constant solutions arising from $g(y)=0$.
+
+</Statement>
+
+The result is often implicit. Taking logarithms can hide a sign choice and the initial data select the branch, subject to the hypotheses in [existence, uniqueness and linear operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators).
+
+</Method>
+
+<Example slug="separable-exponential" of="separation-of-variables" difficulty="routine">
+
+### Exponential growth with an initial value
+
+For
+
+$$
+y'=y(x+3x^2),\qquad y(0)=1,
+$$
+
+the initial value is nonzero, so separate on the branch $y\neq0$:
+
+$$
+\frac{dy}{y}=(x+3x^2)\,dx.
+$$
+
+Therefore
+
+$$
+\ln|y|=\frac{x^2}{2}+x^3+C.
+$$
+
+Since $y(0)=1>0$, the positive branch is selected and the constant is zero:
+
+$$
+y=e^{x^2/2+x^3}.
+$$
+
+</Example>
+
+<Example slug="separable-square-root" of="separation-of-variables" difficulty="exam">
+
+### A lost equilibrium and a real-domain restriction
+
+For
+
+$$
+y'=x\sqrt{1-y^2},
+$$
+
+the nonconstant solutions on a real branch satisfy
+
+$$
+\frac{dy}{\sqrt{1-y^2}}=x\,dx.
+$$
+
+Integration gives
+
+$$
+\arcsin y=\frac{x^2}{2}+C.
+$$
+
+The square root requires $|y|\leq1$. Because $\arcsin y$ takes values in $[-\pi/2,\pi/2]$, the implicit relation describes a branch only while $x^2/2+C$ stays in that range.
+
+The constant solutions $y=1$ and $y=-1$ were lost on division. At a point where a nonconstant branch reaches either level, it can also join a constant branch: the right side is zero there and uniqueness is not guaranteed at $|y|=1$.
+
+</Example>
+
+<Example slug="separable-circles" of="separation-of-variables" difficulty="routine">
+
+### A family of circles
+
+For
+
+$$
+\frac{dy}{dx}=-\frac{x}{y},
+$$
+
+multiply by $y\,dx$ and integrate:
+
+$$
+y\,dy=-x\,dx
+\quad\Longrightarrow\quad
+\frac{x^2}{2}+\frac{y^2}{2}=C.
+$$
+
+After absorbing the factor of $2$ into the constant,
+
+$$
+x^2+y^2=C.
+$$
+
+The solution curves are circles, but the original differential equation is
+undefined when $y=0$. Thus a circle is represented by an upper or lower
+graph branch on an interval that does not cross its points on the $x$-axis.
+The initial points $(0,7)$, $(2,3)$ and $(-6,-8)$ select respectively
+
+$$
+x^2+y^2=49,\qquad
+x^2+y^2=13,\qquad
+x^2+y^2=100.
+$$
+
+</Example>
+
+## First-order linear equations
+
+When the variables cannot be separated, test next whether the equation is linear in $y$. Mixing and cooling laws in [modelling with first-order equations](/calculus/ordinary-differential-equations/first-order-modelling) lead to this case.
+
+<Definition slug="first-order-linear-equation">
+
+### First-order linear equation
+
+<Statement>
+
+A first-order linear ODE in normal form is
+
+$$
+y'+p(x)y=q(x).
+$$
+
+</Statement>
+
+The term $p(x)y$ couples $y$ to $y'$, so direct integration of $y'$ and $q(x)$ separately does not solve the equation. An integrating factor makes the left side a product-rule derivative.
+
+</Definition>
+
+<Method slug="integrating-factor" of="first-order-linear-equation">
+
+### Integrating factor
+
+<Statement>
+
+For $y'+p(x)y=q(x)$ on an interval where $p$ and $q$ are continuous:
+
+1. Choose
+   $$
+   \mu(x)=e^{\int p(x)\,dx}.
+   $$
+2. Since $\mu'=p\mu$, multiply the equation by $\mu$:
+   $$
+   \mu y'+\mu p y=(\mu y)'=\mu q.
+   $$
+3. Integrate:
+   $$
+   \mu y=\int\mu q\,dx+C.
+   $$
+4. Divide by $\mu$:
+   $$
+   y=\frac1{\mu}\left(\int\mu q\,dx+C\right).
+   $$
+
+</Statement>
+
+The integrating factor is not a new solution of the ODE; it is chosen to produce the product rule. If the coefficient of $y'$ is not $1$, first divide by it on an interval where it is nonzero.
+
+</Method>
+
+<Example slug="linear-preweighted" of="integrating-factor" difficulty="routine">
+
+### An equation already in product-rule form
+
+For
+
+$$
+e^{x^2}y'+2xe^{x^2}y=x,
+$$
+
+the left side is already $(e^{x^2}y)'$. Hence
+
+$$
+(e^{x^2}y)'=x
+\quad\Longrightarrow\quad
+e^{x^2}y=\frac{x^2}{2}+C,
+$$
+
+and
+
+$$
+y=e^{-x^2}\left(\frac{x^2}{2}+C\right).
+$$
+
+</Example>
+
+<Example slug="linear-standard" of="integrating-factor" difficulty="routine">
+
+### A standard first-order linear equation
+
+For
+
+$$
+y'+3y=e^{-x},
+$$
+
+the integrating factor is $\mu=e^{3x}$. Multiplication gives
+
+$$
+(e^{3x}y)'=e^{2x}.
+$$
+
+Therefore
+
+$$
+e^{3x}y=\frac12e^{2x}+C,
+$$
+
+so
+
+$$
+y=\frac12e^{-x}+Ce^{-3x}.
+$$
+
+</Example>
+
+<Example slug="linear-singular-coefficient" of="integrating-factor" difficulty="exam">
+
+### A singular normal form with a smooth continuation
+
+For
+
+$$
+xy'+(x+1)y=2,
+$$
+
+divide by $x$ only on $x>0$ or $x<0$:
+
+$$
+y'+\left(1+\frac1x\right)y=\frac2x.
+$$
+
+On either interval, an integrating factor is
+
+$$
+\mu(x)=e^{x+\ln|x|}.
+$$
+
+Multiplying by a nonzero constant does not change an integrating factor, so we may take $\mu=xe^x$ on each chosen interval. Then
+
+$$
+(xe^xy)'=2e^x,
+\qquad
+xe^xy=2e^x+C.
+$$
+
+Thus
+
+$$
+y=\frac2x+\frac{Ce^{-x}}{x}.
+$$
+
+The normalised equation is valid only for $x\ne0$, but the original equation
+at $x=0$ still imposes $y(0)=2$. Choosing
+$C=-2$ gives
+
+$$
+y=\frac{2(1-e^{-x})}{x},
+\qquad y(0)=2
+$$
+
+by continuous extension. Other values of $C$ do not extend continuously
+through $x=0$, so the interval restriction created by division must still be
+reported.
+
+</Example>
+
+## Exact equations
+
+When the equation is neither separable nor linear, test whether $M\,dx+N\,dy=0$ is a total differential. If the test fails, try a substitution or a [numerical method](/calculus/ordinary-differential-equations/numerical-solutions).
+
+<Definition slug="exact-differential-equation">
+
+### Exact differential equation
+
+<Statement>
+
+An equation in differential form
+
+$$
+M(x,y)\,dx+N(x,y)\,dy=0
+$$
+
+is exact on a domain when there is a potential function $F(x,y)$ such that
+
+$$
+F_x=M,\qquad F_y=N.
+$$
+
+Here $F_x$ means differentiate with respect to $x$ while holding $y$ fixed,
+and $F_y$ means differentiate with respect to $y$ while holding $x$ fixed.
+The later [multivariable-calculus chapter](/calculus/functions-of-several-variables/geometry-and-approximation)
+develops this notation and the level-curve geometry in more detail.
+
+</Statement>
+
+Along a curve $y=y(x)$, the differential equation becomes
+
+$$
+M(x,y)+N(x,y)y'=0.
+$$
+
+A potential turns this into the statement that $F$ is constant along the curve, as shown after the theorem below.
+
+</Definition>
+
+<Theorem slug="exact-potential" of="exact-differential-equation">
+
+### The exactness test and potential
+
+<Statement>
+
+Suppose $M$ and $N$ have continuous first partial derivatives on an open simply connected domain $D$. If
+
+$$
+M_y=\frac{\partial M}{\partial y}
+=N_x=\frac{\partial N}{\partial x}
+$$
+
+throughout $D$, then the equation $M\,dx+N\,dy=0$ has a potential $F$ on $D$ and its solution curves satisfy
+
+$$
+F(x,y)=C.
+$$
+
+</Statement>
+
+Matching partial derivatives guarantees a single-valued potential on a simply
+connected domain, while holes in the domain can obstruct a global potential.
+
+</Theorem>
+
+One direction is short. If a potential $F$ exists and $M,N$ have continuous
+first partial derivatives, then equality of mixed partials gives
+
+$$
+M_y=F_{xy}=F_{yx}=N_x,
+$$
+
+so $M_y=N_x$ is necessary. The converse is the substantive part of the
+theorem: the simply connected hypothesis rules out holes that can prevent
+locally compatible derivatives from coming from one global potential. The
+course uses the theorem as a test rather than developing the line-integral
+theory behind that global step.
+
+In practice, the construction below produces a candidate $F$ directly and
+checking $F_x=M$ and $F_y=N$ verifies it without that further theory. Once a
+potential is known, along a solution curve the chain rule gives
+
+$$
+\frac{d}{dx}F(x,y(x))
+=F_x+F_y y'
+=M+Ny'
+=0.
+$$
+
+Therefore $F$ is constant along each solution curve, so the curves are level
+curves $F(x,y)=C$. This explains why a potential solves the ODE, not why one
+exists.
+
+Level curves connect exact equations to gradients. In two variables, the
+gradient is the vector of partial derivatives, $\nabla F=(F_x,F_y)$. At a
+regular point of a level curve $F=C$ (where this vector is nonzero), it is
+normal to the curve. Since $(F_x,F_y)=(M,N)$, the equation $M+Ny'=0$ says that
+the graph's tangent direction $(1,y')$ is perpendicular to the gradient. An
+exact equation is therefore a level-curve problem whose slope field is
+orthogonal to the gradient. Points where $\nabla F=0$ need separate attention.
+The [multivariable-calculus chapter](/calculus/functions-of-several-variables/geometry-and-approximation)
+develops this geometry further.
+
+<Method slug="solve-exact-equation" of="exact-potential">
+
+### Constructing the potential
+
+<Statement>
+
+To solve an exact equation:
+
+1. Check that $M_y=N_x$ on the domain.
+2. Integrate $M$ with respect to $x$, treating $y$ as constant:
+   $$
+   F(x,y)=\int M(x,y)\,dx+h(y).
+   $$
+3. Differentiate this expression with respect to $y$.
+4. Match $F_y$ with $N$ to determine $h(y)$.
+5. Write the implicit solution as $F(x,y)=C$.
+
+</Statement>
+
+The arbitrary function $h(y)$ is needed because integration with respect to $x$ leaves every function of $y$ unchanged. Omitting it can make the final expression fail to reproduce $N$.
+
+</Method>
+
+<Example slug="exact-linear-coefficients" of="solve-exact-equation" difficulty="routine">
+
+### A polynomial potential
+
+For
+
+$$
+(2x+y+3)\,dx+(2y+x-7)\,dy=0,
+$$
+
+we have
+
+$$
+M_y=1=N_x,
+$$
+
+so the equation is exact. Integrate $M$ with respect to $x$:
+
+$$
+F=x^2+xy+3x+h(y).
+$$
+
+Then
+
+$$
+F_y=x+h'(y)=x+2y-7,
+$$
+
+which gives $h'(y)=2y-7$ and hence $h(y)=y^2-7y$. The implicit general solution is
+
+$$
+x^2+xy+3x+y^2-7y=C.
+$$
+
+</Example>
+
+<Example slug="exact-hyperbolic" of="solve-exact-equation" difficulty="exam">
+
+### A potential involving hyperbolic functions
+
+Rewrite
+
+$$
+(x^2y+y^3)y'+xy^2+\sinh(2x)=0
+$$
+
+as
+
+$$
+\bigl(xy^2+\sinh(2x)\bigr)\,dx
++\bigl(x^2y+y^3\bigr)\,dy=0.
+$$
+
+Here
+
+$$
+M_y=2xy=N_x.
+$$
+
+Integrating $M$ with respect to $x$ gives
+
+$$
+F=\frac12x^2y^2+\frac12\cosh(2x)+h(y).
+$$
+
+Matching
+
+$$
+F_y=x^2y+h'(y)=x^2y+y^3
+$$
+
+gives $h(y)=y^4/4$. Therefore
+
+$$
+\frac12x^2y^2+\frac12\cosh(2x)+\frac14y^4=C.
+$$
+
+</Example>
+
+If the partial derivatives do not match, the equation is not exact in its current form. It may still be solvable by separation, a substitution or an integrating factor, but the exact method needs the equation to be changed first.
+
+## Homogeneous substitutions
+
+When none of these structures is visible, a change of variables may reveal one. A degree-zero ratio $y/x$ calls for $y=xv$ and a power $y^n$ calls for the Bernoulli substitution below. Either way, the substitution turns the equation into an earlier case rather than starting a new family.
+
+<Definition slug="homogeneous-function">
+
+### Homogeneous function
+
+<Statement>
+
+A function $F(x,y)$ is homogeneous of degree $k$ when
+
+$$
+F(\lambda x,\lambda y)=\lambda^kF(x,y)
+$$
+
+for nonzero scalars $\lambda$ wherever both sides are defined.
+
+</Statement>
+
+When the right side of $y'=F(x,y)$ is homogeneous of degree $0$, scaling $(x,y)$ leaves it unchanged. On a suitable domain, it can therefore be expressed as a function of $y/x$, which suggests the substitution $y=xv$.
+
+</Definition>
+
+<Method slug="homogeneous-substitution" of="homogeneous-function">
+
+### The substitution $y=xv$
+
+<Statement>
+
+For an equation of the form
+
+$$
+\frac{dy}{dx}=f\left(\frac{y}{x}\right),
+$$
+
+set $y=xv(x)$. Then
+
+$$
+y'=v+xv',
+$$
+
+so
+
+$$
+xv'=f(v)-v,
+\qquad
+\frac{dv}{dx}=\frac{f(v)-v}{x}.
+$$
+
+The resulting equation is separable on an interval where $x\neq0$ and the required denominators are nonzero.
+
+</Statement>
+
+The substitution works because $y/x$ becomes $v$. The point $x=0$ is excluded from the interval used for the substitution unless the original equation is analysed separately there.
+
+</Method>
+
+<Example slug="homogeneous-ode-example" of="homogeneous-substitution" difficulty="exam">
+
+### A degree-zero right side
+
+For
+
+$$
+2xy\,y'+x^2+y^2=0,
+$$
+
+solve for the derivative:
+
+$$
+y'=-\frac{x^2+y^2}{2xy}.
+$$
+
+The right side is homogeneous of degree $0$. Work on an interval where
+$x\ne0$ and $y\ne0$, so the displayed normal form and the substitution
+$v=y/x$ are valid. Put $y=xv$, so $y'=v+xv'$. Substitution gives
+
+$$
+2x(xv)(v+xv')+x^2+x^2v^2=0,
+$$
+
+and, after division by $x^2$,
+
+$$
+2xvv'+1+3v^2=0.
+$$
+
+Separate and integrate:
+
+$$
+\frac{2v}{1+3v^2}\,dv=-\frac{dx}{x}
+\quad\Longrightarrow\quad
+\frac13\ln(1+3v^2)=-\ln|x|+C.
+$$
+
+Exponentiating gives $(1+3v^2)|x|^3=C_1$. The sign of $x$ is fixed on the chosen interval, so that sign can be absorbed into the constant. Substituting $v=y/x$ gives the equivalent implicit solution
+
+$$
+x^3+3xy^2=C
+$$
+
+on a chosen interval with $x\neq0$ and $y\neq0$. Differentiating this relation gives
+
+$$
+3x^2+3y^2+6xy\,y'=0,
+$$
+
+which is equivalent to the original equation.
+
+</Example>
+
+## Bernoulli equations
+
+The substitution $y=xv$ uses scaling in both variables. A Bernoulli substitution instead changes the dependent variable so that a nonlinear power becomes a first-order linear equation.
+
+<Definition slug="bernoulli-equation">
+
+### Bernoulli equation
+
+<Statement>
+
+A Bernoulli equation has the form
+
+$$
+y'+p(x)y=q(x)y^n,
+\qquad n\neq0,1.
+$$
+
+</Statement>
+
+The cases $n=0$ and $n=1$ are already first-order linear equations. For
+$n\neq0,1$, the nonlinear power can be converted into a new dependent
+variable on a real branch where the required powers of $y$ are defined.
+
+</Definition>
+
+<Method slug="bernoulli-substitution" of="bernoulli-equation,integrating-factor">
+
+### The Bernoulli substitution
+
+<Statement>
+
+For a Bernoulli equation, on a nonzero real branch where $y^{1-n}$ is
+defined, set
+
+$$
+v=y^{1-n}.
+$$
+
+Since
+
+$$
+v'=(1-n)y^{-n}y',
+$$
+
+multiplying the equation by $(1-n)y^{-n}$ gives the linear equation
+
+$$
+v'+(1-n)p(x)v=(1-n)q(x).
+$$
+
+Solve this equation with an integrating factor, then substitute back. Check
+$y=0$ separately because the substitution divides by a power of $y$; it is
+an admissible solution only when the original equation is defined there and
+both sides agree.
+
+</Statement>
+
+</Method>
+
+<Example slug="bernoulli-example" of="bernoulli-substitution" difficulty="exam">
+
+### A Bernoulli equation with a zero solution
+
+For
+
+$$
+2xy'-y=10x^3y^5,
+$$
+
+use $v=y^{-4}$ on a nonzero branch. Since $v'=-4y^{-5}y'$, multiplying by $y^{-5}$ and rearranging gives
+
+$$
+v'+\frac2xv=-20x^2.
+$$
+
+The integrating factor is $x^2$, so
+
+$$
+(x^2v)'=-20x^4
+\quad\Longrightarrow\quad
+x^2v=-4x^5+C.
+$$
+
+Thus
+
+$$
+y^{-4}=v=-4x^3+\frac{C}{x^2},
+$$
+
+or, on intervals where the right side gives a real nonzero solution,
+
+$$
+y=\pm\left(-4x^3+\frac{C}{x^2}\right)^{-1/4}.
+$$
+
+These real branches require $x\neq0$ and $-4x^3+C/x^2>0$. The solution $y=0$ is also present in the original equation but is not represented by $y^{-4}$.
+
+</Example>

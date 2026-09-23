@@ -1,0 +1,12 @@
+{
+  "title": "Complex numbers",
+  "pagesIndex": "index",
+  "pages": [
+    "complex-arithmetic",
+    "polar-form",
+    "trigonometric-and-geometric-applications",
+    "complex-polynomials",
+    "stability-of-systems",
+    "seen"
+  ]
+}

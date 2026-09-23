@@ -2,5 +2,5 @@
   "title": "CORE",
   "root": true,
   "icon": "Layers",
-  "pages": ["index"]
+  "pages": ["index", "concept-map", "language"]
 }

@@ -1,0 +1,181 @@
+---
+title: Trigonometric and geometric applications
+description: Exponential identities, trigonometric expansions and loci in the complex plane.
+tags: [algebra]
+ideas: [complex-trigonometry, binomial-theorem, geometric-loci]
+---
+
+This page puts [polar form](/algebra/complex-numbers/polar-form) to work in two ways. Powers of $e^{i\theta}$ are easy to compute, so they give identities for sines and cosines. In the [Argand plane](/algebra/complex-numbers/complex-arithmetic), conditions on modulus and argument describe regions.
+
+## Exponential trigonometry
+
+<Proposition slug="euler-trigonometric-identities" of="polar-form">
+
+### Exponential forms of sine and cosine
+
+<Statement>
+
+For $\theta\in\mathbb R$,
+$$
+\cos\theta=\frac{e^{i\theta}+e^{-i\theta}}2,
+\qquad
+\sin\theta=\frac{e^{i\theta}-e^{-i\theta}}{2i}.
+$$
+
+</Statement>
+
+The two identities follow by adding and subtracting Euler's formula and its conjugate form. They let powers of sine and cosine be expanded with complex arithmetic, where powers of $e^{i\theta}$ combine easily:
+$(e^{i\theta})^n=e^{in\theta}$.
+
+</Proposition>
+
+<Theorem slug="binomial-theorem" of="complex-number">
+
+### Binomial theorem over the complex numbers
+
+<Statement>
+
+For $a,b\in\mathbb C$ and every non-negative integer $n$,
+$$
+(a+b)^n=\sum_{k=0}^n{n\choose k}a^{n-k}b^k,
+\qquad
+{n\choose k}=\frac{n!}{k!(n-k)!}.
+$$
+
+</Statement>
+
+The theorem holds over $\mathbb C$ because complex addition and multiplication obey the same commutative and distributive laws as real arithmetic. The coefficients can be read from Pascal's triangle.
+
+</Theorem>
+
+<Definition slug="trigonometric-polynomial">
+
+### Trigonometric polynomial
+
+<Statement>
+
+A *trigonometric polynomial* is an expression of the form
+$$
+a_0+\sum_{k=1}^N\bigl(a_k\cos(k\theta)+b_k\sin(k\theta)\bigr),
+\qquad \theta\in\mathbb R,
+$$
+where the coefficients $a_k,b_k$ are complex numbers.
+
+</Statement>
+
+</Definition>
+
+<Recall of="de-moivre" />
+
+<Method slug="trigonometric-power-expansion" of="euler-trigonometric-identities,binomial-theorem">
+
+### Expand powers of sine and cosine
+
+<Statement>
+
+Replace $\sin\theta$ and $\cos\theta$ by their exponential forms, expand with the binomial theorem and collect conjugate exponential terms back into sines and cosines.
+
+</Statement>
+
+The result is a trigonometric polynomial. The reverse calculation starts with De Moivre's formula and compares real or imaginary parts.
+
+</Method>
+
+<Example slug="sine-cube-expansion" of="trigonometric-power-expansion" difficulty="routine">
+
+### Expand $\sin^3\theta$
+
+Using the exponential form,
+$$
+\begin{aligned}
+\sin^3\theta
+&=\left(\frac{e^{i\theta}-e^{-i\theta}}{2i}\right)^3\\
+&=\frac{e^{3i\theta}-3e^{i\theta}+3e^{-i\theta}-e^{-3i\theta}}{(2i)^3}\\
+&=\frac{3\sin\theta-\sin(3\theta)}4.
+\end{aligned}
+$$
+
+For the last step, group opposite exponents and use
+$e^{ik\theta}-e^{-ik\theta}=2i\sin(k\theta)$, together with
+$(2i)^3=-8i$. This step turns the exponential calculation back into a real
+trigonometric identity.
+
+For the reverse direction, the imaginary part of
+$$
+(\cos\theta+i\sin\theta)^3
+$$
+gives
+$$
+\sin(3\theta)=3\cos^2\theta\sin\theta-\sin^3\theta.
+$$
+Using $\cos^2\theta=1-\sin^2\theta$ recovers the same cubic identity.
+
+Either way, the cube of one oscillation becomes a combination of
+oscillations at frequencies $1$ and $3$.
+
+</Example>
+
+## Loci in the Argand plane
+
+A *locus* is the set of points whose coordinates satisfy a stated geometric
+condition. In the Argand plane, modulus conditions describe distances and
+argument conditions describe directions.
+
+<Method slug="complex-locus" of="argand-plane,complex-modulus,complex-argument">
+
+### Read loci in the Argand plane
+
+<Statement>
+
+Translate a condition on $z$ into a geometric condition. For $a\in\mathbb C$ and
+$b>0$,
+$$
+|z-a|\le b
+$$
+is the closed disc with centre $a$ and radius $b$. For $z\ne a$ and
+$-\pi<\alpha<\beta\le\pi$,
+$$
+\alpha\le\operatorname{Arg}(z-a)<\beta
+$$
+is the angular region between the rays from $a$ at arguments $\alpha$ and
+$\beta$, including the $\alpha$ boundary and excluding the $\beta$ boundary.
+
+</Statement>
+
+The modulus measures Euclidean distance between points because
+$$
+|z-w|
+=\sqrt{\bigl(\operatorname{Re}(z)-\operatorname{Re}(w)\bigr)^2
+       +\bigl(\operatorname{Im}(z)-\operatorname{Im}(w)\bigr)^2}.
+$$
+When $z\ne w$, the argument of $z-w$ is the directed angle made by the
+line from $w$ to $z$ with the positive real axis. At $z=w$, the difference
+is zero and has no argument.
+
+</Method>
+
+<Example slug="complex-locus-examples" of="complex-locus" difficulty="routine">
+
+### Interpret a combined locus
+
+Describe
+$$
+S=\left\{z\in\mathbb C:|z-(1+i)|\le2,\quad
+0\le\operatorname{Arg}(z-(1+i))<\frac\pi2\right\}.
+$$
+Writing $w=z-(1+i)$ moves the centre to the origin. The modulus condition
+restricts $w$ to the closed disc of radius $2$; the argument condition keeps
+only directions from the positive real axis up to, but not including, the
+positive imaginary axis. Thus $S$ is the quarter-disc of radius $2$ lying
+above and to the right of $1+i$, with its boundary only partly included:
+
+- the horizontal radial edge is included, except for the centre;
+- the circular arc is included, except for its upper endpoint;
+- the vertical radial edge is excluded.
+
+The centre is omitted because $\operatorname{Arg}(0)$ is undefined, a detail
+the disc condition alone would miss.
+
+</Example>
+
+[Complex polynomials](/algebra/complex-numbers/complex-polynomials) uses the same arithmetic for polynomial coefficients and asks when a polynomial splits into factors.

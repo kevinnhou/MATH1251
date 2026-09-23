@@ -1,0 +1,422 @@
+---
+title: Spectral applications
+description: Matrix powers, independent modes and long-term behaviour through diagonalisation.
+tags: [algebra]
+ideas: [matrix-powers, spectral-modes, multiplicity, stability]
+---
+
+This page uses [diagonalisation](/algebra/eigenvalues/diagonalisation) to compute matrix powers and to read the long-term behaviour of each mode. In an eigenbasis, repeated multiplication by $A$ becomes repeated scalar multiplication, so the first question is how many independent modes a repeated eigenvalue supplies.
+
+The same separation reappears in [linear ODE systems](/algebra/eigenvalues/linear-ode-systems), with $e^{\lambda t}$ in place of $\lambda^n$ and in [Markov systems](/algebra/eigenvalues/markov-systems), with a probability interpretation.
+
+## Multiplicities
+
+<Recall of="diagonalisation" />
+
+<Definition slug="algebraic-multiplicity" of="characteristic-polynomial">
+
+### Algebraic multiplicity
+
+<Statement>
+
+The *algebraic multiplicity* of an eigenvalue $\lambda$ is its multiplicity as a root of the characteristic polynomial.
+
+</Statement>
+
+</Definition>
+
+<Definition slug="geometric-multiplicity" of="eigenspace">
+
+### Geometric multiplicity
+
+<Statement>
+
+The *geometric multiplicity* of an eigenvalue $\lambda$ is the dimension of its eigenspace $E_\lambda$.
+
+</Statement>
+
+The geometric multiplicity counts the independent eigenvectors available for that eigenvalue and hence how many it can contribute to an eigenbasis.
+
+</Definition>
+
+These two counts explain the [failed diagonalisation
+example](/algebra/eigenvalues/diagonalisation#failed-diagonalisation-example):
+an eigenvalue can repeat in the characteristic polynomial while its
+eigenspace supplies too few independent eigenvectors.
+
+<Theorem slug="geometric-multiplicity-bound" of="algebraic-multiplicity,geometric-multiplicity">
+
+### Comparing the multiplicities
+
+<Statement>
+
+For every eigenvalue,
+
+$$
+\text{geometric multiplicity}
+\leq
+\text{algebraic multiplicity}.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="geometric-multiplicity-bound">
+
+Let $g=\dim E_\lambda$ and begin a basis of the whole space with a basis
+of $E_\lambda$. In these coordinates, the first $g$ columns of $A$ have
+$\lambda I_g$ in their first $g$ entries and zeros below. Thus
+$A-tI$ is block upper triangular, with $\lambda-t$ on each of those
+$g$ diagonal positions. Its determinant has the factor
+$(\lambda-t)^g$, so the algebraic multiplicity is at least $g$.
+
+</Proof>
+
+<Example slug="repeated-eigenvalue-multiplicities" of="algebraic-multiplicity,geometric-multiplicity" difficulty="routine">
+
+### Three repeated-eigenvalue cases
+
+Consider the three matrices
+
+$$
+A_1=
+\begin{pmatrix}
+3&2&0\\
+0&3&2\\
+0&0&3
+\end{pmatrix},
+\qquad
+A_2=
+\begin{pmatrix}
+3&0&0\\
+0&3&2\\
+0&0&3
+\end{pmatrix},
+\qquad
+A_3=3I.
+$$
+
+Each has characteristic polynomial $(3-\lambda)^3$, so the algebraic multiplicity of $\lambda=3$ is $3$.
+
+For $A_1$,
+
+$$
+A_1-3I=
+\begin{pmatrix}
+0&2&0\\
+0&0&2\\
+0&0&0
+\end{pmatrix},
+$$
+
+so $x_2=x_3=0$ and
+
+$$
+E_3=\operatorname{span}\left\{
+\begin{pmatrix}1\\0\\0\end{pmatrix}
+\right\}.
+$$
+
+The geometric multiplicity is $1$.
+
+For $A_2$,
+
+$$
+A_2-3I=
+\begin{pmatrix}
+0&0&0\\
+0&0&2\\
+0&0&0
+\end{pmatrix},
+$$
+
+so $x_3=0$ and
+
+$$
+E_3=\operatorname{span}\left\{
+\begin{pmatrix}1\\0\\0\end{pmatrix},
+\begin{pmatrix}0\\1\\0\end{pmatrix}
+\right\}.
+$$
+
+The geometric multiplicity is $2$. Finally, $A_3-3I=0$, so the eigenspace is $\mathbb R^3$ and the geometric multiplicity is $3$. Only the last case has three independent eigenvectors and hence an eigenbasis.
+
+</Example>
+
+## Matrix powers
+
+<Proposition slug="diagonal-matrix-powers" of="diagonalisation">
+
+### Powers of a diagonal matrix
+
+<Statement>
+
+If
+
+$$
+D=\operatorname{diag}(\lambda_1,\ldots,\lambda_m),
+$$
+
+then, for every non-negative integer $k$,
+
+$$
+D^k=\operatorname{diag}(\lambda_1^k,\ldots,\lambda_m^k).
+$$
+
+</Statement>
+
+The matrix stays diagonal because each coordinate direction is acted on independently.
+
+</Proposition>
+
+<Proof of="diagonal-matrix-powers">
+
+For $k=0$, both sides equal $I$. If the formula holds for $k$, then
+
+$$
+D^{k+1}=D^kD
+=\operatorname{diag}(\lambda_1^k\lambda_1,\ldots,\lambda_m^k\lambda_m)
+=\operatorname{diag}(\lambda_1^{k+1},\ldots,\lambda_m^{k+1}).
+$$
+
+Induction proves the result.
+
+</Proof>
+
+<Theorem slug="diagonalised-matrix-powers" of="diagonalisation,diagonal-matrix-powers">
+
+### Powers after diagonalisation
+
+<Statement>
+
+If
+
+$$
+A=PDP^{-1},
+$$
+
+then, for every non-negative integer $k$,
+
+$$
+A^k=PD^kP^{-1}.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="diagonalised-matrix-powers">
+
+For $k=0$, both sides are $I$. If $A^k=PD^kP^{-1}$, then
+
+$$
+A^{k+1}
+=A^kA
+=PD^kP^{-1}PDP^{-1}
+=PD^{k+1}P^{-1}.
+$$
+
+</Proof>
+
+<Method slug="matrix-power-via-diagonalisation" of="diagonalisation,diagonalised-matrix-powers">
+
+### Compute a matrix power by diagonalisation
+
+<Statement>
+
+To compute $A^k x_0$ for a non-negative integer $k$ when $A$ is diagonalisable:
+
+1. choose an eigenbasis and form $P$ from its eigenvectors;
+2. form the diagonal matrix $D$ from the corresponding eigenvalues;
+3. write $A=PDP^{-1}$;
+4. replace $A^k$ by $PD^kP^{-1}$, so the powers are taken only on the diagonal;
+5. apply the result to $x_0$.
+
+</Statement>
+
+Equivalently, if $x_0=c_1v_1+\cdots+c_nv_n$ in the eigenbasis, then
+
+$$
+A^kx_0
+=c_1\lambda_1^kv_1+\cdots+c_n\lambda_n^kv_n.
+$$
+
+This form shows each mode evolving on its own.
+
+</Method>
+
+<Recall of="discrete-root-stability" />
+
+## Long-term behaviour
+
+<Theorem slug="spectral-mode-behaviour" of="matrix-power-via-diagonalisation">
+
+### Long-term behaviour of the modes
+
+<Statement>
+
+Suppose $A=PDP^{-1}$ is diagonalisable, so it has an eigenbasis. A mode
+contribution $c\lambda^kv$ with $c\ne0$ decays to zero when $|\lambda|<1$,
+has constant magnitude when $|\lambda|=1$ and grows when $|\lambda|>1$.
+Without an eigenbasis, a Jordan block can produce additional factors such as
+$k\lambda^{k-1}$, so the diagonalisation hypothesis is what makes this scalar
+classification complete (especially at the unit circle).
+
+</Statement>
+
+This is the modulus test for the modes of a scalar recurrence from [stability of systems](/algebra/complex-numbers/stability-of-systems). [Diagonalisation](/algebra/eigenvalues/diagonalisation) reduces a matrix recurrence to such scalar modes.
+
+</Theorem>
+
+<Example slug="power-of-ones-matrix" of="matrix-power-via-diagonalisation,spectral-mode-behaviour" difficulty="routine">
+
+### Powers of the all-ones matrix
+
+For
+
+$$
+A=
+\begin{pmatrix}
+1&1\\
+1&1
+\end{pmatrix},
+$$
+
+use the eigenvectors computed for the [all-ones matrix](/algebra/eigenvalues/eigenvalues-and-eigenvectors):
+
+$$
+P=
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix},
+\qquad
+D=
+\begin{pmatrix}
+2&0\\
+0&0
+\end{pmatrix},
+\qquad
+P^{-1}
+=\frac12
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix}.
+$$
+
+Therefore, for $n\geq1$,
+
+$$
+\begin{aligned}
+A^n
+&=PD^nP^{-1}\\
+&=\frac12
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix}
+\begin{pmatrix}
+2^n&0\\
+0&0
+\end{pmatrix}
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix}\\
+&=2^{n-1}
+\begin{pmatrix}
+1&1\\
+1&1
+\end{pmatrix}.
+\end{aligned}
+$$
+
+For $x_0=(a,b)^{\mathsf T}$,
+
+$$
+A^nx_0
+=2^{n-1}(a+b)
+\begin{pmatrix}1\\1\end{pmatrix}.
+$$
+
+The component in the $0$-eigenspace disappears after one step, while the component in the $2$-eigenspace grows like $2^n$.
+
+</Example>
+
+<Example slug="three-by-three-power" of="matrix-power-via-diagonalisation" difficulty="exam">
+
+### A three-by-three power
+
+Let
+
+$$
+A=
+\begin{pmatrix}
+3&1&1\\
+0&2&0\\
+0&0&2
+\end{pmatrix},
+$$
+
+and take the eigenvectors
+
+$$
+v_1=\begin{pmatrix}1\\0\\0\end{pmatrix},
+\qquad
+v_2=\begin{pmatrix}-1\\0\\1\end{pmatrix},
+\qquad
+v_3=\begin{pmatrix}-1\\1\\0\end{pmatrix},
+$$
+
+for eigenvalues $3,2,2$, respectively. Then
+
+$$
+P=
+\begin{pmatrix}
+1&-1&-1\\
+0&0&1\\
+0&1&0
+\end{pmatrix},
+\qquad
+D=
+\begin{pmatrix}
+3&0&0\\
+0&2&0\\
+0&0&2
+\end{pmatrix},
+\qquad
+P^{-1}=
+\begin{pmatrix}
+1&1&1\\
+0&0&1\\
+0&1&0
+\end{pmatrix}.
+$$
+
+The multiplication check gives $A=PDP^{-1}$ and hence
+
+$$
+A^n=P
+\begin{pmatrix}
+3^n&0&0\\
+0&2^n&0\\
+0&0&2^n
+\end{pmatrix}
+P^{-1}
+=
+\begin{pmatrix}
+3^n&3^n-2^n&3^n-2^n\\
+0&2^n&0\\
+0&0&2^n
+\end{pmatrix}.
+$$
+
+The eigenvalue $2$ is repeated but has two independent eigenvectors, $v_2$
+and $v_3$. Together with $v_1$ they form an eigenbasis, so the diagonal power
+calculation is valid.
+
+</Example>
+
+Next, [linear ODE systems](/algebra/eigenvalues/linear-ode-systems) use the same mode decomposition in continuous time.

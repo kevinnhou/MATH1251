@@ -1,0 +1,279 @@
+---
+title: Modelling with first-order equations
+description: Translating proportional change, relaxation and conservation laws into first-order ODE models.
+tags: [calculus]
+ideas: [first-order-equations, modelling, differential-equations]
+---
+
+This page turns verbal rate laws into first-order equations. Each model follows the same steps: translate the law into an equation, solve it with [first-order methods](/calculus/ordinary-differential-equations/first-order-equations), use data to fix the constants and interpret the solution on the interval where the assumptions hold.
+
+## Translating rate laws into models
+
+<Method slug="first-order-modelling">
+
+### Translate a rate law
+
+<Statement>
+
+Build a first-order model by translating the verbal rate law:
+
+- proportional change gives $P'=kP$;
+- relaxation towards a target gives $T'=-k(T-A)$, with $k>0$ for decay toward the target;
+- conservation gives
+  $$
+  \text{rate of change}=\text{inflow}-\text{outflow}.
+  $$
+
+Use initial or measured data to determine the constants, then interpret the resulting solution on the physical interval where the model is valid.
+
+</Statement>
+
+The differential equation describes the local rate, while the data and parameters describe the particular system. Proportional growth is exponential, while relaxation approaches its target. Depending on the law, the translation can lead to a [separable equation](/calculus/ordinary-differential-equations/first-order-equations), a [first-order linear equation](/calculus/ordinary-differential-equations/first-order-equations) or a logistic equation below.
+
+</Method>
+
+## Relaxation towards equilibrium
+
+For an autonomous model $y'=f(y)$, an equilibrium is a constant solution
+$y(t)=y_*$, so it must satisfy $f(y_*)=0$.
+
+When the rate is proportional to the difference from a fixed target, the
+model is linear and the difference decays exponentially. The target is an
+equilibrium and the solution approaches it without crossing it on the usual
+positive-time branch.
+
+<Example slug="newton-cooling-model" of="first-order-modelling" difficulty="exam">
+
+### Newton's law of cooling
+
+If $A$ is a constant ambient temperature, the rate of change of the temperature difference is proportional to that difference:
+
+$$
+\frac{d}{dt}(T-A)=-k(T-A),
+\qquad k>0.
+$$
+
+Equivalently,
+
+$$
+T'=-k(T-A).
+$$
+
+If $t$ is measured in hours, then $k$ has units of $\mathrm{h}^{-1}$; the
+same inverse-time units apply to any first-order rate constant.
+
+Separation or the linear method gives
+
+$$
+T(t)=A+(T_0-A)e^{-kt}.
+$$
+
+The difference $T-A$ keeps its sign and decays exponentially. A hotter object cools monotonically, a colder object warms monotonically and
+
+$$
+\lim_{t\to\infty}T(t)=A.
+$$
+
+As a forensic application, a body's temperature is measured at 11:30 am and again an hour later. Let $t=0$ be 11:30 am. The data are
+
+$$
+T(0)=24.5,\qquad T(1)=24.0,\qquad A=20.
+$$
+
+Using the first measurement,
+
+$$
+T(t)=20+4.5e^{-kt}.
+$$
+
+The second measurement gives
+
+$$
+24=20+4.5e^{-k}
+\quad\Longrightarrow\quad
+e^{-k}=\frac89
+\quad\Longrightarrow\quad
+k=\ln\frac98.
+$$
+
+If death occurred $\tau$ hours before 11:30 am, the body was at normal temperature $36.5^\circ\mathrm{C}$ at $t=-\tau$:
+
+$$
+36.5=20+4.5e^{k\tau}.
+$$
+
+Therefore
+
+$$
+\tau
+=\frac{\ln(16.5/4.5)}{k}
+=\frac{\ln(11/3)}{\ln(9/8)}
+\approx11.03\text{ hours}.
+$$
+
+The estimated time of death is about 12:28 am.
+This estimate assumes a constant ambient temperature and cooling coefficient
+over the whole period; the ODE alone cannot verify those assumptions.
+
+</Example>
+
+## Conservation of a changing quantity
+
+Conservation models track an amount rather than a concentration. The outflow concentration depends on the current amount divided by the current volume, which is why a changing-volume tank produces a [first-order linear equation](/calculus/ordinary-differential-equations/first-order-equations) with a variable coefficient.
+
+<Example slug="mixing-model" of="first-order-modelling,integrating-factor" difficulty="exam">
+
+### A salt solution
+
+Let $S(t)$ be the amount of salt in grams and $V(t)$ the volume in litres. For a well-stirred tank,
+
+$$
+\text{salt rate in}
+=(\text{inflow rate})(\text{inflow concentration}),
+$$
+
+and
+
+$$
+\text{salt rate out}
+=(\text{outflow rate})\frac{S(t)}{V(t)}.
+$$
+
+Suppose $S(0)=50$, $V(0)=300$, the inflow is $3$ litres per minute at $2$ grams per litre and the outflow is $2$ litres per minute. Assuming the tank remains well mixed and no salt is created or removed except by the streams, the volume is
+
+$$
+V(t)=300+t,
+$$
+
+and conservation gives
+
+$$
+S'=6-\frac{2S}{300+t}.
+$$
+
+The equation is linear:
+
+$$
+S'+\frac{2}{300+t}S=6.
+$$
+
+An integrating factor is $(300+t)^2$, so
+
+$$
+\bigl((300+t)^2S\bigr)'=6(300+t)^2.
+$$
+
+Integrating gives $(300+t)^2S=2(300+t)^3+C$. At $t=0$,
+$C=300^2(50)-2(300)^3=-49\,500\,000$. Thus
+
+$$
+S(t)=2(300+t)-\frac{49\,500\,000}{(300+t)^2}
+\quad\text{grams}.
+$$
+
+The concentration tends to $2$ grams per litre as $t$ increases, which matches the inflow concentration.
+
+The volume grows because inflow exceeds outflow. The physical domain is
+$t\geq0$ (so $V(t)=300+t>0$); extending the formula to earlier times would
+need a separate physical justification.
+
+</Example>
+
+## Proportional and limited growth
+
+Proportional growth gives the exponential model and has no finite carrying capacity. Adding a factor that reduces per-capita growth as the population approaches $K$ produces the logistic model.
+
+<Example slug="exponential-population" of="first-order-modelling" difficulty="routine">
+
+### Exponential population growth
+
+If the rate is proportional to the population,
+
+$$
+P'=kP,
+\qquad
+P(t)=P_0e^{kt}.
+$$
+
+If $t$ is measured in hours and $P(1)=\frac32P_0$, then $e^k=3/2$. The time needed to reach $3P_0$ satisfies
+
+$$
+e^{kt}=3
+\quad\Longrightarrow\quad
+t=\frac{\ln3}{\ln(3/2)}
+\approx2.71\text{ hours}.
+$$
+
+</Example>
+
+<Definition slug="logistic-model">
+
+### Logistic model
+
+<Statement>
+
+The logistic model combines proportional growth with a reduction in the per-capita growth rate as the population approaches a carrying capacity $K$:
+
+$$
+P'=\alpha P\left(1-\frac{P}{K}\right).
+$$
+
+Here $\alpha>0$, $K>0$ and $P\ge0$; if $t$ is measured in a time unit,
+$\alpha$ has inverse-time units. The equilibria are
+$P=0$ and $P=K$. For $0<P<K$, the population grows; for $P>K$, it
+decreases. Its separated solution has the form
+
+$$
+P(t)=\frac{K}{1+Ae^{-\alpha t}}.
+$$
+
+This expression is interpreted only on intervals where its denominator is
+nonzero; for a physical population one usually takes the forward-time branch
+with $P(0)>0$; the zero equilibrium is listed separately below.
+
+</Statement>
+
+To see where the formula comes from, separate on a branch with $P>0$ and
+$P\ne K$. Since
+$$
+\frac{1}{P(1-P/K)}=\frac1P+\frac1{K-P},
+$$
+integration gives $\ln|P|-\ln|K-P|=\alpha t+C$. Solving this ratio for $P$
+gives the displayed expression, with $A=K/P(0)-1$ when $P(0)>0$.
+The zero equilibrium $P=0$ is not obtained from a finite $A$ and must be
+included separately; $P=K$ corresponds to $A=0$. The bounded relaxation
+model $P'=k(P_c-P)$ also approaches a target, but logistic growth is
+proportional to both the current population and the remaining fraction of
+carrying capacity.
+
+</Definition>
+
+<Example slug="logistic-population" of="logistic-model,first-order-modelling" difficulty="exam">
+
+### A city with a carrying capacity
+
+Suppose the carrying capacity is $K=5$ million, with $P(0)=1$ million and $P(10)=2$ million. The logistic solution is
+
+$$
+P(t)=\frac{5}{1+4e^{-\alpha t}},
+$$
+
+because $P(0)=1$. Using $P(10)=2$,
+
+$$
+2=\frac{5}{1+4e^{-10\alpha}}
+\quad\Longrightarrow\quad
+e^{-10\alpha}=\frac38
+\quad\Longrightarrow\quad
+\alpha=\frac1{10}\ln\frac83.
+$$
+
+Thus, with population measured in millions,
+
+$$
+P(t)=\frac{5}{1+4e^{-(\ln(8/3))t/10}},
+\qquad
+\lim_{t\to\infty}P(t)=5.
+$$
+
+</Example>

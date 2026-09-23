@@ -1,0 +1,308 @@
+---
+title: ODE fundamentals
+description: Differential-equation vocabulary, solution families and the data that select a solution.
+tags: [calculus]
+ideas: [ordinary-differential-equations, initial-value-problems, boundary-value-problems]
+---
+
+This page sets up the vocabulary for the chapter. An equation involving derivatives does not usually specify one function: integration introduces constants and initial or boundary data select a member of the resulting family, or several members, or none.
+
+Before [choosing a method](/calculus/ordinary-differential-equations/pipeline), identify the independent variable, the order, the linearity and the domain. [First-order methods](/calculus/ordinary-differential-equations/first-order-equations) and [second-order constant-coefficient equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) each need a matching structure.
+
+## Differential equations and notation
+
+<Definition slug="ordinary-differential-equation">
+
+### Ordinary differential equation
+
+<Statement>
+
+An ordinary differential equation (ODE) is a relation involving one unknown function of one independent variable and its ordinary derivatives. A general $n$th-order ODE can be written as
+
+$$
+F\bigl(x,y(x),y'(x),\ldots,y^{(n)}(x)\bigr)=0.
+$$
+
+</Statement>
+
+The independent variable may be $x$ or $t$ and the dependent function may be written $y$, $u$, $P$ or another letter. Renaming the variables does not change the structure. Primes such as $y'$ mean differentiation with respect to the current independent variable; when that variable is time, dots such as $\dot{x}$ and $\ddot{x}$ are another common notation.
+
+A partial differential equation (PDE) has two or more independent variables and uses partial derivatives. Newton's law for a falling point mass,
+
+$$
+\frac{d^2y}{dt^2}=-g,
+$$
+
+is an ODE, whereas the heat equation for a temperature $u(x,t)$,
+
+$$
+\frac{\partial u}{\partial t}=\kappa\frac{\partial^2u}{\partial x^2},\qquad \kappa>0,
+$$
+
+is a PDE because $u$ depends on both position and time.
+
+</Definition>
+
+<Definition slug="linear-ode">
+
+### Linear ordinary differential equation
+
+<Statement>
+
+An $n$th-order ODE is linear when the dependent function and each of its derivatives occur only to the first power, are not multiplied together and have coefficients depending only on the independent variable. Its general form is
+
+$$
+a_n(x)y^{(n)}+a_{n-1}(x)y^{(n-1)}+\cdots+a_1(x)y'+a_0(x)y=f(x).
+$$
+
+Here $a_n$ is not identically zero; on an interval where $a_n(x)\ne0$ the
+equation can be divided into normal form.
+
+</Statement>
+
+The order is the order of the highest derivative present. The degree (when
+defined) is the exponent of that derivative after the equation is expressed as
+a polynomial in derivatives: $(y'')^3+y=0$ has order $2$ and degree $3$.
+
+A linear equation is homogeneous when $f(x)\equiv0$ and non-homogeneous, or
+inhomogeneous, otherwise. This use of *homogeneous* concerns the right-hand
+side; the [homogeneous functions](/calculus/ordinary-differential-equations/first-order-equations)
+of first-order substitutions refer instead to a scaling property.
+
+Terms such as $y^2$, $yy'$, $(y')^2$ and $\sin y$ make an equation nonlinear. For example,
+
+$$
+u''(t)=u'(t)+tu(t)^2+t^3,\qquad
+y''=y'+xy^2+x^3,\qquad
+\frac{d^2y}{dx^2}=\frac{dy}{dx}+xy^2+x^3
+$$
+
+are the same nonlinear second-order structure after the variables are renamed. The logistic population model, with growth parameter $\alpha$ and carrying capacity $K$,
+
+$$
+\frac{dP}{dt}=\alpha P\left(1-\frac{P}{K}\right)
+$$
+
+is a first-order nonlinear ODE.
+
+</Definition>
+
+## Solutions and solution families
+
+<Definition slug="ode-solution">
+
+### Solution of an ODE
+
+<Statement>
+
+A solution of an ODE is a function that, after substitution into the equation, makes the equation an identity on its domain. The solution may be given explicitly as $y=y(x)$ or implicitly as a relation between $x$ and $y$.
+
+</Statement>
+
+An implicit relation is a solution only on a domain where it defines a differentiable function and satisfies the original equation. Differentiating the relation is often the quickest check. In the example below, $y+\tan^{-1}y$ is strictly increasing in $y$, so the relation defines one differentiable $y$ for each $x$.
+
+The stated domain is part of the solution. If an implicit relation splits into
+separate connected pieces, each piece on which it defines a valid solution is a
+branch. Division, logarithms and real roots can restrict the domain or branch,
+as the [first-order methods](/calculus/ordinary-differential-equations/first-order-equations)
+examples show.
+
+</Definition>
+
+<Example slug="implicit-ode-solution" of="ode-solution" difficulty="routine">
+
+### An implicit solution
+
+The relation
+
+$$
+y+\tan^{-1}y=\frac{x^2}{2}
+$$
+
+defines a solution of
+
+$$
+y'=\frac{x(1+y^2)}{2+y^2}.
+$$
+
+Differentiating implicitly gives
+
+$$
+y'+\frac{y'}{1+y^2}=x.
+$$
+
+Collecting the terms containing $y'$,
+
+$$
+y'\frac{2+y^2}{1+y^2}=x,
+$$
+
+so
+
+$$
+y'=\frac{x(1+y^2)}{2+y^2}.
+$$
+
+</Example>
+
+<Definition slug="solution-family">
+
+### General and particular solutions
+
+<Statement>
+
+The general solution of an ODE is the family containing the arbitrary constants introduced during the solution process. A particular solution is obtained by assigning specific values to those constants.
+
+</Statement>
+
+An $n$th-order equation normally produces $n$ arbitrary constants. Singular solutions, restrictions from division and degenerate equations can change how a family is represented.
+
+</Definition>
+
+<Example slug="direct-integration-solutions" of="solution-family" difficulty="routine">
+
+### Constants from direct integration
+
+For a first-order equation,
+
+$$
+y'=\sin(3x)
+$$
+
+gives
+
+$$
+y=-\frac13\cos(3x)+C.
+$$
+
+For a third-order equation,
+
+$$
+y'''=0
+$$
+
+gives
+
+$$
+y=Ax^2+Bx+C.
+$$
+
+For
+
+$$
+y''=x+5,
+$$
+
+integrating twice gives
+
+$$
+y=\frac{x^3}{6}+\frac{5x^2}{2}+C_1x+C_2.
+$$
+
+</Example>
+
+## Initial and boundary data
+
+<Definition slug="initial-value-problem">
+
+### Initial value problem
+
+<Statement>
+
+An initial value problem (IVP) consists of an ODE together with the value of the function and enough derivatives at one point. For an $n$th-order equation, the usual data are
+
+$$
+y(x_0)=C_0,\qquad
+y'(x_0)=C_1,\qquad
+\ldots,\qquad
+y^{(n-1)}(x_0)=C_{n-1}.
+$$
+
+</Statement>
+
+When the problem is well posed, the data determine the arbitrary constants. They may instead reveal that no solution exists or that more than one solution satisfies the same data.
+
+</Definition>
+
+<Definition slug="boundary-value-problem">
+
+### Boundary value problem
+
+<Statement>
+
+A boundary value problem (BVP) prescribes conditions at different points of the independent-variable interval, rather than prescribing all data at one initial point.
+
+</Statement>
+
+For a second-order equation, values of $y$ at two endpoints may determine the
+two constants just as values of $y$ and $y'$ at one endpoint can. As with an
+IVP, check existence and uniqueness rather than assuming them.
+
+</Definition>
+
+<Example slug="initial-boundary-data" of="initial-value-problem,boundary-value-problem" difficulty="exam">
+
+### Selecting solutions with data
+
+For the IVP
+
+$$
+y'=\sin(3x),\qquad y(0)=4,
+$$
+
+the general solution gives
+
+$$
+-\frac13+C=4.
+$$
+
+Thus
+
+$$
+y=4+\frac{1-\cos(3x)}{3}.
+$$
+
+For the BVP
+
+$$
+y''+6y'+9y=0,\qquad y(0)=1,\qquad y(2)=0,
+$$
+
+the repeated-root solution is
+
+$$
+y=(A+Bx)e^{-3x}.
+$$
+
+The first condition gives $A=1$. The second gives
+
+$$
+(1+2B)e^{-6}=0,
+$$
+
+so $B=-\frac12$. The BVP solution is therefore
+
+$$
+y=\left(1-\frac{x}{2}\right)e^{-3x}.
+$$
+
+</Example>
+
+<Example slug="ivp-existence-outcomes" of="initial-value-problem" difficulty="challenge">
+
+### Different outcomes for initial data
+
+The instruction "solve the IVP" can have different outcomes:
+
+- $y'=x$, $y(0)=1$ has the unique solution $y=1+x^2/2$.
+- $y'=3y^{2/3}$, $y(0)=0$ has at least the two solutions $y=0$ and $y=x^3$, so uniqueness can fail. The [Lipschitz condition](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators) explains why.
+- $xy'=y-1$, $y(0)=1$ has the family $y=1+Cx$; the coefficient of $y'$ vanishes at the initial point, so the usual normal form is singular there.
+- $|y'|+|y|=0$, $y(0)=1$ has no solution, because the equation forces $y=0$ everywhere while the initial value requires $y(0)=1$.
+
+</Example>
+
+[Existence, uniqueness and linear operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators)
+gives hypotheses that guarantee a unique IVP solution. When they hold but no
+elementary formula is available,
+[numerical solutions](/calculus/ordinary-differential-equations/numerical-solutions)
+follow the slope field.

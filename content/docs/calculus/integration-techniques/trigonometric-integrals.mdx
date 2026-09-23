@@ -1,0 +1,387 @@
+---
+title: Trigonometric integrals
+description: Powers and products of sine, cosine, tangent and secant.
+tags: [calculus]
+ideas: [trigonometric-integrals, substitution]
+---
+
+This page integrates powers and products of sine, cosine, tangent and secant. Each case is recognised by the shape of the integrand:
+
+- One power odd in $\int \cos^m x \sin^n x \, dx$: peel one factor and substitute $u=\sin x$ or $u=\cos x$.
+- Both powers even: use the double-angle identities to lower the powers.
+- Different frequencies, such as $\int \cos(mx)\sin(nx) \, dx$: use a product-to-sum identity.
+- Powers of $\tan x$ and $\sec x$: use $1+\tan^2 x=\sec^2 x$ with $\frac{d}{dx}\tan x=\sec^2 x$ and $\frac{d}{dx}\sec x=\tan x\sec x$.
+
+For high powers that recur with a lower index, [reduction formulae](/calculus/integration-techniques/reduction-formulae) organise the repeated integration by parts. A quadratic surd calls for [trigonometric and hyperbolic substitutions](/calculus/integration-techniques/trigonometric-and-hyperbolic-substitutions) instead.
+
+Throughout, $m$ and $n$ are non-negative integers. An indefinite
+antiderivative involving $\tan x$ or $\sec x$ holds on an interval that does
+not cross a zero of $\cos x$.
+
+## Odd powers of sine or cosine
+
+<Method slug="trig-odd-power">
+
+### Odd power of sine or cosine
+
+<Statement>
+
+To evaluate $\int \cos^m x \sin^n x \, dx$ when at least one of $m,n$ is odd:
+
+1. If $m$ is odd, factor out $\cos x$ to obtain $\int \cos^{m-1} x \sin^n x \cos x \, dx$. If $n$ is odd, factor out $\sin x$ to obtain $\int \cos^m x \sin^{n-1} x \sin x \, dx$.
+2. The leftover power is even. Replace it using $\sin^2 x+\cos^2 x=1$.
+3. Substitute $u=\sin x$ or $u=\cos x$. The binomial expansion $(a+b)^k$ is usually needed before the powers of $u$ can be integrated.
+
+</Statement>
+
+Always peel from an odd power. Peeling from an even power leaves an odd remainder, which $1=\sin^2 x+\cos^2 x$ cannot turn into a polynomial in the substitution variable. If both $m$ and $n$ are odd, either factor works, although the two antiderivatives need not look the same.
+
+</Method>
+
+<Example slug="int-cos4-sin3" of="trig-odd-power" difficulty="routine">
+
+### $\int \cos^4 x \sin^3 x \, dx$
+
+Here $m$ is even and $n$ is odd. Peel $\sin x$ and replace $\sin^2 x=1-\cos^2 x$:
+
+$$
+\begin{aligned}
+\int \cos^4 x \sin^3 x \, dx
+&=\int \cos^4 x \sin^2 x \sin x \, dx \\
+&=\int \cos^4 x (1-\cos^2 x) \sin x \, dx \\
+&=\int (\cos^4 x-\cos^6 x) \sin x \, dx.
+\end{aligned}
+$$
+
+Let $u=\cos x$, so $du=-\sin x \, dx$. The integral is
+
+$$
+-\int (u^4-u^6) \, du=-\frac{u^5}{5}+\frac{u^7}{7}+C=-\frac{\cos^5 x}{5}+\frac{\cos^7 x}{7}+C.
+$$
+
+</Example>
+
+<Example slug="int-cos5-sin4" of="trig-odd-power" difficulty="exam">
+
+### $\int \cos^5 x \sin^4 x \, dx$
+
+Here $m$ is odd and $n$ is even. Peel $\cos x$ and replace $\cos^2 x=1-\sin^2 x$:
+
+$$
+\begin{aligned}
+\int \cos^5 x \sin^4 x \, dx
+&=\int \cos^4 x \sin^4 x \cos x \, dx \\
+&=\int (1-\sin^2 x)^2 \sin^4 x \cos x \, dx \\
+&=\int \bigl(\sin^4 x-2\sin^6 x+\sin^8 x\bigr) \cos x \, dx.
+\end{aligned}
+$$
+
+Let $u=\sin x$, so $du=\cos x \, dx$. The integral is
+
+$$
+\int (u^4-2u^6+u^8) \, du=\frac{u^5}{5}-\frac{2u^7}{7}+\frac{u^9}{9}+C=\frac{\sin^5 x}{5}-\frac{2\sin^7 x}{7}+\frac{\sin^9 x}{9}+C.
+$$
+
+</Example>
+
+<Example slug="int-cos5-sin5" of="trig-odd-power" difficulty="exam">
+
+### $\int \cos^5 x \sin^5 x \, dx$
+
+Both $m$ and $n$ are odd. Factoring out $\cos x$ and substituting $u=\sin x$ (so $du=\cos x \, dx$),
+
+$$
+\begin{aligned}
+\int \cos^5 x \sin^5 x \, dx
+&=\int \cos^4 x \sin^5 x \cos x \, dx \\
+&=\int (1-\sin^2 x)^2 \sin^5 x \cos x \, dx \\
+&=\int \bigl(\sin^5 x-2\sin^7 x+\sin^9 x\bigr) \cos x \, dx \\
+&=\int (u^5-2u^7+u^9) \, du \\
+&=\frac{u^6}{6}-\frac{2u^8}{8}+\frac{u^{10}}{10}+C \\
+&=\frac{\sin^6 x}{6}-\frac{\sin^8 x}{4}+\frac{\sin^{10} x}{10}+C.
+\end{aligned}
+$$
+
+Factoring out $\sin x$ instead produces a different-looking formula. Both
+formulas have derivative $\cos^5x\sin^5x$, so on any interval they differ by a
+constant.
+
+</Example>
+
+## Even powers of sine and cosine
+
+<Method slug="trig-even-power" see="trig-odd-power">
+
+### Both powers even
+
+<Statement>
+
+To evaluate $\int \cos^m x \sin^n x \, dx$ when both $m$ and $n$ are even, use
+
+$$
+\cos^2\alpha=\frac{1+\cos 2\alpha}{2},\qquad \sin^2\alpha=\frac{1-\cos 2\alpha}{2}
+$$
+
+to rewrite the integrand as a sum of integrals of the form $\int \cos^k(2x) \, dx$. Integrate any odd $k$ by the odd-power substitution in $2x$; apply the double-angle identities again to any remaining even $k$.
+
+</Statement>
+
+After expanding, the constant and $\cos 2x$ terms integrate immediately. Because the argument is $2x$, the odd-power substitution is $u=\sin 2x$, with $du=2\cos 2x\, dx$.
+
+</Method>
+
+<Example slug="int-cos-sq-sin-sq" of="trig-even-power" difficulty="routine">
+
+### $\int \cos^2 x \, dx$ and $\int \sin^2 x \, dx$
+
+When one of $m$ or $n$ is zero the identities are the whole calculation:
+
+$$
+\int \cos^2 x \, dx=\int \frac{1+\cos 2x}{2} \, dx=\frac{x}{2}+\frac{\sin 2x}{4}+C,
+$$
+
+$$
+\int \sin^2 x \, dx=\int \frac{1-\cos 2x}{2} \, dx=\frac{x}{2}-\frac{\sin 2x}{4}+C.
+$$
+
+</Example>
+
+<Example slug="int-cos2-sin4" of="trig-even-power" difficulty="exam">
+
+### $\int \cos^2 x \sin^4 x \, dx$
+
+Both powers are even, so
+
+$$
+\int \cos^2 x \sin^4 x \, dx=\int \frac{1+\cos 2x}{2}\left(\frac{1-\cos 2x}{2}\right)^2 \, dx=\frac{1}{8}\int (1+\cos 2x)(1-\cos 2x)^2 \, dx.
+$$
+
+Expanding and cancelling $-\cos 2x$ against $+\cos 2x$ gives
+
+$$
+(1+\cos 2x)(1-2\cos 2x+\cos^2 2x)=1-\cos 2x-\cos^2 2x+\cos^3 2x,
+$$
+
+so the integral is
+
+$$
+\frac{1}{8}\left(\int 1 \, dx-\int\cos 2x \, dx-\int\cos^2 2x \, dx+\int\cos^3 2x \, dx\right).
+$$
+
+The first two integrals evaluate to $x$ and $\frac{1}{2}\sin 2x$. For the even square, $\cos^2 2x=\frac{1+\cos 4x}{2}$. For the odd cube, $\cos^3 2x=(1-\sin^2 2x)\cos 2x$. Thus the integral equals
+
+$$
+\frac{1}{8}\left[x-\frac{\sin 2x}{2}-\int\frac{1+\cos 4x}{2} \, dx+\int(1-\sin^2 2x)\cos 2x \, dx\right].
+$$
+
+The remaining cosine-square integral is $\frac{x}{2}+\frac{\sin 4x}{8}$. For the last integral, let $u=\sin 2x$, so $du=2\cos 2x \, dx$ and $\cos 2x \, dx=\tfrac12 \, du$. Collecting factors,
+
+$$
+\frac{x}{8}-\frac{\sin 2x}{16}-\frac{x}{16}-\frac{\sin 4x}{64}+\frac{1}{16}\int (1-u^2) \, du
+=\frac{x}{16}-\frac{\sin 2x}{16}-\frac{\sin 4x}{64}+\frac{1}{16}\left(u-\frac{u^3}{3}\right)+C.
+$$
+
+Back-substituting $u=\sin 2x$ yields
+
+$$
+\frac{x}{16}-\frac{\sin 2x}{16}-\frac{\sin 4x}{64}+\frac{\sin 2x}{16}-\frac{\sin^3 2x}{48}+C=\frac{x}{16}-\frac{\sin 4x}{64}-\frac{\sin^3 2x}{48}+C.
+$$
+
+</Example>
+
+## Products at distinct frequencies
+
+The methods above treat powers of $\sin x$ and $\cos x$ at a single argument. The integrals $\int \cos(mx)\sin(nx) \, dx$, $\int \cos(mx)\cos(nx) \, dx$ and $\int \sin(mx)\sin(nx) \, dx$ mix two frequencies and a product-to-sum identity separates them.
+
+<Method slug="product-to-sum" see="trig-odd-power,trig-even-power">
+
+### Product-to-sum
+
+<Statement>
+
+Convert the product to a sum, then integrate term by term:
+
+$$
+\sin A\cos B=\tfrac12\bigl(\sin(A+B)+\sin(A-B)\bigr)
+$$
+$$
+\cos A\cos B=\tfrac12\bigl(\cos(A+B)+\cos(A-B)\bigr)
+$$
+$$
+\sin A\sin B=-\tfrac12\bigl(\cos(A+B)-\cos(A-B)\bigr)
+$$
+
+</Statement>
+
+The minus sign on $\sin A\sin B$ is the one most often dropped.
+
+</Method>
+
+<Example slug="int-sin-3x-sin-2x" of="product-to-sum" difficulty="exam">
+
+### $\int \sin 3x \sin 2x \, dx$
+
+With $A=3x$ and $B=2x$,
+
+$$
+\begin{aligned}
+\int \sin 3x \sin 2x \, dx
+&=-\frac{1}{2}\int \bigl(\cos 5x-\cos x\bigr) \, dx \\
+&=-\frac{1}{2}\left(\frac{\sin 5x}{5}-\sin x\right)+C \\
+&=-\frac{\sin 5x}{10}+\frac{\sin x}{2}+C.
+\end{aligned}
+$$
+
+</Example>
+
+## Powers of tangent and secant
+
+<Definition slug="tan-sec-identities">
+
+### Tangent and secant
+
+<Statement>
+
+The identities used to integrate $\int \tan^m x \sec^n x \, dx$ are
+
+$$
+1+\tan^2 x=\sec^2 x,\qquad \frac{d}{dx}\tan x=\sec^2 x,\qquad \frac{d}{dx}\sec x=\tan x\sec x.
+$$
+
+</Statement>
+
+The two derivative identities are why $u=\tan x$ and $u=\sec x$ match a leftover factor of $\sec^2 x$ or $\tan x\sec x$.
+
+</Definition>
+
+<Example slug="int-tan-sec" of="tan-sec-identities" difficulty="routine">
+
+### $\int \tan x \, dx$ and $\int \sec x \, dx$
+
+Writing $\tan x=\frac{\sin x}{\cos x}$,
+
+$$
+\int \tan x \, dx=\int \frac{\sin x}{\cos x} \, dx=-\ln|\cos x|+C.
+$$
+
+For the secant integral, multiply numerator and denominator by $\sec x+\tan x$:
+
+$$
+\int \sec x \, dx=\int \frac{\sec x(\sec x+\tan x)}{\sec x+\tan x} \, dx=\int \frac{\sec^2 x+\sec x\tan x}{\sec x+\tan x} \, dx=\ln|\sec x+\tan x|+C,
+$$
+
+since the numerator is then the derivative of the denominator.
+
+</Example>
+
+<Recall of="tan-sec-identities" />
+
+<Method slug="tan-sec-integral" of="tan-sec-identities" see="int-sec-cubed">
+
+### Powers of tangent and secant
+
+<Statement>
+
+To evaluate $\int \tan^m x \sec^n x \, dx$:
+
+- If $n$ is a positive even integer, factor out $\sec^2 x$ and substitute $u=\tan x$. Convert remaining powers of $\sec$ by $1+\tan^2 x=\sec^2 x$.
+- If $n=0$, use $\tan^2 x=\sec^2 x-1$ to lower the power of $\tan$ by two, with $\int dx$ and $\int\tan x\,dx$ as base cases.
+- If $n$ is odd:
+  - If $m$ is odd, factor out $\tan x\sec x$ and substitute $u=\sec x$. Convert remaining powers of $\tan$ by $\tan^2 x=\sec^2 x-1$.
+  - If $m$ is even, write $\tan^m x=(\sec^2 x-1)^{m/2}$ and expand into powers of $\sec x$. Reduce odd secant powers by parts until only $\int\sec x\,dx$ remains.
+
+</Statement>
+
+The first rule needs $n$ even: factoring out $\sec^2 x$ when $n$ is odd leaves an unmatched $\sec x$, so $u=\tan x$ does not absorb the whole integrand.
+
+For the odd secant powers $S_\ell=\int\sec^\ell x\,dx$, the integration by parts used below for $S_3$ gives the [reduction formula](/calculus/integration-techniques/reduction-formulae)
+$$
+S_\ell=\frac{\sec^{\ell-2}x\tan x}{\ell-1}+\frac{\ell-2}{\ell-1}S_{\ell-2},\qquad \ell\ge3.
+$$
+To derive it, split $\sec^\ell x=\sec^{\ell-2}x\sec^2x$ to get $S_\ell=\sec^{\ell-2}x\tan x-(\ell-2)\int\sec^{\ell-2}x\tan^2x\,dx$, substitute $\tan^2x=\sec^2x-1$ and collect the resulting copy of $S_\ell$. Stop at $S_1=\ln|\sec x+\tan x|$ and add one arbitrary constant at the end.
+
+</Method>
+
+<Example slug="int-sec-cubed" of="tan-sec-integral" difficulty="exam">
+
+### $\int \sec^3 x \, dx$
+
+Write $I=\int \sec^3 x \, dx$. Split the integrand as $\sec x\cdot\sec^2 x$ and integrate by parts with $u=\sec x$ and $dv=\sec^2 x \, dx$, so $du=\sec x\tan x \, dx$ and $v=\tan x$. Then
+
+$$
+I=\sec x\tan x-\int \sec x\tan^2 x \, dx.
+$$
+
+Replace $\tan^2 x=\sec^2 x-1$:
+
+$$
+I=\sec x\tan x-\int \sec x(\sec^2 x-1) \, dx=\sec x\tan x-\int \sec^3 x \, dx+\int \sec x \, dx.
+$$
+
+The first integral on the right is $I$ again, so
+
+$$
+2I=\sec x\tan x+\int \sec x \, dx=\sec x\tan x+\ln|\sec x+\tan x|+C.
+$$
+
+After dividing by $2$ (and absorbing the factor into the arbitrary constant),
+
+$$
+I=\frac{1}{2}\sec x\tan x+\frac{1}{2}\ln|\sec x+\tan x|+C.
+$$
+
+</Example>
+
+<Example slug="int-sec4-tan2" of="tan-sec-integral" difficulty="exam">
+
+### $\int \sec^4 x \tan^2 x \, dx$
+
+The power of $\sec$ is even, so factor out $\sec^2 x$:
+
+$$
+\int \sec^4 x \tan^2 x \, dx=\int \sec^2 x \tan^2 x \sec^2 x \, dx.
+$$
+
+Let $u=\tan x$, so $du=\sec^2 x \, dx$. The remaining $\sec^2 x$ is $1+\tan^2 x$ and the integral becomes
+
+$$
+\int (1+\tan^2 x)\tan^2 x \sec^2 x \, dx=\int (1+u^2)u^2 \, du=\int (u^2+u^4) \, du=\frac{u^3}{3}+\frac{u^5}{5}+C=\frac{\tan^3 x}{3}+\frac{\tan^5 x}{5}+C.
+$$
+
+</Example>
+
+<Example slug="int-sec-tan3" of="tan-sec-integral" difficulty="exam">
+
+### $\int \sec x \tan^3 x \, dx$
+
+Here $m$ and $n$ are both odd, so factor out $\tan x\sec x$:
+
+$$
+\int \sec x \tan^3 x \, dx=\int \tan^2 x\,(\tan x\sec x) \, dx.
+$$
+
+Let $u=\sec x$, so $du=\sec x\tan x \, dx$. Replace $\tan^2 x=\sec^2 x-1$:
+
+$$
+\int (\sec^2 x-1)\tan x\sec x \, dx=\int (u^2-1) \, du=\frac{u^3}{3}-u+C=\frac{\sec^3 x}{3}-\sec x+C.
+$$
+
+</Example>
+
+<Example slug="int-sec-tan2" of="tan-sec-integral" difficulty="exam">
+
+### $\int \sec x \tan^2 x \, dx$
+
+Here $n$ is odd and $m$ is even. Replace $\tan^2 x=\sec^2 x-1$:
+
+$$
+\int \sec x \tan^2 x \, dx=\int \sec x(\sec^2 x-1) \, dx=\int \sec^3 x \, dx-\int \sec x \, dx.
+$$
+
+The antiderivatives of $\sec x$ and $\sec^3 x$ found above give
+
+$$
+\frac{1}{2}\sec x\tan x+\frac{1}{2}\ln|\sec x+\tan x|-\ln|\sec x+\tan x|+C=\frac{1}{2}\sec x\tan x-\frac{1}{2}\ln|\sec x+\tan x|+C.
+$$
+
+</Example>

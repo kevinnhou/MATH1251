@@ -1,0 +1,537 @@
+---
+title: Matrix representations
+description: Writing a linear map in coordinates relative to ordered bases.
+tags: [algebra]
+ideas: [linear-maps, matrices, bases, coordinates, rank-nullity]
+---
+
+This page writes a linear map $T:V\to W$ between finite-dimensional spaces as a matrix. A [basis](/algebra/vector-spaces/basis-and-dimension) gives each vector unique coordinates and a linear map is fixed by its values on a basis, so the matrix records the [coordinate vectors](/algebra/vector-spaces/coordinates-and-bases) of the images of the domain basis. The page then reads injectivity, surjectivity and invertibility of $T$ from its matrix.
+
+## The coordinate matrix
+
+<Recall of="linear-map" />
+
+<Recall of="coordinate-vector" />
+
+<Recall of="basis" />
+
+The matrix depends on the chosen bases, but the linear map $T$ does not. Changing a basis changes the coordinate columns used to write $T$, not which vectors $T$ sends to which outputs.
+
+Using the matrix takes three steps: write the input as a coordinate column in
+$B_V$, multiply by $A$ and read the result as a coordinate column in $B_W$.
+
+<Theorem slug="matrix-of-linear-map" of="linear-map,basis,coordinate-vector,linear-map-determined-by-basis">
+
+### Matrix representation of a linear map
+
+<Statement>
+
+Let $T:V\to W$ be a linear map, where $\dim(V)=n$ and $\dim(W)=m$. For ordered bases
+
+$$
+B_V=(v_1,\ldots,v_n),\qquad B_W=(w_1,\ldots,w_m),
+$$
+
+form the coordinate columns
+
+$$
+a_j=[T(v_j)]_{B_W}\qquad (j=1,\ldots,n).
+$$
+
+Then
+
+$$
+A=\begin{pmatrix}a_1&\cdots&a_n\end{pmatrix}
+$$
+
+is the unique $m\times n$ matrix satisfying
+
+$$
+[T(v)]_{B_W}=A[v]_{B_V}\qquad\text{for every }v\in V.
+$$
+
+We call $A$ the matrix representation of $T$ relative to $B_V$ and $B_W$ and may write it as $[T]_{B_V}^{B_W}$.
+
+With this notation, the subscript names the domain basis and the superscript
+names the codomain basis, matching the direction
+$[v]_{B_V}\mapsto[T(v)]_{B_W}$ in the displayed coordinate identity.
+
+</Statement>
+
+The $j$th column is the coordinate vector of $T(v_j)$ in the codomain basis. Thus the number of columns is the dimension of the domain and the number of entries in each column is the dimension of the codomain.
+
+</Theorem>
+
+<Proof of="matrix-of-linear-map">
+
+Write
+
+$$
+v=c_1v_1+\cdots+c_nv_n.
+$$
+
+Then
+
+$$
+[v]_{B_V}=
+\begin{pmatrix}
+c_1\\
+\vdots\\
+c_n
+\end{pmatrix}.
+$$
+
+Preservation of finite linear combinations gives
+
+$$
+\begin{aligned}
+[T(v)]_{B_W}
+&=c_1[T(v_1)]_{B_W}+\cdots+c_n[T(v_n)]_{B_W}\\
+&=c_1a_1+\cdots+c_na_n\\
+&=A[v]_{B_V}.
+\end{aligned}
+$$
+
+This proves the coordinate identity. If another matrix has the same identity, apply it to each $v_j$. Since $[v_j]_{B_V}$ is the $j$th standard coordinate vector, its $j$th column must be $[T(v_j)]_{B_W}=a_j$. Every column is therefore forced, so $A$ is unique.
+
+</Proof>
+
+The theorem turns the basis-data principle into a construction. The order of both bases matters: it fixes the order of the entries in each coordinate column and the order of the columns themselves.
+
+## Building and using the matrix
+
+<Method slug="construct-matrix-representation" of="matrix-of-linear-map,coordinate-vector">
+
+### Construct a matrix representation
+
+<Statement>
+
+For a linear map $T:V\to W$:
+
+1. choose an ordered basis $B_V=(v_1,\ldots,v_n)$ for $V$ and an ordered basis $B_W=(w_1,\ldots,w_m)$ for $W$;
+2. evaluate $T(v_j)$ for each domain basis vector;
+3. compute the codomain coordinate vector $[T(v_j)]_{B_W}$ for each image;
+4. place these coordinate vectors, in the same order, as the columns of the $m\times n$ matrix.
+
+</Statement>
+
+</Method>
+
+<Example of="construct-matrix-representation,matrix-of-linear-map" difficulty="routine">
+
+### Differentiation on polynomial spaces
+
+For $n\ge 1$, differentiation is the real-linear map
+
+$$
+D:P_n(\mathbb R)\to P_{n-1}(\mathbb R),\qquad D(p)=p'.
+$$
+
+Take $n=4$ and let
+
+$$
+T:P_4(\mathbb R)\to P_3(\mathbb R),\qquad T(p)=\frac{dp(x)}{dx},
+$$
+
+and use the ordered standard polynomial bases
+
+$$
+B_V=(1,x,x^2,x^3,x^4),\qquad B_W=(1,x,x^2,x^3).
+$$
+
+Evaluate $T$ on each domain basis vector and find the coordinates of the result in $B_W$:
+
+$$
+\begin{array}{c|c|c}
+\text{domain vector} & \text{image} & \text{codomain coordinate vector}\\
+\hline
+1 & T(1)=0 & \begin{pmatrix}0\\0\\0\\0\end{pmatrix}\\[6pt]
+x & T(x)=1 & \begin{pmatrix}1\\0\\0\\0\end{pmatrix}\\[6pt]
+x^2 & T(x^2)=2x & \begin{pmatrix}0\\2\\0\\0\end{pmatrix}\\[6pt]
+x^3 & T(x^3)=3x^2 & \begin{pmatrix}0\\0\\3\\0\end{pmatrix}\\[6pt]
+x^4 & T(x^4)=4x^3 & \begin{pmatrix}0\\0\\0\\4\end{pmatrix}
+\end{array}
+$$
+
+These coordinate vectors, in order, are the columns of the matrix representation:
+
+$$
+A=[T]_{B_V}^{B_W}
+=
+\begin{pmatrix}
+0&1&0&0&0\\
+0&0&2&0&0\\
+0&0&0&3&0\\
+0&0&0&0&4
+\end{pmatrix}.
+$$
+
+For
+
+$$
+p=a_0+a_1x+a_2x^2+a_3x^3+a_4x^4,
+$$
+
+$$
+[p]_{B_V}=
+\begin{pmatrix}
+a_0\\a_1\\a_2\\a_3\\a_4
+\end{pmatrix},
+\qquad
+A[p]_{B_V}=
+\begin{pmatrix}
+a_1\\2a_2\\3a_3\\4a_4
+\end{pmatrix}
+=[T(p)]_{B_W}.
+$$
+
+This agrees with
+
+$$
+T(p)=a_1+2a_2x+3a_3x^2+4a_4x^3.
+$$
+
+The zero first column records $T(1)=0$, so differentiation is not injective. The four pivot columns give rank $4=\dim(P_3(\mathbb R))$, so it is surjective. In words, differentiation loses the constant direction but still reaches every polynomial of degree at most $3$.
+
+</Example>
+
+With standard bases, a vector in $\mathbb R^n$ equals its own coordinate column and the matrix representation is the [matrix map](/algebra/linear-transformations/geometric-examples) from the geometric examples. For these maps, operations on maps match operations on matrices.
+
+<Proposition slug="matrix-operations-for-linear-maps" of="matrix-map-linear">
+
+### Operations on matrix representations
+
+<Statement>
+
+Let $T_A:\mathbb R^n\to\mathbb R^m$ and $T_B:\mathbb R^n\to\mathbb R^m$ be the standard-coordinate matrix maps
+
+$$
+T_A(x)=Ax,\qquad T_B(x)=Bx.
+$$
+
+Then
+
+$$
+(T_A+T_B)(x)=(A+B)x,\qquad
+(\omega T_A)(x)=(\omega A)x.
+$$
+
+If $T_A:\mathbb R^p\to\mathbb R^m$ and $T_B:\mathbb R^n\to\mathbb R^p$, then
+
+$$
+(T_A\circ T_B)(y)=A(By)=(AB)y.
+$$
+
+Thus the matrix of a sum, scalar multiple, or composition is respectively the sum, scalar multiple, or product of the matrices, with the product ordered to match the composition.
+
+</Statement>
+
+</Proposition>
+
+For non-standard bases, the same rules hold when the matrices use the same
+domain and codomain bases for a sum and a matching intermediate basis for a
+composition. Otherwise the coordinate columns refer to different bases and
+cannot be combined directly.
+
+## Reading map properties in coordinates
+
+The coordinate identity transfers questions about the [kernel](/algebra/linear-transformations/kernel-image-rank) and [image](/algebra/linear-transformations/kernel-image-rank) of $T$ to its matrix, where [rank-nullity](/algebra/linear-transformations/rank-nullity) applies to coordinate columns. This section defines injective, surjective and inverse maps and reads each property from the matrix.
+
+<Definition slug="injective-map" of="linear-map">
+
+### Injective map
+
+<Statement>
+
+A map $T:V\to W$ is *injective*, or one-to-one, when
+
+$$
+T(v_1)=T(v_2)\quad\Longrightarrow\quad v_1=v_2.
+$$
+
+</Statement>
+
+</Definition>
+
+<Corollary slug="injective-if-trivial-kernel" of="kernel-of-linear-map,injective-map">
+
+### Injectivity and the kernel
+
+<Statement>
+
+A linear map $T:V\to W$ is injective if and only if
+
+$$
+\ker(T)=\{0\}.
+$$
+
+If $V$ is finite-dimensional, this is equivalent to
+$\operatorname{nullity}(T)=0$.
+
+</Statement>
+
+If $T(v_1)=T(v_2)$, then $T(v_1-v_2)=0$. A trivial kernel therefore gives
+$v_1=v_2$. Conversely, injectivity forces any vector with $T(v)=T(0)$ to be
+$v=0$.
+
+</Corollary>
+
+<Definition slug="surjective-map" of="linear-map">
+
+### Surjective map
+
+<Statement>
+
+A map $T:V\to W$ is *surjective*, or onto, when every $w\in W$ equals
+$T(v)$ for some $v\in V$. Equivalently, $\operatorname{im}(T)=W$.
+
+</Statement>
+
+</Definition>
+
+<Definition slug="bijective-map" of="injective-map,surjective-map">
+
+### Bijective map
+
+<Statement>
+
+A map is *bijective* when it is both injective and surjective.
+
+</Statement>
+
+</Definition>
+
+<Definition slug="identity-map" of="linear-map">
+
+### Identity map
+
+<Statement>
+
+The identity map on $V$ is
+
+$$
+\operatorname{id}_V:V\to V,\qquad \operatorname{id}_V(v)=v.
+$$
+
+</Statement>
+
+</Definition>
+
+<Definition slug="inverse-map" of="bijective-map">
+
+### Inverse map
+
+<Statement>
+
+For a map $T:V\to W$, a map $S:W\to V$ is an inverse of $T$ when
+
+$$
+S\circ T=\operatorname{id}_V,
+\qquad
+T\circ S=\operatorname{id}_W.
+$$
+
+</Statement>
+
+The first composition is the left-inverse condition and the second is the
+right-inverse condition. An inverse satisfies both.
+
+</Definition>
+
+Do not confuse the transpose with the inverse: $A^{\mathsf T}$ transposes rows and
+columns, while $A^{-1}$ reverses the map when a two-sided inverse exists.
+Taking reciprocals of individual entries does not generally produce
+$A^{-1}$. For an orthogonal matrix $Q$, the special identity
+$Q^{-1}=Q^{\mathsf T}$ follows from its orthonormal columns; see the
+[symmetric-matrix diagonalisation](/algebra/eigenvalues/diagonalisation).
+
+<Corollary slug="matrix-representation-properties" of="matrix-of-linear-map,kernel-of-linear-map,image-of-linear-map,rank-nullity-matrix,rank-nullity-theorem,injective-if-trivial-kernel">
+
+### Properties read from a matrix representation
+
+<Statement>
+
+Let $A=[T]_{B_V}^{B_W}$ be the matrix representation of $T:V\to W$ over a
+scalar field $\mathbb F$, with $\dim(V)=n$ and $\dim(W)=m$. Then
+
+$$
+\ker(A)=\{[v]_{B_V}:v\in\ker(T)\}
+$$
+
+and
+
+$$
+\operatorname{im}(A)=\{[w]_{B_W}:w\in\operatorname{im}(T)\}.
+$$
+
+Since a linear map is injective exactly when its kernel is trivial and
+surjective exactly when its image is the codomain, these identities give the
+coordinate tests $\ker(A)=\{0\}$ and $\operatorname{im}(A)=\mathbb F^m$.
+Here $\ker(A)$ and $\operatorname{im}(A)$ are sets of coordinate columns;
+the displayed equalities identify them with the corresponding abstract
+subspaces through the coordinate maps.
+
+Consequently,
+
+$$
+\operatorname{nullity}(A)=\operatorname{nullity}(T),
+\qquad
+\operatorname{rank}(A)=\operatorname{rank}(T).
+$$
+
+Hence $T$ is injective if and only if $\operatorname{nullity}(A)=0$ and $T$ is surjective if and only if $\operatorname{rank}(A)=m$. If $m=n$, then $T$ is bijective if and only if $A$ is invertible.
+
+</Statement>
+
+</Corollary>
+
+<Example slug="integral-map-injective" of="injective-map,rank-nullity-theorem" difficulty="routine">
+
+### Integration gives an injective map
+
+Define
+
+$$
+I:P_n(\mathbb R)\to P_{n+1}(\mathbb R),
+\qquad
+I(p)(x)=\int_0^x p(t)\,dt.
+$$
+
+The integral is linear in $p$, so $I$ is a linear map.
+If $I(p)$ is the zero polynomial, differentiating the identity
+$I(p)(x)=0$ gives $p(x)=0$ for every $x$, so $\ker(I)=\{0\}$. Thus $I$ is
+injective. Its rank is $\dim(P_n(\mathbb R))=n+1$, which is smaller than
+$\dim(P_{n+1}(\mathbb R))=n+2$, so it is not surjective.
+Concretely, every polynomial $I(p)$ vanishes at $x=0$, so the constant
+polynomial $1$ is not in the image.
+
+</Example>
+
+## Invertibility in equal dimensions
+
+When the domain and codomain have the same finite dimension, [rank-nullity](/algebra/linear-transformations/rank-nullity) makes injectivity and surjectivity equivalent. A bijective linear map has an inverse and in coordinates that inverse is given by the inverse matrix.
+
+<Proposition slug="finite-dimensional-bijectivity" of="matrix-representation-properties,rank-nullity-theorem,injective-map,surjective-map">
+
+### Bijectivity in equal dimensions
+
+<Statement>
+
+For a linear map $T:V\to W$ between finite-dimensional vector spaces:
+
+1. if $T$ is bijective, then $\dim(V)=\dim(W)$;
+2. if $\dim(V)=\dim(W)$ and $T$ is injective, then $T$ is surjective;
+3. if $\dim(V)=\dim(W)$ and $T$ is surjective, then $T$ is injective.
+
+</Statement>
+
+Indeed, if $T$ is bijective, then its kernel is trivial and its image is all
+of $W$. Rank-nullity therefore gives
+$\dim(V)=\operatorname{rank}(T)=\dim(W)$. If the dimensions are equal and
+$T$ is injective, then nullity is $0$, so rank equals $\dim(V)=\dim(W)$ and
+$T$ is surjective. The surjective case is dual: rank equals $\dim(W)=\dim(V)$,
+so nullity is $0$ and $T$ is injective.
+
+</Proposition>
+
+<Theorem slug="linear-map-invertibility" of="bijective-map,inverse-map,finite-dimensional-bijectivity">
+
+### Equivalent invertibility conditions
+
+<Statement>
+
+For a linear map $T:V\to W$ between finite-dimensional spaces, the
+following conditions are equivalent when $\dim(V)=\dim(W)$:
+
+1. $T$ is invertible;
+2. $T$ is bijective;
+3. $T$ has a left inverse;
+4. $T$ has a right inverse.
+
+</Statement>
+
+A left inverse makes $T$ injective and a right inverse makes $T$
+surjective. In equal dimensions either property makes $T$ bijective, so the
+one-sided inverse is then the two-sided inverse of $T$.
+
+</Theorem>
+
+<Theorem slug="inverse-matrix-of-linear-map" of="matrix-of-linear-map,matrix-representation-properties,finite-dimensional-bijectivity,linear-map-invertibility,inverse-map">
+
+### Inverse maps in coordinates
+
+<Statement>
+
+Let $V$ and $W$ be finite-dimensional vector spaces, let $T:V\to W$ be
+bijective and fix ordered bases $B_V$ of $V$ and $B_W$ of $W$. Then
+$T^{-1}:W\to V$ is linear. If
+
+$$
+A=[T]_{B_V}^{B_W},
+$$
+
+then $A$ is square and
+
+$$
+[T^{-1}]_{B_W}^{B_V}=A^{-1}.
+$$
+
+Equivalently, for every $w\in W$,
+
+$$
+[T^{-1}(w)]_{B_V}=A^{-1}[w]_{B_W}.
+$$
+
+Conversely, if the matrix representation $A$ is invertible, then $T$ is bijective.
+
+</Statement>
+
+The formula follows by writing $w=T(v)$, so that $[w]_{B_W}=A[v]_{B_V}$ and hence $[v]_{B_V}=A^{-1}[w]_{B_W}$. The two compositions are represented by $A^{-1}A$ and $AA^{-1}$, which return the original coordinate vector.
+To check that $T^{-1}$ is linear, write $w_1=T(v_1)$ and $w_2=T(v_2)$.
+Then $T(\alpha v_1+\beta v_2)=\alpha w_1+\beta w_2$ and uniqueness of
+preimages gives
+$T^{-1}(\alpha w_1+\beta w_2)=\alpha T^{-1}(w_1)+\beta T^{-1}(w_2)$.
+
+</Theorem>
+
+<Example of="inverse-matrix-of-linear-map" difficulty="routine">
+
+### A scalar map and its inverse
+
+Let $\alpha\in\mathbb R\setminus\{0\}$ and define
+
+$$
+T:P_n(\mathbb R)\to P_n(\mathbb R),\qquad T(p)=\alpha p.
+$$
+
+Relative to the standard polynomial basis $(1,x,\ldots,x^n)$,
+
+$$
+A=[T]=\alpha I.
+$$
+
+The candidate inverse is
+
+$$
+S:P_n(\mathbb R)\to P_n(\mathbb R),\qquad S(p)=\frac{1}{\alpha}p,
+$$
+
+whose matrix is
+
+$$
+[S]=\frac{1}{\alpha}I=A^{-1}.
+$$
+
+For every $p\in P_n(\mathbb R)$,
+
+$$
+S(T(p))=S(\alpha p)=p,
+\qquad
+T(S(p))=T\left(\frac{1}{\alpha}p\right)=p.
+$$
+
+Thus $T$ is bijective with inverse $S$ and its matrix $[S]=A^{-1}$ matches the theorem.
+
+</Example>
+
+The [eigenvalues](/algebra/eigenvalues) chapter asks when a choice of basis makes the matrix of an operator diagonal.

@@ -1,0 +1,87 @@
+---
+title: Ordinary differential equations
+description: Solving equations that describe a function through its derivatives, by exact methods, models and numerical approximation.
+tags: [calculus]
+ideas: [ordinary-differential-equations, modelling, numerical-methods]
+---
+
+An ordinary differential equation (ODE) describes a function through how it
+changes and the task is to reconstruct the functions that satisfy it. ODEs
+model motion, population change, cooling, mixing and oscillation. The chapter
+assumes the differentiation, integration and algebra of the earlier calculus
+material.
+
+## Lessons
+
+1. [ODE fundamentals](/calculus/ordinary-differential-equations/ode-fundamentals):
+   order, linearity, solution families and the initial or boundary data that
+   select one solution.
+2. [First-order methods](/calculus/ordinary-differential-equations/first-order-equations):
+   separable, linear and exact equations and the substitutions that reduce
+   other equations to these.
+3. [Modelling with first-order
+   equations](/calculus/ordinary-differential-equations/first-order-modelling):
+   translating proportional change, relaxation and conservation laws into
+   equations, then reading the solutions.
+4. [Second-order constant-coefficient
+   equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations):
+   characteristic roots as modes, forcing by undetermined coefficients,
+   resonance and spring-mass systems.
+5. [Existence, uniqueness and linear
+   operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators):
+   the Lipschitz condition that guarantees a unique local solution and why
+   every forced linear solution is one particular solution plus a homogeneous
+   one.
+6. [Numerical solutions](/calculus/ordinary-differential-equations/numerical-solutions):
+   direction fields, Euler's method and Heun's method, with their error
+   estimates. Read after the previous lesson, since the estimates rely on its
+   Lipschitz condition.
+7. [Choosing an ODE method](/calculus/ordinary-differential-equations/pipeline):
+   a checklist for classifying an equation and picking a method.
+8. [Seen questions](/calculus/ordinary-differential-equations/seen): past exam
+   questions on exact equations, integrating factors and forced second-order
+   equations.
+
+## Methods by structure
+
+Each exact method relies on a structure the equation must have:
+
+- **Separable:** separate the variables and integrate.
+- **First-order linear:** an integrating factor turns the left side into a
+  product-rule derivative.
+- **Exact:** the equation is the total differential of a potential.
+- **Substitution:** homogeneous and Bernoulli substitutions change variables
+  into one of the cases above.
+- **Second-order constant-coefficient:** an algebraic equation gives the
+  exponential modes.
+
+When no structure applies, a numerical method follows the slope field instead.
+
+## Where it leads
+
+Euler's method steps along tangent lines. The next chapter, [Taylor
+series](/calculus/taylor-series), develops that idea into local polynomial
+models and measures the terms a single step leaves out.
+
+## Vocabulary checkpoints
+
+- **Order and degree:** the order is the highest derivative present and the
+  degree, when the equation is a polynomial in its derivatives, is the power
+  of that derivative ([ODE fundamentals](/calculus/ordinary-differential-equations/ode-fundamentals)).
+- **Solution formula and domain:** a formula solves an ODE only on the
+  interval or branch where it is defined and satisfies the equation
+  ([ODE fundamentals](/calculus/ordinary-differential-equations/ode-fundamentals)).
+- **Separable, linear and exact:** these are independent tests, so one
+  equation can pass several of them
+  ([first-order methods](/calculus/ordinary-differential-equations/first-order-equations)).
+- **Equilibrium and integration constant:** an equilibrium is a constant
+  solution, while a constant of integration labels a member of the solution
+  family
+  ([modelling](/calculus/ordinary-differential-equations/first-order-modelling)).
+- **Homogeneous and particular solutions:** the homogeneous part carries the
+  arbitrary constants and the particular part accounts for the forcing
+  ([second-order equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)).
+- **Local and global error:** the local error comes from one numerical step,
+  while the global error also includes errors carried forward from earlier
+  steps
+  ([numerical solutions](/calculus/ordinary-differential-equations/numerical-solutions)).

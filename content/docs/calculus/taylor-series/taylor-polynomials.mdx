@@ -1,0 +1,244 @@
+---
+title: Taylor polynomials
+description: Match derivative data at a centre to obtain a local polynomial approximation.
+tags: [calculus]
+ideas: [taylor-polynomial, maclaurin-polynomial, approximation]
+---
+
+This page approximates $f$ near a point $a$ by the polynomial in powers of $x-a$ that matches its value, slope, curvature and higher derivatives up to a chosen degree. [Interpolation](/algebra/vector-spaces/data-fitting) is the other polynomial construction in the course: it matches values at distinct nodes rather than derivatives at one centre.
+
+The degree-one Taylor model is the tangent-line step used by
+[Euler's method](/calculus/ordinary-differential-equations/numerical-solutions).
+The degree-two term, built from $f''(a)$, is the one-variable version of
+the quadratic [Hessian model](/calculus/functions-of-several-variables/multivariable-approximation)
+used for functions of several variables.
+
+## Build a local model from derivative data
+
+The centre $a$ is the point where the approximation is anchored. Matching only the value
+gives a constant model; matching the first derivative as well gives the tangent line.
+Each further matched derivative makes the polynomial share more of the local behaviour of $f$.
+
+<Definition slug="taylor-polynomial">
+
+### Taylor polynomial
+
+<Statement>
+
+If $f$ has derivatives through order $n$ at $a$, its Taylor polynomial of degree at most
+$n$ about $a$ is
+
+$$
+P_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(a)}{k!}(x-a)^k.
+$$
+
+</Statement>
+
+The polynomial is centred at $a$: its powers measure displacement from $a$, not from the
+origin. The factorial occurs because the $k$-th derivative of $(x-a)^k$ at $a$ is $k!$.
+In this chapter $P_n(x)$ names the Taylor polynomial; the similar notation $P_n(F)$ in
+[vector spaces](/algebra/vector-spaces/vector-spaces) denotes the whole space of polynomials
+of degree at most $n$ over a field $F$.
+
+</Definition>
+
+<Definition slug="maclaurin-polynomial" of="taylor-polynomial">
+
+### Maclaurin polynomial
+
+<Statement>
+
+The Maclaurin polynomial of degree at most $n$ is the Taylor polynomial about $a=0$:
+
+$$
+P_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(0)}{k!}x^k.
+$$
+
+</Statement>
+
+Maclaurin polynomials are convenient when the derivatives at zero have a simple pattern.
+
+</Definition>
+
+## Why the coefficients are forced
+
+<Theorem slug="taylor-polynomial-uniqueness" of="taylor-polynomial">
+
+### Matching derivatives determines the coefficients
+
+<Statement>
+
+Suppose $Q$ is a polynomial of degree at most $n$ satisfying
+
+$$
+Q^{(j)}(a)=f^{(j)}(a),\qquad 0\le j\le n.
+$$
+
+Then $Q=P_n$, where $P_n$ is the Taylor polynomial of $f$ about $a$.
+
+</Statement>
+
+How accurate this model is away from the centre is measured by the [remainder in Taylor's theorem](/calculus/taylor-series/taylors-theorem).
+
+</Theorem>
+
+<Proof of="taylor-polynomial-uniqueness">
+
+Write $Q$ in powers of $x-a$:
+
+$$
+Q(x)=c_0+c_1(x-a)+\cdots+c_n(x-a)^n.
+$$
+
+Evaluating at $a$ gives $Q(a)=c_0$. After differentiating once, evaluating at $a$ gives
+$Q'(a)=c_1$ and after differentiating $j$ times it gives
+
+$$
+Q^{(j)}(a)=j!c_j.
+$$
+
+The matching condition therefore forces
+
+$$
+c_j=\frac{f^{(j)}(a)}{j!}
+$$
+
+for every $0\le j\le n$. These are exactly the coefficients of $P_n$, so $Q=P_n$.
+
+</Proof>
+
+## Construct the polynomial in practice
+
+Choose a centre close to the values of $x$ you care about, so that the powers
+$(x-a)^k$ stay small.
+
+<Method slug="construct-taylor-polynomial" of="taylor-polynomial">
+
+### Construct a Taylor polynomial
+
+<Statement>
+
+To construct the degree-$n$ Taylor polynomial of $f$ about $a$:
+
+1. choose the centre $a$ and degree $n$;
+2. calculate $f(a),f'(a),\ldots,f^{(n)}(a)$;
+3. substitute those values into
+   $$
+   P_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(a)}{k!}(x-a)^k;
+   $$
+4. use Taylor's theorem to quantify the error of the approximation.
+
+</Statement>
+
+</Method>
+
+## Read the pattern in standard functions
+
+At zero, parity and repeating derivative cycles often make the coefficients
+visible at once. At a nonzero centre the same rule applies, but every power is
+a power of the displacement $x-a$.
+
+<Example slug="sine-maclaurin-polynomial" of="construct-taylor-polynomial" difficulty="routine">
+
+### A Maclaurin polynomial for $\sin x$
+
+The derivatives at zero alternate between $0,1,0,-1$. The odd-degree polynomial is
+
+$$
+P_{2m+1}(x)
+=\sum_{k=0}^{m}(-1)^k\frac{x^{2k+1}}{(2k+1)!}
+=x-\frac{x^3}{3!}+\frac{x^5}{5!}-\cdots
++(-1)^m\frac{x^{2m+1}}{(2m+1)!}.
+$$
+
+</Example>
+
+<Example slug="cosine-maclaurin-polynomial" of="construct-taylor-polynomial" difficulty="routine">
+
+### A Maclaurin polynomial for $\cos x$
+
+The derivatives cycle as
+
+$$
+\cos x,\quad-\sin x,\quad-\cos x,\quad\sin x,\quad\cos x,\ldots
+$$
+
+At zero, the odd derivatives vanish. Therefore
+
+$$
+P_6(x)=1-\frac{x^2}{2!}+\frac{x^4}{4!}-\frac{x^6}{6!}.
+$$
+
+Only even powers occur, as expected for the even function $\cos x$.
+
+</Example>
+
+<Example slug="cosine-taylor-at-pi-over-four" of="construct-taylor-polynomial" difficulty="exam">
+
+### Moving the centre to $\pi/4$
+
+Let $h=x-\pi/4$. Since
+
+$$
+\cos\frac{\pi}{4}=\sin\frac{\pi}{4}=\frac{\sqrt2}{2},
+$$
+
+the degree-three Taylor polynomial is
+
+$$
+\begin{aligned}
+P_3(x)
+&=\frac{\sqrt2}{2}
+-\frac{\sqrt2}{2}h
+-\frac{\sqrt2}{4}h^2
++\frac{\sqrt2}{12}h^3\\
+&=\frac{\sqrt2}{2}
+\left(1-h-\frac{h^2}{2}+\frac{h^3}{6}\right).
+\end{aligned}
+$$
+
+The coefficient rule is unchanged from the Maclaurin case; only the displacement changes
+from $x$ to $x-\pi/4$.
+
+</Example>
+
+When derivatives repeat, record the pattern instead of differentiating each order from
+scratch.
+
+<Example slug="standard-finite-taylor-polynomials" of="construct-taylor-polynomial" difficulty="routine">
+
+### Standard finite expansions
+
+For $e^x$, every derivative is $e^x$, so every derivative at zero is $1$:
+
+$$
+P_n(x)=\sum_{k=0}^{n}\frac{x^k}{k!}
+=1+x+\frac{x^2}{2!}+\cdots+\frac{x^n}{n!}.
+$$
+
+For $\ln(1+x)$ and $k\ge1$,
+
+$$
+\left.\frac{d^k}{dx^k}\ln(1+x)\right|_{x=0}
+=(-1)^{k+1}(k-1)!,
+$$
+
+so
+
+$$
+P_n(x)=\sum_{k=1}^{n}(-1)^{k+1}\frac{x^k}{k}
+=x-\frac{x^2}{2}+\frac{x^3}{3}-\cdots
++(-1)^{n+1}\frac{x^n}{n}.
+$$
+
+Replacing $x$ by $-x$ gives the finite expansion
+
+$$
+-x-\frac{x^2}{2}-\frac{x^3}{3}-\cdots-\frac{x^n}{n}
+$$
+
+for $\ln(1-x)$.
+
+</Example>
+
+All of these are finite approximations. For a fixed $x$, increasing $n$ produces a [sequence](/calculus/taylor-series/sequences-and-limits) of approximations whose error is the [remainder in Taylor's theorem](/calculus/taylor-series/taylors-theorem). Passing to the infinite [Taylor series](/calculus/taylor-series/taylor-series) needs a [convergence](/calculus/taylor-series/convergence-tests) argument and a proof that this remainder tends to zero.

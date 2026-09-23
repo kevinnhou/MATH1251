@@ -1,0 +1,13 @@
+{
+  "title": "Functions of several variables",
+  "pagesIndex": "index",
+  "pages": [
+    "geometry-and-approximation",
+    "multivariable-approximation",
+    "local-extrema",
+    "global-extrema",
+    "constrained-extrema",
+    "economic-applications",
+    "seen"
+  ]
+}

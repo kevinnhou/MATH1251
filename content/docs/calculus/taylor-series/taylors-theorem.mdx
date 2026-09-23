@@ -1,0 +1,381 @@
+---
+title: Taylor's theorem
+description: Express the exact error of a Taylor polynomial and turn it into an error bound.
+tags: [calculus]
+ideas: [remainder, error-estimation, stationary-points]
+---
+
+This page gives an exact formula for the error of a [Taylor polynomial](/calculus/taylor-series/taylor-polynomials) $P_n$, called the remainder $R_{n+1}$:
+
+$$
+f(x)=P_n(x)+R_{n+1}(x).
+$$
+
+Bounding the remainder turns an approximation into a guaranteed one and its leading term classifies stationary points.
+
+## The remainder measures what the polynomial misses
+
+<Recall of="taylor-polynomial" />
+
+<Theorem slug="taylors-theorem" of="taylor-polynomial">
+
+### Taylor's theorem with remainder
+
+<Statement>
+
+Suppose $f$ has $n+1$ continuous derivatives on an interval containing $a$ and $x$. If
+
+$$
+P_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(a)}{k!}(x-a)^k,
+$$
+
+then
+
+$$
+f(x)=P_n(x)+R_{n+1}(x),
+$$
+
+where the integral remainder is
+
+$$
+R_{n+1}(x)
+=\frac1{n!}\int_a^x f^{(n+1)}(t)(x-t)^n\,dt.
+$$
+
+For $x\ne a$, there is also a point $c$ between $a$ and $x$ for which the Lagrange remainder is
+
+$$
+R_{n+1}(x)
+=\frac{f^{(n+1)}(c)}{(n+1)!}(x-a)^{n+1}.
+$$
+
+</Statement>
+
+The integral form accumulates the first omitted derivative. The Lagrange form replaces the
+integral by one unknown derivative value. If
+
+$$
+|f^{(n+1)}(t)|\le M
+$$
+
+throughout the interval between $a$ and $x$, then
+
+$$
+|f(x)-P_n(x)|
+=|R_{n+1}(x)|
+\le \frac{M|x-a|^{n+1}}{(n+1)!}.
+$$
+
+The bound depends on the distance $|x-a|$ from the centre and the size of the first omitted
+derivative. The factorial often dominates the numerator for large $n$, but this must be
+checked for the interval and degree in use.
+
+</Theorem>
+
+<Proof of="taylors-theorem">
+
+We prove the integral formula by induction. When $n=0$, the Fundamental Theorem of Calculus
+gives
+
+$$
+R_1(x)=\int_a^x f'(t)\,dt=f(x)-f(a).
+$$
+
+Assume that
+
+$$
+R_k(x)
+=\frac1{(k-1)!}\int_a^x f^{(k)}(t)(x-t)^{k-1}\,dt.
+$$
+
+For the next remainder, take $u=(x-t)^k$ and
+$dv=f^{(k+1)}(t)\,dt$, so $du=-k(x-t)^{k-1}\,dt$ and $v=f^{(k)}(t)$. We obtain
+
+$$
+\begin{aligned}
+R_{k+1}(x)
+&=\frac1{k!}\int_a^x f^{(k+1)}(t)(x-t)^k\,dt\\
+&=\left[\frac{f^{(k)}(t)}{k!}(x-t)^k\right]_{t=a}^{t=x}
++\frac1{(k-1)!}\int_a^x f^{(k)}(t)(x-t)^{k-1}\,dt\\
+&=-\frac{f^{(k)}(a)}{k!}(x-a)^k+R_k(x)\\
+&=f(x)-P_{k-1}(x)-\frac{f^{(k)}(a)}{k!}(x-a)^k\\
+&=f(x)-P_k(x),
+\end{aligned}
+$$
+
+The $t=x$ endpoint vanishes because $(x-x)^k=0$ and the penultimate line
+uses the induction hypothesis $R_k(x)=f(x)-P_{k-1}(x)$. Each induction step
+removes one Taylor term, which proves the integral form for every $n$.
+
+To obtain the Lagrange form, apply the mean value theorem for integrals to the continuous
+function $f^{(n+1)}$ with the non-negative weight $|x-t|^n$ between $a$ and $x$.
+Accounting for the orientation when $x<a$ gives
+$\int_a^x f^{(n+1)}(t)(x-t)^n\,dt
+=f^{(n+1)}(c)(x-a)^{n+1}/(n+1)$ for some intermediate $c$.
+
+</Proof>
+
+## Taylor's theorem extends the Mean Value Theorem
+
+When $n=0$, Taylor's theorem reads
+
+$$
+f(x)=f(a)+f'(c)(x-a).
+$$
+
+<Corollary slug="mean-value-theorem-from-taylor" of="taylors-theorem">
+
+### The Mean Value Theorem as the first case
+
+<Statement>
+
+For some $c$ between $a$ and $x$,
+
+$$
+\frac{f(x)-f(a)}{x-a}=f'(c)
+$$
+
+whenever $x\ne a$ and the hypotheses of the Mean Value Theorem hold.
+
+</Statement>
+
+</Corollary>
+
+## Turn the remainder into an error bound
+
+<Method slug="taylor-error-bound" of="taylors-theorem">
+
+### Bound a Taylor approximation error
+
+<Statement>
+
+To prove that $P_n(x)$ approximates $f(x)$ within a tolerance $\varepsilon$:
+
+1. identify $f^{(n+1)}$;
+2. find a bound $M$ for $|f^{(n+1)}(t)|$ between $a$ and the relevant values of $x$;
+3. use
+   $$
+   |f(x)-P_n(x)|
+   \le \frac{M|x-a|^{n+1}}{(n+1)!};
+   $$
+4. choose $n$ or the interval so that the right-hand side is at most $\varepsilon$.
+
+</Statement>
+
+The estimate is uniform on an interval when one $M$ and one distance bound work throughout
+that interval. It bounds the error from above; it is not the actual error.
+
+</Method>
+
+<Example slug="exponential-error-bound" of="taylor-error-bound" difficulty="routine">
+
+### Approximating $e^x$ by a quadratic
+
+Take
+
+$$
+P_2(x)=1+x+\frac{x^2}{2}
+$$
+
+for $f(x)=e^x$ about zero. The third derivative is $e^x$. On
+$[-1/2,1/2]$, an intermediate point satisfies $e^c\le e^{1/2}$, so
+
+$$
+|R_3(x)|
+\le \frac{e^{1/2}|x|^3}{3!}
+\le \frac{e^{1/2}}{48}
+\approx0.03435.
+$$
+
+The bound holds for every $x$ in the interval.
+
+</Example>
+
+<Example slug="compute-e-with-taylor-remainder" of="taylor-error-bound" difficulty="exam">
+
+### Computing $e$ to within $10^{-6}$
+
+At $x=1$, the Maclaurin polynomial gives
+
+$$
+P_n(1)=\sum_{k=0}^{n}\frac1{k!}.
+$$
+
+For $0<c<1$, the Lagrange remainder satisfies $e^c<3$, hence
+
+$$
+|R_{n+1}(1)|<\frac3{(n+1)!}.
+$$
+
+With $n=9$,
+
+$$
+\frac3{10!}<10^{-6}.
+$$
+
+Therefore
+
+$$
+e\approx P_9(1)
+=\sum_{k=0}^{9}\frac1{k!}
+=2.7182815256
+$$
+
+with the requested accuracy. The bound guarantees the accuracy; the actual error is about
+$3.03\times10^{-7}$.
+
+</Example>
+
+<Example slug="sine-taylor-error" of="taylor-error-bound" difficulty="routine">
+
+### Error for a sine approximation
+
+Every derivative of $\sin x$ is one of $\pm\sin x$ or $\pm\cos x$, so its absolute value is
+at most $1$. For a degree-$n$ Taylor polynomial about $a$,
+
+$$
+|R_{n+1}(x)|
+\le \frac{|x-a|^{n+1}}{(n+1)!}.
+$$
+
+Near the expansion centre, the factorial makes the bound decrease rapidly.
+
+</Example>
+
+## The first nonzero term controls local behaviour
+
+At a stationary point the linear term vanishes, so the first nonzero higher derivative
+decides whether values rise, fall or change sign on each side. The remainder is of strictly
+higher order, so close to the centre it is too small to reverse that sign.
+
+<Theorem slug="stationary-point-test" of="taylors-theorem">
+
+### Classify a stationary point with the first nonzero derivative
+
+<Statement>
+
+Suppose $k$ is an integer with $k\ge2$ and $f$ has $k+1$ continuous
+derivatives on a neighbourhood of $a$. If
+
+$$
+f^{(j)}(a)=0\quad(1\le j<k),
+\qquad f^{(k)}(a)\ne0.
+$$
+
+then Taylor's theorem gives
+
+$$
+f(x)-f(a)
+=\frac{f^{(k)}(a)}{k!}(x-a)^k+R_{k+1}(x),
+\qquad
+R_{k+1}(x)=O\bigl(|x-a|^{k+1}\bigr),\qquad
+R_{k+1}(x)=o\bigl(|x-a|^k\bigr).
+$$
+
+Thus, locally:
+
+- if $k$ is even and $f^{(k)}(a)>0$, $a$ is a local minimum;
+- if $k$ is even and $f^{(k)}(a)<0$, $a$ is a local maximum;
+- if $k$ is odd, the leading term changes sign across $a$, giving a horizontal point of
+  inflection.
+
+</Statement>
+
+Here $O(|x-a|^{k+1})$ means an error bounded by a constant times
+$|x-a|^{k+1}$ near $a$ and $o(|x-a|^k)$ means an error whose ratio to $|x-a|^k$
+tends to zero.
+
+The test requires $k\ge2$, a genuinely first nonzero derivative and enough continuity
+to ensure that the remainder is $o(|x-a|^k)$. If all derivatives examined vanish,
+those terms give no classification.
+
+</Theorem>
+
+<Proof of="stationary-point-test">
+
+Taylor's theorem gives
+
+$$
+f(x)-f(a)
+=\frac{f^{(k)}(a)}{k!}(x-a)^k+R_{k+1}(x),
+$$
+
+because the lower-order terms vanish. Since $f^{(k+1)}$ is continuous near $a$, it is
+bounded on a smaller neighbourhood, so the remainder estimate gives
+$R_{k+1}(x)=O(|x-a|^{k+1})$ and hence
+$R_{k+1}(x)=o(|x-a|^k)$. Therefore the first nonzero term determines
+the sign of $f(x)-f(a)$ sufficiently close to $a$.
+
+When $k$ is even, $(x-a)^k$ is positive on both sides of $a$, so the sign of
+$f^{(k)}(a)$ determines a minimum or maximum. When $k$ is odd, then $k\ge3$ and the
+same expansion applied to $f''$ gives
+
+$$
+f''(x)=\frac{f^{(k)}(a)}{(k-2)!}(x-a)^{k-2}+o\bigl(|x-a|^{k-2}\bigr).
+$$
+
+Since $k-2$ is odd, $f''$ changes sign across $a$; together with $f'(a)=0$, this gives
+a horizontal point of inflection.
+
+</Proof>
+
+<Example slug="fifth-order-stationary-point" of="stationary-point-test" difficulty="challenge">
+
+### A fifth-order stationary point
+
+Let
+
+$$
+f(x)=x^7-10x^6+40x^5-80x^4+80x^3-32x^2-10.
+$$
+
+At $x=2$,
+
+$$
+f'(2)=f''(2)=f^{(3)}(2)=f^{(4)}(2)=0,
+\qquad
+f^{(5)}(2)=480>0.
+$$
+
+The first nonzero derivative has odd order, so $x=2$ is a horizontal point of inflection.
+Since $f(2)=-10$, the point is $(2,-10)$.
+
+</Example>
+
+<Proposition slug="leading-taylor-coefficients-limit" of="taylors-theorem">
+
+### Comparing the first nonzero Taylor terms
+
+<Statement>
+
+Suppose $m\ge1$, $f$ and $g$ are $m$ times differentiable near $a$,
+$f^{(j)}(a)=g^{(j)}(a)=0$ for $0\le j<m$ and
+$f^{(m)}(a),g^{(m)}(a)\ne0$. Then
+
+$$
+\lim_{x\to a}\frac{f(x)}{g(x)}
+=\frac{f^{(m)}(a)}{g^{(m)}(a)}.
+$$
+
+</Statement>
+
+The leading expansions are
+
+$$
+f(x)=\frac{f^{(m)}(a)}{m!}(x-a)^m+o((x-a)^m),
+$$
+
+and
+
+$$
+g(x)=\frac{g^{(m)}(a)}{m!}(x-a)^m+o((x-a)^m).
+$$
+
+The common power $(x-a)^m$ cancels in the quotient. This explains why repeated L'Hôpital
+differentiation can work, but the hypotheses of that rule must still be checked.
+
+</Proposition>
+
+## From one polynomial to a sequence
+
+For a fixed $x$, the [Taylor polynomials](/calculus/taylor-series/taylor-polynomials) of degree $0,1,2,\ldots$ form a [sequence](/calculus/taylor-series/sequences-and-limits) of approximations. Two questions decide its limit: the [convergence tests](/calculus/taylor-series/convergence-tests) settle whether the series converges and the remainder decides whether the sum is $f(x)$. The [Taylor series](/calculus/taylor-series/taylor-series) page combines the two and [power series](/calculus/taylor-series/power-series) adds termwise calculus inside the radius.

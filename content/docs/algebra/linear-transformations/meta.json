@@ -1,0 +1,12 @@
+{
+  "title": "Linear transformations",
+  "pagesIndex": "index",
+  "pages": [
+    "linear-transformations",
+    "geometric-examples",
+    "kernel-image-rank",
+    "rank-nullity",
+    "matrix-representations",
+    "seen"
+  ]
+}

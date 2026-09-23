@@ -1,0 +1,12 @@
+{
+  "title": "Eigenvalues",
+  "pagesIndex": "index",
+  "pages": [
+    "eigenvalues-and-eigenvectors",
+    "diagonalisation",
+    "spectral-applications",
+    "linear-ode-systems",
+    "markov-systems",
+    "seen"
+  ]
+}

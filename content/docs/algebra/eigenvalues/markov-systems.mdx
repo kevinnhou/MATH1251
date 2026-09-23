@@ -1,0 +1,343 @@
+---
+title: Markov systems
+description: Transition matrices, stationary distributions and long-term behaviour.
+tags: [algebra]
+ideas: [markov-systems, transition-matrices, stationary-distributions]
+---
+
+This page applies the [matrix-power](/algebra/eigenvalues/spectral-applications) method to a discrete-time system whose state is a probability vector. A transition matrix moves probability between states, its powers give the distribution after any number of steps and its eigenvalue-$1$ mode describes a stationary distribution.
+
+As in diagonalisation, $P$ denotes a change-of-basis matrix. The bold
+$\mathbf p$ denotes a probability vector or stationary distribution, which is
+a different object even when a formula uses both.
+
+## Probability states and transitions
+
+<Recall of="diagonalisation" />
+
+<Recall of="eigenvalue" />
+
+<Recall of="matrix-power-via-diagonalisation" />
+
+<Definition slug="transition-matrix" of="matrix-of-linear-map">
+
+### Transition matrix
+
+<Statement>
+
+An $n\times n$ *transition matrix* for a Markov system has non-negative entries and each column sums to $1$:
+
+$$
+a_{ij}\geq0,
+\qquad
+\sum_{i=1}^n a_{ij}=1
+\quad (j=1,\ldots,n).
+$$
+
+</Statement>
+
+Column $j$ records the probabilities of moving from state $j$ to each possible next state. Some texts use the transposed convention, with these probabilities in rows.
+
+</Definition>
+
+<Definition slug="markov-system" of="transition-matrix">
+
+### Markov system
+
+<Statement>
+
+A *Markov system* is the discrete dynamical system
+
+$$
+\mathbf{x}(k+1)=A\mathbf{x}(k),
+\qquad
+k=0,1,2,\ldots,
+$$
+
+where $A$ is a transition matrix and $\mathbf{x}(k)$ is the state vector at time $k$.
+
+</Statement>
+
+If $\mathbf{x}(0)$ is a probability vector, then $\mathbf{x}(k)$ records the state probabilities after $k$ transitions.
+
+</Definition>
+
+<Proposition slug="probability-vector-preservation" of="transition-matrix,markov-system">
+
+### Probability vectors remain probability vectors
+
+<Statement>
+
+If $\mathbf{x}$ has non-negative entries summing to $1$ and $A$ is a transition matrix, then $A\mathbf{x}$ also has non-negative entries summing to $1$.
+
+</Statement>
+
+</Proposition>
+
+<Proof of="probability-vector-preservation">
+
+Non-negativity follows because each entry of $A\mathbf{x}$ is a sum of products of non-negative numbers. Let $\mathbf{1}$ be the all-ones vector. Since the columns of $A$ sum to $1$,
+
+$$
+\mathbf{1}^{\mathsf T}A=\mathbf{1}^{\mathsf T}.
+$$
+
+Therefore
+
+$$
+\mathbf{1}^{\mathsf T}A\mathbf{x}
+=\mathbf{1}^{\mathsf T}\mathbf{x}
+=1.
+$$
+
+</Proof>
+
+## Stationary distributions are eigenvalue-one modes
+
+<Definition slug="stationary-distribution" of="markov-system,eigenvalue">
+
+### Stationary distribution
+
+<Statement>
+
+A *stationary distribution* is a probability vector $\mathbf{p}$ satisfying
+
+$$
+A\mathbf{p}=\mathbf{p}.
+$$
+
+Thus a stationary distribution is an eigenvector for the eigenvalue $1$, scaled so that its entries sum to $1$.
+Equivalently, it is a non-negative eigenvector for eigenvalue $1$ normalized
+to have component sum $1$.
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="markov-unit-eigenvalue" of="transition-matrix,eigenvalue">
+
+### The eigenvalue one
+
+<Statement>
+
+Every transition matrix has $1$ as an eigenvalue.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="markov-unit-eigenvalue">
+
+The column-sum condition gives
+
+$$
+A^{\mathsf T}\mathbf{1}=\mathbf{1},
+$$
+
+so $1$ is an eigenvalue of $A^{\mathsf T}$. Since
+
+$$
+\det(A^{\mathsf T}-\lambda I)
+=\det\bigl((A-\lambda I)^{\mathsf T}\bigr)
+=\det(A-\lambda I),
+$$
+
+$A$ and $A^{\mathsf T}$ have the same eigenvalues. Hence $1$ is an eigenvalue of $A$. The all-ones vector is generally an eigenvector of $A^{\mathsf T}$, not of $A$.
+
+</Proof>
+
+The eigenvalue $1$ is necessary for a stationary distribution, but this
+computation alone does not produce a non-negative, normalised eigenvector or
+show that the system converges to a unique limit. Those conclusions need
+extra hypotheses and the theorem below gives one convenient set.
+
+## Evolving a Markov system
+
+<Method slug="markov-system-via-diagonalisation" of="markov-system,matrix-power-via-diagonalisation">
+
+### Evolve a Markov system by diagonalisation
+
+<Statement>
+
+For
+
+$$
+\mathbf{x}(k+1)=A\mathbf{x}(k),
+$$
+
+repeated substitution gives
+
+$$
+\mathbf{x}(k)=A^k\mathbf{x}(0).
+$$
+
+If $A=PDP^{-1}$, compute this as
+
+$$
+\mathbf{x}(k)=PD^kP^{-1}\mathbf{x}(0).
+$$
+
+</Statement>
+
+In an eigenbasis, the eigenvalue-$1$ component is unchanged, while every mode
+with modulus less than $1$ decays, as in
+[stability of systems](/algebra/complex-numbers/stability-of-systems). This is
+the calculation from [matrix powers](/algebra/eigenvalues/spectral-applications)
+with the state vector read as probabilities.
+
+</Method>
+
+## Long-term Markov behaviour
+
+<Theorem slug="markov-long-term-limit" of="markov-system,markov-system-via-diagonalisation,stationary-distribution">
+
+### A sufficient condition for long-term Markov behaviour
+
+<Statement>
+
+Suppose that a transition matrix $A$ satisfies:
+
+1. $1$ is an eigenvalue with algebraic multiplicity $1$;
+2. every other eigenvalue $\lambda_j$ has $|\lambda_j|<1$;
+3. there is a basis of eigenvectors for $\mathbb R^n$.
+
+Then $\mathbf{x}(k+1)=A\mathbf{x}(k)$ has a limit $\mathbf{p}$ in the
+eigenspace for $\lambda=1$. It is the unique vector in that eigenspace
+whose component sum equals the component sum of $\mathbf{x}(0)$; it may
+be zero when that sum is zero. If $\mathbf{x}(0)$ is a probability vector,
+then $\mathbf{p}$ is the stationary distribution and does not depend on
+the initial probabilities.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="markov-long-term-limit">
+
+Let $v_1,\ldots,v_n$ be an eigenbasis with $Av_1=v_1$ and
+$Av_j=\lambda_jv_j$ for $j\ge2$. Expand the initial state as
+
+$$
+\mathbf{x}(0)=\alpha_1v_1+\cdots+\alpha_nv_n.
+$$
+
+Repeated application of $A$ gives
+
+$$
+\mathbf{x}(k)=A^k\mathbf{x}(0)
+=\alpha_1v_1+\sum_{j=2}^n\alpha_j\lambda_j^kv_j.
+$$
+
+Since $|\lambda_j|<1$ for $j\ge2$, the sum tends to zero. Thus
+$\mathbf{x}(k)\to\alpha_1v_1$. For $j\ge2$, the column-sum identity
+$\mathbf1^{\mathsf T}A=\mathbf1^{\mathsf T}$ gives
+$\mathbf1^{\mathsf T}v_j=\lambda_j\mathbf1^{\mathsf T}v_j$, hence
+$\mathbf1^{\mathsf T}v_j=0$. Since the eigenvectors form a basis, $v_1$
+must have non-zero component sum. The preserved initial sum therefore
+determines $\alpha_1v_1$ uniquely. If the initial state is a probability
+vector, every $\mathbf{x}(k)$ is one too, so its limit is non-negative and
+sums to $1$.
+
+</Proof>
+
+These hypotheses are sufficient rather than necessary. The real eigenbasis
+keeps the proof in diagonal form. Convergence can also be analysed with
+complex eigenvectors or Jordan blocks, provided the other modes still have
+modulus less than $1$.
+
+<Example slug="stock-market-markov-system" of="transition-matrix,markov-system,probability-vector-preservation" difficulty="exam">
+
+### A three-state stock market
+
+Order the states as bull, bear and stagnant. The transition matrix is
+
+$$
+A=
+\begin{pmatrix}
+0.65&0.60&0.35\\
+0.10&0.05&0.40\\
+0.25&0.35&0.25
+\end{pmatrix}.
+$$
+
+For example, the first column says that a bull market is followed by a bull market with probability $0.65$, a bear market with probability $0.10$ and a stagnant market with probability $0.25$. Each column sums to $1$ and every entry is non-negative, so this is a transition matrix.
+
+If the market starts in the bear state, then
+
+$$
+\mathbf{x}(0)=
+\begin{pmatrix}
+0\\1\\0
+\end{pmatrix},
+\qquad
+\mathbf{x}(k+1)=A\mathbf{x}(k).
+$$
+
+</Example>
+
+<Example slug="stock-market-long-term-behaviour" of="markov-system-via-diagonalisation,markov-long-term-limit,stationary-distribution" difficulty="exam">
+
+### The stock market in the long run
+
+For this transition matrix, the eigenvalues and corresponding eigenvectors are
+
+$$
+\lambda_1=1,\quad
+v_1=
+\begin{pmatrix}229\\70\\109\end{pmatrix};
+\qquad
+\lambda_2=-0.2,\quad
+v_2=
+\begin{pmatrix}1\\-2\\1\end{pmatrix};
+\qquad
+\lambda_3=0.15,\quad
+v_3=
+\begin{pmatrix}-5\\3\\2\end{pmatrix}.
+$$
+
+These eigenvectors form a basis, $1$ has multiplicity $1$ and
+
+$$
+|-0.2|<1,
+\qquad
+|0.15|<1.
+$$
+
+For the initial bear state,
+
+$$
+\mathbf{x}(k)
+=P
+\begin{pmatrix}
+1&0&0\\
+0&(-0.2)^k&0\\
+0&0&(0.15)^k
+\end{pmatrix}
+P^{-1}
+\begin{pmatrix}0\\1\\0\end{pmatrix},
+\qquad
+P=\begin{pmatrix}v_1&v_2&v_3\end{pmatrix}.
+$$
+
+The last two modes vanish as $k\to\infty$, leaving a multiple of $v_1$. Its entries sum to $229+70+109=408$, so the limiting probability vector is
+
+$$
+\mathbf{p}
+=\frac1{408}
+\begin{pmatrix}229\\70\\109\end{pmatrix}
+\approx
+\begin{pmatrix}
+0.5613\\
+0.1716\\
+0.2672
+\end{pmatrix}.
+$$
+
+The entries are non-negative and sum to $1$ and $A\mathbf{p}=\mathbf{p}$ because $Av_1=v_1$. Thus $\mathbf{p}$ is the stationary distribution: the long-run probabilities of bull, bear and stagnant states.
+
+The other two eigenmodes are temporary departures from this distribution.
+Both shrink and the negative eigenvalue makes its departure alternate in
+sign. The initial bear state therefore affects the short run but is forgotten
+in the long run.
+
+</Example>

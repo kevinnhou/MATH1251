@@ -1,0 +1,416 @@
+---
+title: Linear ODE systems
+description: First-order matrix ODEs solved by exponential eigenmodes.
+tags: [algebra]
+ideas: [linear-ode-systems, exponential-modes, dynamical-systems]
+---
+
+This page solves coupled first-order equations $\mathbf{x}'=A\mathbf{x}$ by
+the continuous analogue of [matrix powers](/algebra/eigenvalues/spectral-applications).
+An eigenvector gives a direction whose time dependence is a single
+exponential and its eigenvalue is the rate, read for growth or decay by
+[stability of systems](/algebra/complex-numbers/stability-of-systems).
+
+The page links the two strands. The Calculus ODE pages develop scalar
+methods, but the exponential modes needed here are derived below, so the page
+can be read first and compared with the scalar methods later.
+
+## First-order systems
+
+With a single equation, the system is a [first-order linear equation](/calculus/ordinary-differential-equations/first-order-equations), which that page solves with an integrating factor.
+
+<Recall of="first-order-linear-equation" />
+
+<Definition slug="first-order-linear-system" of="matrix-of-linear-map">
+
+### First-order linear system
+
+<Statement>
+
+A *first-order linear system* with constant coefficient matrix $A$ has the form
+
+$$
+\mathbf{x}'(t)=A\mathbf{x}(t),
+$$
+
+where $\mathbf{x}(t)=(x_1(t),\ldots,x_n(t))^{\mathsf T}$ and $A$ is an $n\times n$ matrix.
+Specifying $\mathbf{x}(0)=\mathbf{x}_0$ makes this an initial-value
+problem.
+
+</Statement>
+
+Writing the equations as one matrix equation records all couplings in $A$. For example,
+
+$$
+\begin{aligned}
+x_1'&=x_1+3x_2,\\
+x_2'&=3x_1+x_2
+\end{aligned}
+\qquad\Longleftrightarrow\qquad
+\mathbf{x}'=
+\begin{pmatrix}
+1&3\\
+3&1
+\end{pmatrix}\mathbf{x}.
+$$
+
+</Definition>
+
+## Eigenvectors as exponential modes
+
+An eigenvector is a direction that $A$ does not mix with other directions,
+and its eigenvalue is the rate attached to that direction. An [eigenbasis](/algebra/eigenvalues/diagonalisation) writes every initial vector as a combination of such modes.
+
+<Recall of="diagonalisation" />
+
+<Recall of="eigenvalue" />
+
+<Theorem slug="exponential-mode-of-system" of="first-order-linear-system,eigenvalue,eigenvector">
+
+### Exponential modes
+
+<Statement>
+
+For a constant matrix $A$ and a non-zero vector $\mathbf u$, the function
+
+$$
+\mathbf{x}(t)=\mathbf{u}e^{\lambda t}
+$$
+
+is a solution of $\mathbf{x}'=A\mathbf{x}$ if and only if $\lambda$ is an
+eigenvalue of $A$ and $\mathbf{u}$ is a corresponding eigenvector. The zero
+solution is handled separately by taking $\mathbf u=\mathbf0$.
+
+</Statement>
+
+When $A$ is real, the calculation may take place in $\mathbb C^n$ to use
+complex eigenvalues and eigenvectors. Combining a complex solution with its
+conjugate then gives real solutions, as in the oscillatory example below.
+
+</Theorem>
+
+<Proof of="exponential-mode-of-system">
+
+Differentiating the proposed function gives
+
+$$
+\mathbf{x}'(t)=\lambda\mathbf{u}e^{\lambda t}.
+$$
+
+The equation $\mathbf{x}'=A\mathbf{x}$ therefore becomes
+
+$$
+\lambda\mathbf{u}e^{\lambda t}
+=A\mathbf{u}e^{\lambda t}.
+$$
+
+Since $e^{\lambda t}\neq0$, this is equivalent to $A\mathbf{u}=\lambda\mathbf{u}$. The reverse implication is the same calculation read backwards.
+
+</Proof>
+
+## Superposing independent modes
+
+<Proposition slug="linear-combination-of-system-solutions" of="first-order-linear-system">
+
+### Linear combinations of solutions
+
+<Statement>
+
+If $\mathbf{x}_1(t)$ and $\mathbf{x}_2(t)$ solve $\mathbf{x}'=A\mathbf{x}$, then every linear combination
+
+$$
+\alpha\mathbf{x}_1(t)+\beta\mathbf{x}_2(t)
+$$
+
+also solves the system.
+
+</Statement>
+
+Differentiation and multiplication by $A$ are both linear:
+
+$$
+\frac{d}{dt}(\alpha\mathbf{x}_1+\beta\mathbf{x}_2)
+=\alpha A\mathbf{x}_1+\beta A\mathbf{x}_2
+=A(\alpha\mathbf{x}_1+\beta\mathbf{x}_2).
+$$
+
+</Proposition>
+
+<Method slug="system-solution-via-eigenvectors" of="first-order-linear-system,exponential-mode-of-system,diagonalisation">
+
+### Solve a system by eigenmodes
+
+<Statement>
+
+When $A$ has an eigenbasis $v_1,\ldots,v_n$ with eigenvalues $\lambda_1,\ldots,\lambda_n$:
+
+1. find the eigenvalues and corresponding eigenvectors;
+2. write the initial vector as $\mathbf{x}_0=c_1v_1+\cdots+c_nv_n$;
+3. replace each eigenmode $v_j$ by $e^{\lambda_jt}v_j$;
+4. combine the modes:
+   $$
+   \mathbf{x}(t)
+   =c_1e^{\lambda_1t}v_1+\cdots+c_ne^{\lambda_nt}v_n.
+   $$
+
+</Statement>
+
+This is the [matrix-power](/algebra/eigenvalues/spectral-applications) calculation with the discrete factor $\lambda_j^n$ replaced by the continuous factor $e^{\lambda_jt}$. A matrix without an eigenbasis instead produces terms such as $te^{\lambda t}$, as in the repeated-root case for scalar equations.
+
+</Method>
+
+<Example slug="decaying-two-by-two-system" of="system-solution-via-eigenvectors" difficulty="routine">
+
+### A system with a limiting state
+
+Consider
+
+$$
+\mathbf{x}'=
+\begin{pmatrix}
+-3&3\\
+3&-3
+\end{pmatrix}\mathbf{x},
+\qquad
+\mathbf{x}(0)=
+\begin{pmatrix}4\\0\end{pmatrix}.
+$$
+
+The eigenvalues are $0$ and $-6$, with eigenvectors
+
+$$
+v_1=\begin{pmatrix}1\\1\end{pmatrix},
+\qquad
+v_2=\begin{pmatrix}1\\-1\end{pmatrix}.
+$$
+
+Since
+
+$$
+\begin{pmatrix}4\\0\end{pmatrix}
+=2\begin{pmatrix}1\\1\end{pmatrix}
+ +2\begin{pmatrix}1\\-1\end{pmatrix},
+$$
+
+the solution is
+
+$$
+\mathbf{x}(t)
+=2\begin{pmatrix}1\\1\end{pmatrix}
+ +2e^{-6t}\begin{pmatrix}1\\-1\end{pmatrix}
+=
+\begin{pmatrix}
+2+2e^{-6t}\\
+2-2e^{-6t}
+\end{pmatrix}.
+$$
+
+The $e^{-6t}$ mode decays to zero, so $\mathbf{x}(t)$ tends to the
+equilibrium $(2,2)^{\mathsf T}$. The solution does not tend to zero, because
+the $\lambda=0$ mode stays constant.
+
+</Example>
+
+<Example slug="oscillating-two-by-two-system" of="system-solution-via-eigenvectors" difficulty="exam">
+
+### Complex eigenvalues and a real solution
+
+For
+
+$$
+\mathbf{x}'=
+\begin{pmatrix}
+1&-2\\
+2&1
+\end{pmatrix}\mathbf{x},
+\qquad
+\mathbf{x}(0)=
+\begin{pmatrix}1\\0\end{pmatrix},
+$$
+
+the eigenvalues are $1+2i$ and $1-2i$. Corresponding eigenvectors may be chosen as
+
+$$
+v_+=\begin{pmatrix}i\\1\end{pmatrix},
+\qquad
+v_-=\begin{pmatrix}-i\\1\end{pmatrix}.
+$$
+
+At $t=0$, the coefficients must satisfy
+
+$$
+c_+\begin{pmatrix}i\\1\end{pmatrix}
++c_-\begin{pmatrix}-i\\1\end{pmatrix}
+=\begin{pmatrix}1\\0\end{pmatrix}.
+$$
+
+Solving these two scalar equations gives $c_+=-i/2$ and $c_-=i/2$.
+Therefore
+
+$$
+\mathbf{x}(t)
+=
+-\frac{i}{2}e^{(1+2i)t}\begin{pmatrix}i\\1\end{pmatrix}
+ +\frac{i}{2}e^{(1-2i)t}\begin{pmatrix}-i\\1\end{pmatrix}.
+$$
+
+Using Euler's formula $e^{i\theta}=\cos\theta+i\sin\theta$ with
+$\theta=2t$ and simplifying yields the real solution
+
+$$
+\mathbf{x}(t)
+=e^t
+\begin{pmatrix}
+\cos(2t)\\
+\sin(2t)
+\end{pmatrix}.
+$$
+
+Direct differentiation checks that $\mathbf{x}'=A\mathbf{x}$ and $\mathbf{x}(0)=(1,0)^{\mathsf T}$.
+
+The factor $e^t$ makes the amplitude grow, while the sine and cosine rotate
+the state with angular frequency $2$. The trajectory therefore spirals
+outward from the origin: the imaginary parts of the eigenvalues produce the
+oscillation and their positive real part produces the instability.
+
+</Example>
+
+## Higher-order equations as systems
+
+[Constant-coefficient scalar equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) are solved with a characteristic equation and its
+roots. Each such equation can also be rewritten as a first-order system.
+
+<Recall of="constant-coefficient-ode" />
+
+<Recall of="characteristic-equation" />
+
+<Recall of="characteristic-root-method" />
+
+<Example slug="higher-order-ode-as-system" of="first-order-linear-system" difficulty="routine">
+
+### Converting a higher-order equation
+
+The third-order equation
+
+$$
+y'''+ay''+by'+cy=0
+$$
+
+becomes a first-order system after setting
+
+$$
+x_1=y,\qquad x_2=y',\qquad x_3=y''.
+$$
+
+Then
+
+$$
+\frac{d}{dt}
+\begin{pmatrix}
+x_1\\x_2\\x_3
+\end{pmatrix}
+=
+\begin{pmatrix}
+0&1&0\\
+0&0&1\\
+-c&-b&-a
+\end{pmatrix}
+\begin{pmatrix}
+x_1\\x_2\\x_3
+\end{pmatrix}.
+$$
+
+The first two rows record $x_1'=x_2$ and $x_2'=x_3$, while the third row is the original equation solved for $y'''$.
+
+</Example>
+
+## A coupled economic model
+
+<Example slug="reserve-bank-linear-system" of="first-order-linear-system,system-solution-via-eigenvectors" difficulty="exam">
+
+### A two-variable economic model
+
+Let $y_1$ be the inflation level and $y_2$ the interest-rate level. Consider
+the model
+
+$$
+\frac{dy_1}{dt}=\frac12y_1-\frac15y_2,
+\qquad
+\frac{dy_2}{dt}=\frac35y_1-\frac25y_2,
+$$
+
+with
+
+$$
+\mathbf{y}(0)=
+\begin{pmatrix}4/100\\6/100\end{pmatrix},
+\qquad
+A=
+\begin{pmatrix}
+1/2&-1/5\\
+3/5&-2/5
+\end{pmatrix}.
+$$
+
+The characteristic polynomial is
+
+$$
+\det(A-\lambda I)
+=\lambda^2-\frac1{10}\lambda-\frac2{25},
+$$
+
+so
+
+$$
+\lambda_1=\frac{1+\sqrt{33}}{20},
+\qquad
+\lambda_2=\frac{1-\sqrt{33}}{20}.
+$$
+
+Eigenvectors with second component $1$ are
+
+$$
+v_1=
+\begin{pmatrix}
+(9+\sqrt{33})/12\\1
+\end{pmatrix},
+\qquad
+v_2=
+\begin{pmatrix}
+(9-\sqrt{33})/12\\1
+\end{pmatrix}.
+$$
+
+Writing the initial vector as $\mathbf{y}(0)=c_1v_1+c_2v_2$ gives
+
+$$
+c_1=\frac{33-\sqrt{33}}{1100},
+\qquad
+c_2=\frac{33+\sqrt{33}}{1100}.
+$$
+
+Hence
+
+$$
+\mathbf{y}(t)
+=\frac{33-\sqrt{33}}{1100}
+e^{(1+\sqrt{33})t/20}v_1
+ +\frac{33+\sqrt{33}}{1100}
+e^{(1-\sqrt{33})t/20}v_2.
+$$
+
+The first exponent is positive and the second is negative, so one eigenmode grows and the other decays.
+
+The growing mode is the model's unstable direction: any non-zero component
+of the initial state along $v_1$ eventually dominates. The decaying mode
+along $v_2$ is a short-run adjustment.
+
+</Example>
+
+<Recall of="continuous-root-stability" />
+
+For a mode $e^{\lambda t}$, $\operatorname{Re}(\lambda)$ controls growth or
+decay, as in the [continuous stability criterion](/algebra/complex-numbers/stability-of-systems)
+for scalar characteristic roots. The time factor is the same exponential that
+appears in [second-order constant-coefficient
+equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations).

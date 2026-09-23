@@ -34,12 +34,16 @@ export type ResolvedDocs<P extends CorpusPage = CorpusPage> =
 	| { kind: "notes"; source: P }
 	| { kind: "kind-view"; source: P; view: KindView };
 
-export interface SiteCorpus<P extends CorpusPage = CorpusPage> {
-	byUrl: Map<string, ResolvedDocs<P>>;
+export interface PageIndex<P extends CorpusPage = CorpusPage> {
+	byUrl: ReadonlyMap<string, ResolvedDocs<P>>;
+	kindViews: readonly KindView[];
+	pages: readonly P[];
+}
+
+export interface SiteCorpus<P extends CorpusPage = CorpusPage>
+	extends PageIndex<P> {
 	catalog: PageCatalog;
 	graph: GraphDocument;
-	kindViews: KindView[];
-	pages: P[];
 	tenets: TenetIndex;
 }
 
@@ -47,14 +51,45 @@ export function urlFromSlugs(slugs: readonly string[]): string {
 	return slugs.length === 0 ? "/" : `/${slugs.join("/")}`;
 }
 
+export function resolveFromPageIndex<P extends CorpusPage>(
+	slugs: readonly string[],
+	pageIndex: Pick<PageIndex<P>, "byUrl">
+): ResolvedDocs<P> | undefined {
+	return pageIndex.byUrl.get(urlFromSlugs(slugs));
+}
+
+export function buildPageIndex<P extends CorpusPage>(options: {
+	pageExists: (slugs: string[]) => boolean;
+	pages: readonly P[];
+}): PageIndex<P> {
+	const pages = [...options.pages];
+	const kindViews = kindViewsFromPages(
+		pages.map(({ envs, page }) => ({
+			envs,
+			page: {
+				locale: page.locale,
+				slugs: page.slugs,
+				title: page.data.title,
+				url: page.url,
+			},
+		})),
+		options.pageExists
+	);
+
+	return {
+		byUrl: indexByUrl(pages, kindViews),
+		kindViews,
+		pages,
+	};
+}
+
 export function buildSiteCorpus<P extends CorpusPage>(options: {
 	kindViewMarkdownUrl: (view: KindView) => string;
 	markdownUrl: (page: P["page"]) => string;
-	pageExists: (slugs: string[]) => boolean;
-	pages: readonly P[];
+	pageIndex: PageIndex<P>;
 	resolvePageHref: (href: string, dir: string) => string | undefined;
 }): SiteCorpus<P> {
-	const { pages } = options;
+	const { kindViews, pages } = options.pageIndex;
 	const displays = new Map(
 		pages.map(({ page }) => [
 			page.url,
@@ -75,18 +110,6 @@ export function buildSiteCorpus<P extends CorpusPage>(options: {
 	);
 	assertTenetIndex(tenets);
 
-	const kindViews = kindViewsFromPages(
-		pages.map(({ envs, page }) => ({
-			envs,
-			page: {
-				locale: page.locale,
-				slugs: page.slugs,
-				title: page.data.title,
-				url: page.url,
-			},
-		})),
-		options.pageExists
-	);
 	const catalog = catalogFromPages(
 		pages.map(({ module, page }) => {
 			const display = displays.get(page.url);
@@ -129,11 +152,9 @@ export function buildSiteCorpus<P extends CorpusPage>(options: {
 	);
 
 	return {
-		byUrl: indexByUrl(pages, kindViews),
+		...options.pageIndex,
 		catalog,
 		graph,
-		kindViews,
-		pages: [...pages],
 		tenets,
 	};
 }

@@ -1,0 +1,512 @@
+---
+title: Seen Questions
+description: Worked solutions on composite functions, partial differential equations, critical points and classification of extrema.
+tags: [seen, calculus, functions-of-several-variables]
+ideas: [revision, partial-derivatives, critical-points, extrema, level-sets]
+---
+
+These past exam questions practise partial derivatives of composite functions
+and the location and classification of critical points, including a case
+where the Hessian test is inconclusive.
+
+<Recall of="multivariable-partial-derivative" />
+
+<Example
+  slug="seen-odd-composite-function-pde"
+  of="multivariable-partial-derivative"
+  difficulty="exam"
+>
+
+### A composite function and a partial differential equation
+
+Let $f:\mathbb R\to\mathbb R$ be an odd differentiable function. Define
+
+$$
+F:\mathbb R^2\to\mathbb R,
+\qquad
+F(x,y)=f(x^2+xy+2y^2).
+$$
+
+(a) Differentiating $F$ with respect to $y$ gives
+
+$$
+\frac{\partial F}{\partial y}
+=g(x,y)f'(x^2+xy+2y^2).
+$$
+
+Find $g(x,y)$.
+
+(b) $F$ satisfies
+
+$$
+g(x,y)\frac{\partial F}{\partial x}
+-h(x,y)\frac{\partial F}{\partial y}=0.
+$$
+
+Find a polynomial $h(x,y)$ that makes this identity hold for every such $f$.
+
+(c) Given that $F(x,x)=-6x^2$ for all $x\in\mathbb R$, find the rule for $f$ and then the rule for $F$.
+
+#### Solution
+
+Set
+
+$$
+q(x,y)=x^2+xy+2y^2,
+\qquad
+F(x,y)=f(q(x,y)).
+$$
+
+The function $q$ is a polynomial, so it is differentiable everywhere. Since $f$ is differentiable everywhere, the multivariable chain rule applies throughout $\mathbb R^2$:
+
+$$
+\frac{\partial F}{\partial x}=f'(q)\frac{\partial q}{\partial x},
+\qquad
+\frac{\partial F}{\partial y}=f'(q)\frac{\partial q}{\partial y}.
+$$
+
+#### (a) Finding $g$
+
+Differentiate the inner function with respect to $y$, holding $x$ fixed:
+
+$$
+\frac{\partial q}{\partial y}=x+4y.
+$$
+
+Therefore
+
+$$
+\frac{\partial F}{\partial y}
+=(x+4y)f'(q(x,y))
+=(x+4y)f'(x^2+xy+2y^2),
+$$
+
+so
+
+$$
+{g(x,y)=x+4y}.
+$$
+
+#### (b) Finding $h$
+
+The other partial derivative is
+
+$$
+\frac{\partial q}{\partial x}=2x+y,
+\qquad
+\frac{\partial F}{\partial x}
+=(2x+y)f'(q(x,y)).
+$$
+
+Substituting both derivatives into the proposed equation gives
+
+$$
+\begin{aligned}
+g(x,y)\frac{\partial F}{\partial x}
+-h(x,y)\frac{\partial F}{\partial y}
+&=(x+4y)(2x+y)f'(q)\\
+&\quad{}-h(x,y)(x+4y)f'(q).
+\end{aligned}
+$$
+
+Choosing
+
+$$
+{h(x,y)=2x+y}
+$$
+
+makes the two terms identical, so their difference is zero:
+
+$$
+(x+4y)(2x+y)f'(q)-(2x+y)(x+4y)f'(q)=0.
+$$
+
+For a particular $f$, the equation need not determine $h$: if $f$ is constant,
+both partial derivatives of $F$ vanish and any $h$ works. The displayed
+polynomial works for every differentiable $f$.
+
+#### (c) Recovering $f$ and $F$
+
+Putting $y=x$ in the definition of $F$ gives
+
+$$
+x^2+xy+2y^2\big|_{y=x}
+=x^2+x^2+2x^2
+=4x^2.
+$$
+
+The supplied condition therefore becomes
+
+$$
+f(4x^2)=-6x^2
+\qquad\text{for every }x\in\mathbb R.
+$$
+
+The quantity $4x^2$ ranges over $[0,\infty)$. If $t\ge0$, choose
+$x=\frac{\sqrt t}{2}$ to obtain
+
+$$
+f(t)=-6\left(\frac{\sqrt t}{2}\right)^2
+= -\frac32t.
+$$
+
+The hypothesis that $f$ is odd extends this rule to negative inputs. If
+$t<0$, then $-t>0$, so
+
+$$
+f(t)=-f(-t)
+=-\left(-\frac32(-t)\right)
+=-\frac32t.
+$$
+
+The same formula also gives $f(0)=0$, so altogether
+
+$$
+{f(t)=-\frac32t\qquad(t\in\mathbb R)}.
+$$
+
+Substitution into $F(x,y)=f(q(x,y))$ gives
+
+$$
+{
+F(x,y)
+=-\frac32(x^2+xy+2y^2)
+}.
+$$
+
+As a check,
+
+$$
+F(x,x)=-\frac32(4x^2)=-6x^2,
+$$
+
+and the partial derivatives of this final expression satisfy the equation by the cancellation in part (b).
+
+The diagonal condition samples $f$ only at non-negative arguments, since
+$x^2+xy+2y^2=(x+y/2)^2+7y^2/4\ge0$. Oddness supplies the missing negative half-line.
+
+The key course idea is the [partial derivative](/calculus/functions-of-several-variables/geometry-and-approximation) of a composite function: differentiate the outer function and multiply by the partial derivative of the inner function.
+
+</Example>
+
+<Recall of="multivariable-critical-point" />
+
+<Example
+  slug="seen-critical-points-parameter"
+  of="find-stationary-points,classify-stationary-points,local-and-absolute-extrema"
+  difficulty="exam"
+>
+
+### Critical points depending on a parameter
+
+Consider
+
+$$
+f(x,y)=x^4+y^4-a(x-y)^2,
+\qquad a\ne0.
+$$
+
+#### (a)
+
+Find $a$ such that $f$ has at least two critical points. Give the answer as a set or an interval.
+
+#### (b)
+
+For the case where $f$ has multiple critical points, classify the saddle points, local minimum points and local maximum points and give their coordinates.
+
+#### Solution
+
+Because $f$ is a polynomial, its gradient exists everywhere, so the critical
+points are exactly the solutions of $f_x=f_y=0$. These equations also give the
+condition on $a$. The Hessian then classifies the non-zero candidates; at the
+origin the Hessian test is inconclusive, so we compare values along two lines.
+
+The first partial derivatives are
+
+$$
+f_x=4x^3-2a(x-y),
+\qquad
+f_y=4y^3+2a(x-y).
+$$
+
+At a stationary point,
+
+$$
+4x^3-2a(x-y)=0,
+\qquad
+4y^3+2a(x-y)=0.
+$$
+
+Adding these equations eliminates the parameter term:
+
+$$
+4x^3+4y^3=0
+\quad\Longrightarrow\quad
+x^3+y^3=0.
+$$
+
+Over the reals,
+
+$$
+x^3+y^3=(x+y)(x^2-xy+y^2),
+$$
+
+and
+
+$$
+x^2-xy+y^2
+=\frac12\bigl((x-y)^2+x^2+y^2\bigr)
+\ge0,
+$$
+
+with equality only at $(x,y)=(0,0)$. Hence every real stationary point
+satisfies $y=-x$. Substituting this into the first stationary equation gives
+
+$$
+4x^3-2a(2x)=0
+\quad\Longrightarrow\quad
+4x(x^2-a)=0.
+$$
+
+Thus $(0,0)$ is always a critical point. The other possibilities satisfy
+
+$$
+x^2=a.
+$$
+
+Since $x^2\ge0$ and $a\ne0$, these additional real points exist exactly when
+$a>0$. Therefore the answer to part (a) is
+
+$$
+{a\in(0,\infty)}.
+$$
+
+For every such $a$, put $s=\sqrt a$. The complete list of critical points is
+
+$$
+(0,0),\qquad (s,-s),\qquad (-s,s).
+$$
+
+To classify the two non-zero points, compute the second partial derivatives:
+
+$$
+f_{xx}=12x^2-2a,
+\qquad
+f_{yy}=12y^2-2a,
+\qquad
+f_{xy}=f_{yx}=2a.
+$$
+
+At either point with $x^2=y^2=a$, the Hessian is
+
+$$
+H_f=
+\begin{pmatrix}
+10a&2a\\
+2a&10a
+\end{pmatrix},
+\qquad
+D=\det(H_f)=100a^2-4a^2=96a^2>0.
+$$
+
+Also, $f_{xx}=10a>0$. The second-order partial derivative test therefore
+classifies both points as local minima:
+
+$$
+{(x,y)=(\sqrt a,-\sqrt a),\ (-\sqrt a,\sqrt a)
+\text{ are local minimum points}.}
+$$
+
+At the origin,
+
+$$
+H_f(0,0)=
+\begin{pmatrix}
+-2a&2a\\
+2a&-2a
+\end{pmatrix},
+\qquad
+\det H_f(0,0)=0,
+$$
+
+so the Hessian test does not decide the classification. Compare the function
+along two lines through the origin. On $y=x$,
+
+$$
+f(t,t)=t^4+t^4=2t^4>0
+\qquad(t\ne0),
+$$
+
+whereas on $y=-x$,
+
+$$
+f(t,-t)=2t^4-4at^2
+=2t^2(t^2-2a)<0
+$$
+
+whenever $0<|t|<\sqrt{2a}$. Since $f(0,0)=0$, every neighbourhood of the
+origin contains points where $f$ is larger and points where $f$ is smaller
+than its value at the origin. Thus the origin is a saddle point.
+
+There are no other critical points, so the requested classification for
+$a>0$ is
+
+$$
+{\text{one saddle point at }(0,0),}
+$$
+
+$$
+{\text{two local minimum points at }
+(\sqrt a,-\sqrt a),\ (-\sqrt a,\sqrt a),}
+$$
+
+and
+
+$$
+{\text{no local maximum points}.}
+$$
+
+This follows the [local
+extrema](/calculus/functions-of-several-variables/local-extrema) workflow: the
+stationary equations supply every candidate and the Hessian test classifies
+the two non-zero points. Where the determinant is zero, a direct comparison
+along lines exhibits the opposite signs that define a saddle. The parameter
+$a$ decides whether the two minima exist.
+
+</Example>
+
+<Recall of="multivariable-critical-point" />
+
+<Example
+  slug="seen-quadratic-critical-point-classification"
+  of="find-stationary-points,classify-stationary-points"
+  difficulty="routine"
+>
+
+### Finding and classifying a critical point
+
+Let $f$ be the function
+
+$$
+f(x,y)=-4x^2+3y^2+x+3y-30.
+$$
+
+#### (a) Finding the single critical point
+
+Find the single critical point of $f$.
+
+Because $f$ is a polynomial, its first partial derivatives exist everywhere in $\mathbb{R}^2$. Compute them by treating the other variable as constant:
+
+$$
+f_x(x,y)=-8x+1,
+\qquad
+f_y(x,y)=6y+3.
+$$
+
+A stationary point and hence a critical point, must satisfy
+
+$$
+f_x(x,y)=0,
+\qquad
+f_y(x,y)=0.
+$$
+
+Solving the two equations separately gives
+
+$$
+-8x+1=0
+\quad\Longrightarrow\quad
+x=\frac18,
+$$
+
+and
+
+$$
+6y+3=0
+\quad\Longrightarrow\quad
+y=-\frac12.
+$$
+
+Therefore the single critical point is
+
+$$
+{(x,y)=\left(\frac18,-\frac12\right)}.
+$$
+
+#### (b) Classifying the critical point
+
+The possible choices are:
+
+- local minimum;
+- local maximum;
+- inconclusive;
+- saddle point.
+
+To classify the point, use the second-order partial derivative test. The Hessian matrix is constant:
+
+$$
+H_f(x,y)
+=
+\begin{pmatrix}
+f_{xx}&f_{xy}\\
+f_{yx}&f_{yy}
+\end{pmatrix}
+=
+\begin{pmatrix}
+-8&0\\
+0&6
+\end{pmatrix}.
+$$
+
+Its determinant is
+
+$$
+D=\det H_f
+=(-8)(6)-0^2
+=-48<0.
+$$
+
+Since $D<0$, the Hessian is indefinite and the second-order test classifies the critical point as a saddle point. Thus the correct option is **saddle point**.
+
+The classification can be checked directly by completing the square:
+
+$$
+\begin{aligned}
+f(x,y)
+&=-4\left(x-\frac18\right)^2
++3\left(y+\frac12\right)^2
+-\frac{491}{16}.
+\end{aligned}
+$$
+
+At the critical point,
+
+$$
+f\left(\frac18,-\frac12\right)=-\frac{491}{16}.
+$$
+
+If we move in the $x$-direction by setting
+$x=\frac18+t$ and $y=-\frac12$, then
+
+$$
+f\left(\frac18+t,-\frac12\right)
+=-\frac{491}{16}-4t^2
+<-\frac{491}{16}
+\qquad(t\ne0).
+$$
+
+If instead we move in the $y$-direction by setting
+$x=\frac18$ and $y=-\frac12+t$, then
+
+$$
+f\left(\frac18,-\frac12+t\right)
+=-\frac{491}{16}+3t^2
+>-\frac{491}{16}
+\qquad(t\ne0).
+$$
+
+Arbitrarily close to the critical point there are therefore both larger and smaller function values, which is the defining behaviour of a saddle point.
+
+The [local extrema](/calculus/functions-of-several-variables/local-extrema) method locates the candidate with the stationary-point equations and classifies it with the Hessian determinant. The completed-square form shows the same thing directly: the surface curves down in one coordinate direction and up in the other.
+
+</Example>

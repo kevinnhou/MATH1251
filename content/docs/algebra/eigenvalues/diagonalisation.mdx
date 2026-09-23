@@ -1,0 +1,391 @@
+---
+title: Diagonalisation
+description: Eigenbases, diagonal matrices and the criterion for diagonalising a matrix.
+tags: [algebra]
+ideas: [eigenbasis, diagonalisation, multiplicity]
+---
+
+This page asks when a matrix has enough independent eigenvectors to form an eigenbasis. In that basis the [matrix representation](/algebra/linear-transformations/matrix-representations) is diagonal, so repeated multiplication or coupled evolution splits into scalar modes, as in [matrix powers](/algebra/eigenvalues/spectral-applications), [linear ODE systems](/algebra/eigenvalues/linear-ode-systems) and [Markov systems](/algebra/eigenvalues/markov-systems).
+
+Diagonalisation always takes place over a chosen scalar field: the
+change-of-basis matrix and the diagonal entries must belong to that field.
+A real matrix may therefore be diagonalisable over $\mathbb C$ but not over
+$\mathbb R$.
+
+## Independent eigenvectors
+
+<Recall of="eigenvalue" />
+
+<Recall of="eigenvector" />
+
+<Recall of="basis" />
+
+<Recall of="matrix-of-linear-map" />
+
+<Theorem slug="distinct-eigenvalues-independent" of="eigenvalue,eigenvector,linear-independence">
+
+### Eigenvectors for distinct eigenvalues
+
+<Statement>
+
+Eigenvectors belonging to distinct eigenvalues are linearly independent. In particular, an $n\times n$ matrix with $n$ distinct eigenvalues has $n$ linearly independent eigenvectors.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="distinct-eigenvalues-independent">
+
+Let $v_1,\ldots,v_n$ be eigenvectors for distinct eigenvalues $\lambda_1,\ldots,\lambda_n$ and suppose
+
+$$
+c_1v_1+\cdots+c_nv_n=0.
+$$
+
+To isolate one coefficient, fix $k$ and apply
+
+$$
+B_k=\prod_{j\neq k}(A-\lambda_jI)
+$$
+
+to both sides. The factors commute because each is a polynomial in $A$.
+Every term except the $k$th is killed by one factor, while
+
+$$
+B_kv_k=\prod_{j\neq k}(\lambda_k-\lambda_j)v_k.
+$$
+
+Thus the transformed relation is
+
+$$
+0=c_k\left(\prod_{j\neq k}(\lambda_k-\lambda_j)\right)v_k.
+$$
+
+The scalar product is non-zero and $v_k\ne0$, so $c_k=0$. Since $k$ was
+arbitrary, all coefficients vanish.
+
+</Proof>
+
+<Definition slug="eigenbasis" of="eigenvector,basis">
+
+### Eigenbasis
+
+<Statement>
+
+An *eigenbasis* for a vector space is a basis whose vectors are eigenvectors of the linear map under consideration.
+
+</Statement>
+
+In an eigenbasis, each coordinate direction is scaled independently. Every vector therefore splits into eigenmodes, which [matrix powers](/algebra/eigenvalues/spectral-applications) and [linear ODE systems](/algebra/eigenvalues/linear-ode-systems) evolve separately.
+
+</Definition>
+
+<Definition slug="diagonalisation" of="eigenbasis,matrix-of-linear-map">
+
+### Diagonalisation
+
+<Statement>
+
+An $n\times n$ matrix $A$ over a field $F$ is *diagonalisable over $F$*
+if there are an invertible matrix $P\in M_n(F)$ and a diagonal matrix
+$D\in M_n(F)$ such that
+
+$$
+P^{-1}AP=D,
+\qquad\text{equivalently}\qquad
+A=PDP^{-1}.
+$$
+
+The columns of $P$ are the eigenvectors in the chosen eigenbasis and the corresponding eigenvalues appear on the diagonal of $D$.
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="diagonalisation-criterion" of="diagonalisation,eigenbasis,linear-independence">
+
+### When diagonalisation is possible
+
+<Statement>
+
+An $n\times n$ matrix over $F$ is diagonalisable over $F$ if and only if it
+has $n$ linearly independent eigenvectors in $F^n$.
+
+</Statement>
+
+This test decides whether [matrix powers](/algebra/eigenvalues/spectral-applications) can be computed in diagonal form.
+
+</Theorem>
+
+<Proof of="diagonalisation-criterion">
+
+If $v_1,\ldots,v_n$ are independent eigenvectors, let
+
+$$
+P=\begin{pmatrix}v_1&\cdots&v_n\end{pmatrix},
+\qquad
+D=\operatorname{diag}(\lambda_1,\ldots,\lambda_n).
+$$
+
+The matrix $P$ is invertible and applying $A$ to each column gives $AP=PD$. Hence $P^{-1}AP=D$.
+
+Conversely, if $P^{-1}AP=D$, then $AP=PD$. The columns of $P$ are therefore eigenvectors corresponding to the diagonal entries of $D$. Since $P$ is invertible, its columns are linearly independent.
+
+</Proof>
+
+## Similarity and change of basis
+
+Two square matrices $A$ and $B$ are *similar* if an invertible matrix $P$
+satisfies
+
+$$
+B=P^{-1}AP.
+$$
+
+Similar matrices represent the same linear operator in different bases, as
+in a [matrix representation](/algebra/linear-transformations/matrix-representations),
+so their entries can differ. They share eigenvalues, determinant, rank,
+nullity and invertibility. Diagonalisation $A=PDP^{-1}$ is the case in which
+the matrix in the new basis is diagonal.
+
+## Worked examples
+
+<Example slug="complex-eigenbasis-example" of="eigenvalue,eigenvector,diagonalisation" difficulty="routine">
+
+### A real matrix with complex eigenvalues
+
+For
+
+$$
+A=
+\begin{pmatrix}
+2&-1\\
+1&2
+\end{pmatrix},
+$$
+
+the characteristic polynomial is
+
+$$
+p_A(\lambda)=(2-\lambda)^2+1
+=\lambda^2-4\lambda+5.
+$$
+
+Its eigenvalues are $\lambda=2+i$ and $\lambda=2-i$. For $\lambda=2+i$,
+
+$$
+A-(2+i)I=
+\begin{pmatrix}
+-i&-1\\
+1&-i
+\end{pmatrix},
+$$
+
+and solving $(A-(2+i)I)v=0$ gives
+
+$$
+v=\alpha\begin{pmatrix}i\\1\end{pmatrix}.
+$$
+
+The conjugate eigenvalue has eigenvector $\begin{pmatrix}-i\\1\end{pmatrix}$. These two eigenvectors are independent over $\mathbb C$, so the matrix is diagonalisable over $\mathbb C$ although it has no real eigenvalues. Discarding the [complex roots](/algebra/complex-numbers/stability-of-systems) of a real matrix would miss this diagonalisation.
+
+</Example>
+
+A repeated eigenvalue needs more care. Its [algebraic
+multiplicity](/algebra/eigenvalues/spectral-applications) counts how often it
+repeats as a root of the characteristic polynomial. Its geometric
+multiplicity is the dimension of its eigenspace, which is never larger.
+
+A repeated root is not itself an obstruction to diagonalisation over $F$. The
+obstruction is an eigenspace that is too small, leaving fewer than $n$
+independent eigenvectors in $F^n$. The [three repeated-eigenvalue
+cases](/algebra/eigenvalues/spectral-applications#repeated-eigenvalue-multiplicities)
+compare the possibilities.
+
+<Example slug="failed-diagonalisation-example" of="eigenspace,diagonalisation" difficulty="routine">
+
+### A repeated eigenvalue without enough modes
+
+Let
+
+$$
+A=
+\begin{pmatrix}
+3&-1\\
+1&1
+\end{pmatrix}.
+$$
+
+Then
+
+$$
+p_A(\lambda)
+=(3-\lambda)(1-\lambda)+1
+=(\lambda-2)^2.
+$$
+
+The only eigenvalue is $2$. Solving
+
+$$
+(A-2I)v=
+\begin{pmatrix}
+1&-1\\
+1&-1
+\end{pmatrix}v=0
+$$
+
+gives
+
+$$
+E_2=\operatorname{span}\left\{\begin{pmatrix}1\\1\end{pmatrix}\right\}.
+$$
+
+The algebraic multiplicity is $2$, but the geometric multiplicity is
+$\dim(E_2)=1$. There is only one independent eigenvector, so no eigenbasis of
+$\mathbb R^2$ exists and $A$ is not diagonalisable over either $\mathbb R$ or
+$\mathbb C$.
+
+</Example>
+
+<Example slug="triangular-diagonalisation-example" of="triangular-matrix-eigenvalues,distinct-eigenvalues-independent,diagonalisation" difficulty="routine">
+
+### A triangular matrix with an eigenbasis
+
+For
+
+$$
+A=
+\begin{pmatrix}
+1&2&3\\
+0&4&5\\
+0&0&6
+\end{pmatrix},
+$$
+
+the eigenvalues are the diagonal entries $1$, $4$ and $6$. They are
+distinct, so the corresponding eigenvectors are independent. Solving
+$(A-\lambda I)v=0$ gives $v_1=(1,0,0)^{\mathsf T}$ for $\lambda=1$.
+For $\lambda=4$, the last two equations give $z=0$ and the first gives
+$3x=2y$, so choose $v_2=(2,3,0)^{\mathsf T}$. For $\lambda=6$, the
+second equation gives $2y=5z$; taking $z=10$ gives $y=25$ and the first
+equation then gives $x=16$. Thus one choice is
+
+$$
+v_1=
+\begin{pmatrix}1\\0\\0\end{pmatrix},
+\qquad
+v_2=
+\begin{pmatrix}2\\3\\0\end{pmatrix},
+\qquad
+v_3=
+\begin{pmatrix}16\\25\\10\end{pmatrix}.
+$$
+
+With
+
+$$
+P=
+\begin{pmatrix}
+1&2&16\\
+0&3&25\\
+0&0&10
+\end{pmatrix},
+\qquad
+D=
+\begin{pmatrix}
+1&0&0\\
+0&4&0\\
+0&0&6
+\end{pmatrix},
+$$
+
+the column checks $Av_j=\lambda_jv_j$ give $AP=PD$ and hence
+
+$$
+A=PDP^{-1}.
+$$
+
+</Example>
+
+## Symmetric matrices
+
+Real symmetric matrices are especially well behaved: their eigenvalues are
+real and their eigenvectors can be chosen mutually perpendicular. This is the
+spectral theorem, stated here without proof. The orthonormal form makes the
+change of basis easy to invert, because the inverse of $Q$ is its transpose.
+
+<Proposition slug="real-symmetric-diagonalisation" of="diagonalisation,eigenbasis" see="orthonormal-basis">
+
+### Real symmetric matrices
+
+<Statement>
+
+If $A$ is a real symmetric matrix, then its eigenvalues are real, its eigenvectors can be chosen as an orthonormal basis of $\mathbb R^n$ and
+
+$$
+Q^{\mathsf T}AQ=D
+$$
+
+for an orthogonal matrix $Q$ and a diagonal matrix $D$.
+
+</Statement>
+
+</Proposition>
+
+<Example slug="orthonormal-eigenbasis-example" of="real-symmetric-diagonalisation,diagonalisation" difficulty="routine">
+
+### Orthonormal eigenvectors
+
+For
+
+$$
+A=
+\begin{pmatrix}
+1&1\\
+1&1
+\end{pmatrix},
+$$
+
+the eigenvectors
+
+$$
+u_1=\begin{pmatrix}1\\1\end{pmatrix},
+\qquad
+u_2=\begin{pmatrix}-1\\1\end{pmatrix}
+$$
+
+are perpendicular and have length $\sqrt2$. Normalising them gives
+
+$$
+\widehat u_1=\frac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix},
+\qquad
+\widehat u_2=\frac1{\sqrt2}\begin{pmatrix}-1\\1\end{pmatrix}.
+$$
+
+Thus $Q=(\widehat u_1\ \widehat u_2)$ is orthogonal and
+
+$$
+Q^{\mathsf T}AQ=
+\begin{pmatrix}
+2&0\\
+0&0
+\end{pmatrix}.
+$$
+
+</Example>
+
+## Invertibility and the zero eigenvalue
+
+<Theorem slug="invertibility-eigenvalue-criterion" of="eigenvalue,characteristic-polynomial">
+
+### Invertibility and eigenvalues
+
+<Statement>
+
+An $n\times n$ matrix $A$ is invertible if and only if $0$ is not an eigenvalue of $A$.
+
+</Statement>
+
+The number $0$ is an eigenvalue exactly when $A$ has a non-zero vector in its [kernel](/algebra/linear-transformations/kernel-image-rank), which is exactly when $A$ is not invertible.
+
+</Theorem>

@@ -1,0 +1,509 @@
+---
+title: Change of variables and polar coordinates
+description: Use Jacobians to transform double integrals into coordinates that fit the region or the integrand.
+tags: [calculus]
+ideas: [change-of-variables, jacobian, polar-coordinates]
+---
+
+This page changes the coordinates of a double integral to fit the region or
+the integrand. When the Cartesian slices from [regions and order of
+integration](/calculus/double-integrals/regions-and-order-of-integration) are
+awkward, another coordinate system may be simpler. A disk, for example, has
+square-root bounds in Cartesian coordinates but constant bounds in polar
+coordinates.
+
+The new coordinates simplify the description and the Jacobian corrects the
+area element for how small pieces stretch or shrink. The same tools evaluate
+weighted integrals in [mass, centroids and
+probability](/calculus/double-integrals/mass-centroids-and-probability) and
+the series integral in [Euler's Basel sum](/calculus/double-integrals/basel-sum).
+
+## The Jacobian records area scaling
+
+Suppose the old coordinates are given in terms of new ones by
+
+$$
+(x,y)=g(u,v)=\bigl(x(u,v),y(u,v)\bigr).
+$$
+
+<Definition slug="double-integral-jacobian-matrix">
+
+### Jacobian matrix
+
+<Statement>
+
+The Jacobian matrix of $g$ is
+
+$$
+J_g(u,v)=
+\begin{pmatrix}
+\dfrac{\partial x}{\partial u}&
+\dfrac{\partial x}{\partial v}\\[8pt]
+\dfrac{\partial y}{\partial u}&
+\dfrac{\partial y}{\partial v}
+\end{pmatrix}.
+$$
+
+</Statement>
+
+</Definition>
+
+<Definition slug="double-integral-jacobian-determinant" of="double-integral-jacobian-matrix">
+
+### Jacobian determinant
+
+<Statement>
+
+The Jacobian determinant is
+
+$$
+\det J_g(u,v)
+=\frac{\partial(x,y)}{\partial(u,v)}.
+$$
+
+Its absolute value is the local area-scaling factor:
+
+$$
+dA=dx\,dy
+=\left|\det J_g(u,v)\right|\,du\,dv.
+$$
+
+</Statement>
+
+The determinant is negative when the map reverses orientation. Area is
+non-negative, so the change-of-variables formula uses its absolute value.
+
+To see why it measures area, take small increments $\Delta u,\Delta v$:
+
+$$
+g(u+\Delta u,v+\Delta v)-g(u,v)
+\approx J_g(u,v)
+\begin{pmatrix}\Delta u\\ \Delta v\end{pmatrix}.
+$$
+
+The linear map $J_g(u,v)$ sends a small coordinate rectangle of area
+$\Delta u\,\Delta v$ to a parallelogram of area approximately
+$|\det J_g(u,v)|\Delta u\,\Delta v$. Taking the limit gives the area element
+$dA=|\det J_g(u,v)|\,du\,dv$.
+
+</Definition>
+
+<Theorem slug="double-integral-change-of-variables" of="double-integral-jacobian-determinant">
+
+### Change of variables
+
+<Statement>
+
+Let $\Omega$ be a region in $(x,y)$-coordinates and let $\Phi$ be a region
+in $(u,v)$-coordinates. Assume that $f$ is integrable on $\Omega$, that $g$
+is $C^1$ on $\Phi$, that $\Phi$ can be split into finitely many pieces on
+which $g$ is one-to-one with non-overlapping interiors and that the Jacobian
+is nonzero away from boundary or other exceptional sets of area zero. The
+images of those pieces must cover $\Omega$ once, apart from boundaries of area
+zero; otherwise the transformed integral can omit or count part of the region
+more than once. If a map covers the target with multiplicity, split the
+parameter region into one-to-one pieces (or account for that multiplicity)
+before applying the formula.
+Then
+
+$$
+\iint_\Omega f(x,y)\,dx\,dy
+=
+\iint_\Phi
+f\bigl(x(u,v),y(u,v)\bigr)
+\left|\det J_g(u,v)\right|\,du\,dv.
+$$
+
+</Statement>
+
+Applying the theorem involves two separate tasks: rewriting the integrand in
+terms of $u,v$ and describing the old region in the new coordinates. The
+second task is geometric and cannot be skipped.
+
+</Theorem>
+
+<Method slug="choose-double-integral-change-of-variables" of="double-integral-change-of-variables">
+
+### Choose and apply a coordinate change
+
+<Statement>
+
+To change variables in a double integral:
+
+1. choose new coordinates suggested by the boundaries or by a repeated
+   expression in the integrand;
+2. solve for $x$ and $y$ in terms of the new coordinates when needed;
+3. transform every boundary of the region;
+4. rewrite the integrand;
+5. calculate the absolute Jacobian factor;
+6. integrate over the transformed region.
+
+</Statement>
+
+Good coordinates simplify the region, the integrand or both. A substitution
+that simplifies the formula but complicates the region may not help.
+
+</Method>
+
+## Polar coordinates
+
+<Theorem slug="polar-double-integral" of="double-integral-change-of-variables">
+
+### Polar area element
+
+<Statement>
+
+For $r\ge0$, the polar-coordinate change of variables is
+
+$$
+x=r\cos\theta,\qquad y=r\sin\theta,
+$$
+
+and its Jacobian satisfies
+
+$$
+\left|\frac{\partial(x,y)}{\partial(r,\theta)}\right|
+=r.
+$$
+
+Consequently,
+
+$$
+dA=r\,dr\,d\theta,
+$$
+
+and
+
+$$
+\iint_\Omega f(x,y)\,dA
+=\iint_\Phi
+f(r\cos\theta,r\sin\theta)\,r\,dr\,d\theta.
+$$
+
+</Statement>
+
+The factor $r$ is also visible geometrically. A small polar rectangle has
+radial side approximately $dr$ and angular side approximately $r\,d\theta$,
+so its area is approximately $r\,dr\,d\theta$. The same $(r,\theta)$ pair
+parametrises complex numbers in [polar form](/algebra/complex-numbers/polar-form),
+with $x+iy=re^{i\theta}$.
+
+A usual polar description takes $r\ge0$ and an angular interval of length at
+most $2\pi$. Each point then has one representation, except on a boundary ray
+and at the origin. Those exceptional sets have area zero, so the
+change-of-variables theorem still applies.
+
+The radial limits are read along each ray from the boundary of the region;
+they need not be constant.
+
+</Theorem>
+
+<Example slug="quarter-disk-area" of="polar-double-integral" difficulty="routine">
+
+### Area of a quarter disk
+
+The first-quadrant portion of the unit disk is
+
+$$
+0\le r\le1,\qquad 0\le\theta\le\frac{\pi}{2}.
+$$
+
+Its area is
+
+$$
+\begin{aligned}
+\operatorname{Area}(\Omega)
+&=\int_0^{\pi/2}\int_0^1r\,dr\,d\theta\\
+&=\int_0^{\pi/2}\frac12\,d\theta
+=\frac{\pi}{4}.
+\end{aligned}
+$$
+
+</Example>
+
+<Example slug="polar-triangle-integral" of="polar-double-integral" difficulty="exam">
+
+### A triangle in polar coordinates
+
+Evaluate
+
+$$
+I=\int_0^1\int_0^x
+\left(1+\sqrt{x^2+y^2}\right)\,dy\,dx.
+$$
+
+The region is the first-quadrant triangle bounded by $x=1$ and $y=x$. In
+polar coordinates,
+
+$$
+0\le\theta\le\frac{\pi}{4},
+\qquad
+0\le r\le\sec\theta,
+$$
+
+because $x=r\cos\theta\le1$. Also,
+$\sqrt{x^2+y^2}=r$. Therefore
+
+$$
+\begin{aligned}
+I
+&=\int_0^{\pi/4}\int_0^{\sec\theta}(1+r)r\,dr\,d\theta\\
+&=\int_0^{\pi/4}
+\left[\frac{r^2}{2}+\frac{r^3}{3}\right]_{0}^{\sec\theta}
+d\theta\\
+&=\int_0^{\pi/4}
+\left(\frac{\sec^2\theta}{2}
++\frac{\sec^3\theta}{3}\right)d\theta\\
+&=\frac12+\frac{\sqrt2}{6}
++\frac16\ln(1+\sqrt2).
+\end{aligned}
+$$
+
+</Example>
+
+<Example slug="spiral-area" of="polar-double-integral" difficulty="routine">
+
+### Area enclosed by a spiral
+
+The region swept between
+
+$$
+r=\theta,\qquad0\le\theta\le2\pi,
+$$
+
+and the $x$-axis has
+
+$$
+0\le\theta\le2\pi,\qquad0\le r\le\theta.
+$$
+
+Thus
+
+$$
+\begin{aligned}
+\operatorname{Area}(\Omega)
+&=\int_0^{2\pi}\int_0^\theta r\,dr\,d\theta\\
+&=\int_0^{2\pi}\frac{\theta^2}{2}\,d\theta
+=\frac{4\pi^3}{3}.
+\end{aligned}
+$$
+
+The familiar polar area formula
+
+$$
+\operatorname{Area}(\Omega)
+=\frac12\int r(\theta)^2\,d\theta
+$$
+
+is the result of performing the radial integral first.
+
+</Example>
+
+<Example slug="gaussian-double-integral" of="polar-double-integral" difficulty="challenge">
+
+### The Gaussian integral
+
+Let $\Omega$ be the first quadrant and consider
+
+$$
+I=\iint_\Omega e^{-(x^2+y^2)}\,dA.
+$$
+
+The region is unbounded, so apply the change of variables on bounded
+quarter-disks and then let their radius tend to infinity. The integrand is
+nonnegative, so monotone convergence justifies this limit. Polar coordinates
+give
+
+$$
+\begin{aligned}
+I
+&=\int_0^{\pi/2}\int_0^\infty e^{-r^2}r\,dr\,d\theta\\
+&=\int_0^{\pi/2}\frac12\,d\theta
+=\frac{\pi}{4}.
+\end{aligned}
+$$
+
+In Cartesian coordinates the integrand is a product
+$e^{-x^2}e^{-y^2}$. Because it is nonnegative, Tonelli's theorem (or monotone
+limits over bounded rectangles) justifies separating the two improper
+integrals:
+
+$$
+I
+=\left(\int_0^\infty e^{-x^2}\,dx\right)^2.
+$$
+
+Hence
+
+$$
+\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt\pi}{2}.
+$$
+
+For
+
+$$
+G=\int_{-\infty}^{\infty}e^{-x^2/2}\,dx,
+$$
+
+symmetry and $u=x/\sqrt2$ give
+
+$$
+\begin{aligned}
+G
+&=2\int_0^\infty e^{-x^2/2}\,dx\\
+&=2\sqrt2\int_0^\infty e^{-u^2}\,du
+=\sqrt{2\pi}.
+\end{aligned}
+$$
+
+</Example>
+
+## Other coordinate changes
+
+<Example slug="linear-double-integral-change" of="choose-double-integral-change-of-variables" difficulty="exam">
+
+### A linear change of variables
+
+Evaluate
+
+$$
+I=\int_0^3\int_{-x}^{x}(2-x-y)^2\,dy\,dx
+$$
+
+using
+
+$$
+u=x+y,\qquad v=x-y.
+$$
+
+The inverse transformation is
+
+$$
+x=\frac{u+v}{2},
+\qquad
+y=\frac{u-v}{2},
+$$
+
+and
+
+$$
+\left|\frac{\partial(x,y)}{\partial(u,v)}\right|
+=
+\left|
+\det
+\begin{pmatrix}
+\frac12&\frac12\\[2pt]
+\frac12&-\frac12
+\end{pmatrix}
+\right|
+=\frac12.
+$$
+
+The original region is bounded by $y=-x$, $y=x$ and $x=3$. These become
+
+$$
+y=-x\Longrightarrow u=0,\qquad
+y=x\Longrightarrow v=0,\qquad
+x=3\Longrightarrow u+v=6.
+$$
+
+Thus
+
+$$
+0\le u\le6,\qquad0\le v\le6-u.
+$$
+
+Since $x+y=u$, the integrand is $(2-u)^2$. Therefore
+
+$$
+\begin{aligned}
+I
+&=\int_0^6\int_0^{6-u}(2-u)^2\frac12\,dv\,du\\
+&=\frac12\int_0^6(2-u)^2(6-u)\,du
+=18.
+\end{aligned}
+$$
+
+These coordinates suit the problem because $x+y$ occurs in the integrand and
+the region becomes a triangle with two sides on the axes.
+
+</Example>
+
+<Example slug="nonlinear-double-integral-change" of="choose-double-integral-change-of-variables" difficulty="challenge">
+
+### A nonlinear change of variables
+
+Evaluate
+
+$$
+\iint_\Omega(4x^2-2y^2)\,dA,
+$$
+
+where
+
+$$
+\Omega=\{(x,y):1\le xy\le4,\ x\le y\le4x\}.
+$$
+
+Use
+
+$$
+u=xy,\qquad v=\frac yx.
+$$
+
+On $\Omega$, the inequalities force $x>0$: if $x<0$, then $4x<x$ and the
+condition $x\le y\le4x$ is impossible. The map therefore has the positive
+inverse branch
+$$
+x=\sqrt{\frac uv},\qquad y=\sqrt{uv},
+$$
+for $u,v>0$. The region becomes the rectangle
+
+$$
+1\le u\le4,\qquad1\le v\le4.
+$$
+
+The forward Jacobian is
+
+$$
+\frac{\partial(u,v)}{\partial(x,y)}
+=\det
+\begin{pmatrix}
+y&x\\[2pt]
+-y/x^2&1/x
+\end{pmatrix}
+=\frac yx+\frac yx=2v.
+$$
+
+Hence
+
+$$
+dA
+=\left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv
+=\frac1{2v}\,du\,dv.
+$$
+
+Since $x^2=u/v$ and $y^2=uv$,
+
+$$
+4x^2-2y^2=\frac{4u}{v}-2uv.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+I
+&=\int_1^4\int_1^4
+\left(\frac{4u}{v}-2uv\right)\frac1{2v}\,dv\,du\\
+&=\int_1^4\int_1^4\left(\frac{2u}{v^2}-u\right)\,dv\,du\\
+&=\int_1^4\left[-\frac{2u}{v}-uv\right]_{1}^{4}\,du\\
+&=\int_1^4-\frac{3u}{2}\,du
+=-\frac{45}{4}.
+\end{aligned}
+$$
+
+The answer is negative because the integrand takes both signs; a double
+integral is not automatically a geometric volume.
+
+</Example>

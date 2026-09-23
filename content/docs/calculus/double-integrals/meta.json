@@ -1,0 +1,13 @@
+{
+  "title": "Double integrals",
+  "pagesIndex": "index",
+  "pages": [
+    "double-integrals-and-riemann-sums",
+    "fubini-and-iterated-integrals",
+    "regions-and-order-of-integration",
+    "change-of-variables-and-polar-coordinates",
+    "mass-centroids-and-probability",
+    "basel-sum",
+    "seen"
+  ]
+}

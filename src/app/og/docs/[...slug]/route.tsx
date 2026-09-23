@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
 import { OgImage, toOgImageProps } from "@/lib/og";
-import { compileCorpus } from "@/lib/site/corpus";
+import { compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
+import {
+	appendDocsRouteSuffix,
+	getDocsRouteSlugs,
+} from "@/lib/site/docs-routes";
 
 export const revalidate = false;
+export const dynamicParams = true;
 
 export async function GET(
 	_req: Request,
@@ -38,16 +43,7 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-	const corpus = compileCorpus();
-
-	return [
-		...corpus.pages.map(({ page }) => ({
-			lang: page.locale,
-			slug: [...page.slugs, "image.png"],
-		})),
-		...corpus.kindViews.map((view) => ({
-			lang: view.locale,
-			slug: [...view.pageSlugs, view.slug, "image.png"],
-		})),
-	];
+	return appendDocsRouteSuffix(getDocsRouteSlugs(compilePageIndex()), [
+		"image.png",
+	]).map((slug) => ({ slug }));
 }

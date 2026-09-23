@@ -1,0 +1,472 @@
+---
+title: Seen questions
+description: Worked solutions on complex roots, polynomial factorisation, conjugate pairs and root counts.
+tags: [seen, algebra, complex-numbers]
+ideas: [revision, complex-roots, polynomial-factorisation, conjugate-roots]
+---
+
+These past exam questions find and count polynomial roots using factorisation, conjugate pairs and the fundamental theorem of algebra.
+
+Keep the scalar field explicit whenever a question moves between complex
+roots and real factors: [complex factorisation](/algebra/complex-numbers/complex-polynomials)
+uses linear factors over $\mathbb C$, while conjugate pairs give real
+quadratics over $\mathbb R$.
+
+<Recall of="factor-theorem" />
+
+<Example
+  slug="seen-complex-conjugate-roots"
+  of="polynomial-root,factor-theorem,complex-conjugate"
+  difficulty="routine"
+>
+
+### A complex conjugate pair of roots
+
+The following factorisation is available:
+
+```text
+>> syms z
+>> p = z^3 + (2 + 6*i)*z^2 + (10 + 36*i)*z - 136 + 204*i;
+>> q = simplify( p / (z - 4 + 6*i) )
+
+q =
+
+z^2 + 6*z + 34
+```
+
+Using the above output, or otherwise, does the equation
+
+$$
+z^3+(2+6i)z^2+(10+36i)z-136+204i=0
+$$
+
+have a complex conjugate pair of roots? Give a short argument directly from the factorisation.
+
+#### Solution
+
+The divisor displayed in the output is
+
+$$
+z-4+6i=z-(4-6i).
+$$
+
+To justify the result algebraically, multiply the displayed divisor and quotient:
+
+$$
+\begin{aligned}
+p(z)
+&=(z-4+6i)(z^2+6z+34)\\
+&=z^3+(6-4+6i)z^2+\bigl(34+6(-4+6i)\bigr)z
+  +34(-4+6i)\\
+&=z^3+(2+6i)z^2+(10+36i)z-136+204i.
+\end{aligned}
+$$
+
+Thus the original polynomial has the root $4-6i$ and its remaining roots are the roots of
+
+$$
+z^2+6z+34=0.
+$$
+
+The quadratic formula gives
+
+$$
+\begin{aligned}
+z
+&=\frac{-6\pm\sqrt{6^2-4(1)(34)}}{2}\\
+&=\frac{-6\pm\sqrt{-100}}{2}\\
+&=-3\pm5i.
+\end{aligned}
+$$
+
+The two roots $-3+5i$ and $-3-5i$ are complex conjugates, so the answer is **Yes**.
+
+The coefficients of the original polynomial are not all real, so the conjugate-root theorem does not apply here; the explicit factorisation is what establishes the pair.
+
+</Example>
+
+<Recall of="complex-factorisation" />
+
+<Recall of="real-linear-quadratic-factorisation" />
+
+<Example
+  slug="seen-polynomial-factorisation-truth-values"
+  of="complex-factorisation,real-linear-quadratic-factorisation"
+  difficulty="routine"
+>
+
+### Factorisation over the real and complex numbers
+
+Identify whether each statement is true or false:
+
+(a) Every **complex polynomial** with degree at least $1$ can be factored into
+**real polynomials** of degrees $1$, $2$ and $3$.
+
+(b) Every **complex polynomial** with degree at least $1$ can be factored into
+**complex polynomials** of degrees $1$ and $3$.
+
+(c) Every **real polynomial** with degree at least $1$ can be factored into
+**real polynomials** of degrees $1$ and $2$.
+
+(d) Every **complex polynomial** with degree at least $1$ can be factored into
+**complex polynomials** of degrees $1$ and $2$.
+
+(e) Every **complex polynomial** with degree at least $1$ can be factored into
+**real polynomials** of degrees $1$ and $2$.
+
+(f) Every **real polynomial** with degree at least $1$ can be factored into
+**real polynomials** of degrees $1$ and $3$.
+
+(g) Every **real polynomial** with degree at least $1$ can be factored into
+**real polynomials** of degrees $1$, $2$ and $3$.
+
+#### Solution
+
+The coefficient field determines which factorisation theorem applies. Over
+$\mathbb C$, every non-constant polynomial is a product of complex linear
+factors. Over $\mathbb R$, a real root gives a real linear factor, while a
+non-real conjugate pair gives a real quadratic factor. Read “of degrees $1$
+and $2$” as allowing any factors whose degrees are among those listed.
+
+**(a) False.** Consider the complex polynomial
+
+$$
+p(z)=z-i.
+$$
+
+It has no real root, so it has no real linear factor. A factor of real degree
+$2$ or $3$ cannot occur in a factorisation of a degree-one polynomial.
+Therefore $p$ cannot be factored into real polynomials of the listed
+degrees. More generally, complex coefficients do not guarantee real
+polynomial factors.
+
+**(b) True.** The complex factorisation theorem gives, for a degree-$n$
+complex polynomial,
+
+$$
+p(z)=c(z-\alpha_1)\cdots(z-\alpha_n),
+\qquad c\in\mathbb C.
+$$
+
+Every non-constant factor in this factorisation has degree $1$, which is one
+of the allowed degrees. A separate cubic factor is not needed.
+
+**(c) True.** If a real polynomial has a non-real root $\alpha$, then
+$\overline\alpha$ is also a root. Pairing their factors gives
+
+$$
+(x-\alpha)(x-\overline\alpha)
+=x^2-2\operatorname{Re}(\alpha)x+|\alpha|^2,
+$$
+
+which is a real quadratic. Real roots provide real linear factors, so every
+real polynomial factors into real factors of degrees $1$ and $2$.
+
+**(d) True.** The same complex factorisation used in part (b) factors every
+complex polynomial into degree-one complex factors. Since degree $1$ is
+allowed, the statement holds.
+
+**(e) False.** The example $p(z)=z-i$ is again a counterexample. Its root is
+non-real, so it has no real linear factor and its degree is too small to
+have a non-constant quadratic factor. Thus a complex polynomial need not
+factor into real polynomials.
+
+**(f) False.** The real polynomial
+
+$$
+p(x)=x^2+1
+$$
+
+has no real root, so it has no real linear factor. Up to non-zero constant
+factors, its only non-constant factorisation over $\mathbb R$ is the quadratic
+itself and a degree-$3$ factor is impossible because the total degree is
+$2$. Hence degrees $1$ and $3$ do not suffice.
+
+**(g) True.** Part (c) already shows that every real polynomial factors into
+real linear and quadratic factors. Allowing degree $3$ as well changes
+nothing.
+
+The truth values are therefore
+
+$$
+{
+\begin{array}{c|ccccccc}
+\text{part}&(a)&(b)&(c)&(d)&(e)&(f)&(g)\\
+\hline
+\text{answer}&\text{False}&\text{True}&\text{True}&\text{True}
+&\text{False}&\text{False}&\text{True}
+\end{array}
+}
+$$
+
+</Example>
+
+<Recall of="fundamental-theorem-of-algebra" />
+
+<Example
+  slug="seen-high-degree-complex-polynomial-roots"
+  of="complex-factorisation,polynomial-degree"
+  difficulty="exam"
+>
+
+### Roots of a high-degree complex polynomial
+
+Harry is studying the equation
+
+$$
+z^{88}+z^{99}+z^{151}
+=(15+11i)^{88}+(15+11i)^{99}+(15+11i)^{151}.
+\tag{1}
+$$
+
+(a) Find the number $k$ of solutions of (1), counting multiplicity and justify the answer.
+
+(b) If $z_1,\ldots,z_k$ are the solutions of (1), find
+
+$$
+\sum_{j=1}^kz_j
+\qquad\text{and}\qquad
+\prod_{j=1}^kz_j.
+$$
+
+(c) Identify one solution of (1).
+
+#### Solution
+
+##### (a)
+
+Let
+
+$$
+C=(15+11i)^{88}+(15+11i)^{99}+(15+11i)^{151}.
+$$
+
+Moving the right-hand side of (1) to the left gives the polynomial equation
+
+$$
+P(z)=z^{151}+z^{99}+z^{88}-C=0.
+$$
+
+The highest power has coefficient $1$, so $P$ is a non-zero complex polynomial of degree $151$.
+
+The fundamental theorem of algebra implies that a complex polynomial of degree $n\ge1$ has exactly $n$ complex roots counted with multiplicity. Therefore
+
+$$
+{k=151}.
+$$
+
+##### (b)
+
+Because $P$ is monic, its factorisation over $\mathbb C$ is
+
+$$
+P(z)=\prod_{j=1}^{151}(z-z_j).
+$$
+
+The coefficient of $z^{150}$ in this product is
+$-\sum_{j=1}^{151}z_j$. In $P(z)$ there is no $z^{150}$ term, so this coefficient is zero. Hence
+
+$$
+{
+\sum_{j=1}^{k}z_j
+=\sum_{j=1}^{151}z_j
+=0
+}.
+$$
+
+The constant term of the factorisation is
+
+$$
+(-1)^{151}\prod_{j=1}^{151}z_j
+=-\prod_{j=1}^{151}z_j.
+$$
+
+The constant term of $P$ is $-C$. Equating the two constant terms gives
+
+$$
+-\prod_{j=1}^{151}z_j=-C,
+$$
+
+so
+
+$$
+{
+\prod_{j=1}^{k}z_j
+=\prod_{j=1}^{151}z_j
+=(15+11i)^{88}+(15+11i)^{99}+(15+11i)^{151}
+}.
+$$
+
+The minus signs agree because the degree $151$ is odd. More generally, for a monic degree-$n$ polynomial, the product of all roots is $(-1)^n$ times its constant term.
+
+##### (c)
+
+Taking
+
+$$
+{z=15+11i}
+$$
+
+in the left-hand side of (1) gives
+
+$$
+(15+11i)^{88}+(15+11i)^{99}+(15+11i)^{151},
+$$
+
+which is exactly the right-hand side. Thus $z=15+11i$ is a solution.
+
+</Example>
+
+<Recall of="fundamental-theorem-of-algebra" />
+
+<Recall of="conjugate-root-theorem" />
+
+<Example
+  slug="seen-real-polynomial-root-counts"
+  of="fundamental-theorem-of-algebra,complex-factorisation,conjugate-root-theorem"
+  difficulty="exam"
+>
+
+### Roots of a real polynomial
+
+You are given information about a real polynomial $p(z)$ of degree $26$. It can be factored as
+
+$$
+p(z)=q(z)p_0(z)p_1(z)p_2(z)p_3(z)p_4(z),
+$$
+
+where $q(z)$ is a complex polynomial and
+
+$$
+\begin{aligned}
+p_0(z)&=z^4-2,\\
+p_1(z)&=z^2+4z+5,\\
+p_2(z)&=z^2-z-6,\\
+p_3(z)&=z-7,\\
+p_4(z)&=z-2+3i.
+\end{aligned}
+$$
+
+#### (a)
+
+A consequence of the Fundamental Theorem of Algebra is that $p(z)$ can also be factored into $26$ complex linear factors:
+
+$$
+p(z)=a(z-z_1)(z-z_2)(z-z_3)\cdots(z-z_{26}),
+$$
+
+where $z_1,z_2,\ldots,z_{26}\in\mathbb C$ and $a\in\mathbb R$.
+
+For example, consider
+
+$$
+p(z)=z^{26}-8z^{25}+3z^{24}+\cdots+808z^2-2818z-5460.
+$$
+
+For the example, find
+
+$$
+z_1+z_2+z_3+\cdots+z_{26}
+$$
+
+and
+
+$$
+z_1z_2z_3\cdots z_{26}.
+$$
+
+#### (b)
+
+Given the information about the factorisation of $p(z)$, what are the possible minimum and maximum numbers of real roots, counted with multiplicity?
+
+#### Solution
+
+##### (a)
+
+The displayed factorisation into linear factors is a direct consequence of the fundamental theorem of algebra: a degree-$26$ complex polynomial has $26$ complex roots counted with multiplicity. The leading coefficient $a$ is real because the original polynomial is real.
+
+For the example, the polynomial is monic, so
+
+$$
+p(z)=\prod_{j=1}^{26}(z-z_j).
+$$
+
+The coefficient of $z^{25}$ in this product is $-\sum_{j=1}^{26}z_j$. Comparing with the given coefficient $-8$ gives
+
+$$
+-\sum_{j=1}^{26}z_j=-8,
+\qquad\text{so}\qquad
+{\sum_{j=1}^{26}z_j=8}.
+$$
+
+Since the degree is even, the constant term is
+
+$$
+\prod_{j=1}^{26}z_j.
+$$
+
+Comparing with the constant term $-5460$ gives
+
+$$
+{\prod_{j=1}^{26}z_j=-5460}.
+$$
+
+##### (b)
+
+Factor the supplied factors as far as needed:
+
+$$
+\begin{aligned}
+p_0(z)
+&=z^4-2
+=(z-\sqrt[4]{2})(z+\sqrt[4]{2})
+(z-i\sqrt[4]{2})(z+i\sqrt[4]{2}),\\
+p_1(z)
+&=z^2+4z+5
+=(z+2-i)(z+2+i),\\
+p_2(z)
+&=z^2-z-6
+=(z-3)(z+2),\\
+p_3(z)&=z-7,\\
+p_4(z)&=z-(2-3i).
+\end{aligned}
+$$
+
+The displayed factors have total degree
+$4+2+2+1+1=10$, so $q$ has degree $26-10=16$.
+
+The known real roots are
+
+$$
+\sqrt[4]{2},\quad-\sqrt[4]{2},\quad3,\quad-2,\quad7,
+$$
+
+so at least five real roots are forced. The factors $p_0$ and $p_1$ also force four non-real roots:
+
+$$
+\pm i\sqrt[4]{2},\qquad -2\pm i.
+$$
+
+The factor $p_4$ forces $2-3i$. Because $p$ has real coefficients, the conjugate-root theorem forces $2+3i$ as a further root, which must be supplied by $q$. Thus at least six non-real roots are forced, so there can be at most
+
+$$
+26-6=20
+$$
+
+real roots.
+
+The number of real roots counted with multiplicity has the same parity as the degree, because all non-real roots occur in conjugate pairs. Since five real roots are already forced and the degree is even, at least one additional real root is required. Hence there are at least six real roots.
+
+Both bounds are attainable. For the minimum, $q$ can supply the conjugate
+root $2+3i$, one real root and fourteen further non-real roots arranged in
+seven conjugate pairs. For the maximum, $q$ can supply $2+3i$ and fifteen
+real roots. In either case, choose
+$q(z)=(z-(2+3i))h(z)$, where $h$ is a real degree-$15$ polynomial with the
+specified roots. The product $p_4(z)(z-(2+3i))$ is real, so these choices
+are consistent with $p$ having real coefficients. Therefore
+
+$$
+{\text{minimum }=6,\qquad \text{maximum }=20}.
+$$
+
+</Example>

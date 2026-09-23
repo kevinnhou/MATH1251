@@ -1,0 +1,186 @@
+---
+title: Subspaces
+description: Subspaces inherit vector-space operations and can be tested by closure.
+tags: [algebra]
+ideas: [subspace, closure]
+---
+
+A subspace is a subset that is itself a [vector space](/algebra/vector-spaces/vector-spaces) under the operations it inherits. This page reduces the ten axioms to a three-condition test and applies it to vectors, polynomials and matrices.
+
+## Inheriting the vector-space structure
+
+<Recall of="vector-space" />
+
+<Definition slug="subspace" of="vector-space">
+
+### Subspace
+
+<Statement>
+
+Let $V$ be a vector space over $F$. A subset $S\subseteq V$ is a *subspace* of $V$ when it is a vector space over the same field $F$ and uses the addition and scalar multiplication inherited from $V$. A *proper subspace* is a subspace that is not equal to $V$.
+
+</Statement>
+
+Two elements of $S$ are added as they are in $V$ and scalar multiplication uses the same scalars. The sets $\{0\}$ and $V$ are always subspaces of $V$. When $m\leq n$, the standard embedding
+$$
+(x_1,\ldots,x_m)\longmapsto(x_1,\ldots,x_m,\underbrace{0,\ldots,0}_{n-m})
+$$
+identifies $\mathbb R^m$ with the coordinate subspace
+$\{(x_1,\ldots,x_m,0,\ldots,0)\}\subseteq\mathbb R^n$. For $n\ge2$, a
+plane through the origin in $\mathbb R^n$ is another example.
+
+</Definition>
+
+## Testing closure
+
+Most axioms hold in $S$ automatically because they hold in $V$, so there is
+no need to check all ten again.
+
+<Theorem slug="subspace-test" of="subspace,vector-space">
+
+### Subspace test
+
+<Statement>
+
+Let $S$ be a subset of a vector space $V$ over $F$, with the operations inherited from $V$. Then $S$ is a subspace of $V$ if and only if:
+
+1. $S$ is non-empty;
+2. $S$ is closed under vector addition: $u,v\in S$ implies $u+v\in S$;
+3. $S$ is closed under scalar multiplication: $u\in S$ and $\lambda\in F$ imply $\lambda u\in S$.
+
+</Statement>
+
+Non-emptiness and scalar closure supply the zero vector and additive inverses, so these three conditions are enough.
+
+</Theorem>
+
+<Proof of="subspace-test">
+
+If $S$ is a subspace, the three properties are part of the vector-space axioms. Conversely, the inherited operations already satisfy associativity, commutativity and distributivity because they do so in $V$. Choose $u\in S$ using non-emptiness. Scalar closure gives
+$$
+0u=0\in S
+$$
+and, for every $u\in S$,
+$$
+(-1)u=-u\in S.
+$$
+Thus $S$ has the zero vector and additive inverses, while the three listed properties provide the remaining requirements.
+
+</Proof>
+
+<Corollary slug="subspace-contains-zero" of="subspace-test">
+
+### The zero-vector check
+
+<Statement>
+
+Every subspace contains the zero vector of its underlying vector space. Therefore, a subset that does not contain $0$ is not a subspace.
+
+</Statement>
+
+</Corollary>
+
+Keep $\{0\}$ and $\varnothing$ distinct. The set $\{0\}$ has one element and
+is a subspace; the empty set has none and fails the non-emptiness condition.
+
+## Examples and non-examples
+
+<Example slug="subspace-line-through-origin" of="subspace-test" difficulty="routine">
+
+### A line through the origin
+
+For a fixed non-zero direction vector $w\in\mathbb R^n$, consider
+$$
+S=\{x\in\mathbb R^n:x=\lambda w,\ \lambda\in\mathbb R\}.
+$$
+The zero vector is in $S$ by taking $\lambda=0$. If $x_1=\lambda_1w$ and $x_2=\lambda_2w$, then
+$$
+x_1+x_2=(\lambda_1+\lambda_2)w\in S.
+$$
+For $\mu\in\mathbb R$,
+$$
+\mu x_1=(\mu\lambda_1)w\in S.
+$$
+The subspace test shows that $S$ is a subspace of $\mathbb R^n$.
+
+</Example>
+
+The same test applies when membership is a homogeneous condition on a
+polynomial or a matrix.
+
+<Example slug="subspace-zero-polynomials" of="subspace-test" difficulty="routine">
+
+### Polynomials satisfying a homogeneous condition
+
+Consider
+$$
+S=\{p\in P_3(\mathbb R):p(1)=0\}.
+$$
+The zero polynomial belongs to $S$. If $p_1,p_2\in S$, then
+$$
+(p_1+p_2)(1)=p_1(1)+p_2(1)=0,
+$$
+and if $p\in S$ and $\lambda\in\mathbb R$, then
+$$
+(\lambda p)(1)=\lambda p(1)=0.
+$$
+Thus $S$ is a subspace of $P_3(\mathbb R)$. It is not merely $\{0\}$; for
+example, $x-1\in S$.
+
+</Example>
+
+<Example slug="subspace-matrix-annihilator" of="subspace-test" difficulty="routine">
+
+### Matrices annihilating a fixed vector
+
+For a fixed $x\in\mathbb R^n$, let
+$$
+S=\{A\in M_{m\times n}(\mathbb R):Ax=0\}.
+$$
+The zero matrix belongs to $S$. If $A_1,A_2\in S$, then
+$$
+(A_1+A_2)x=A_1x+A_2x=0.
+$$
+If $A\in S$ and $\lambda\in\mathbb R$, then
+$$
+(\lambda A)x=\lambda(Ax)=0.
+$$
+Therefore $S$ is a subspace of $M_{m\times n}(\mathbb R)$.
+
+</Example>
+
+To reject a proposed subspace, one failed check is enough: a missing zero vector or a failed closure condition.
+
+<Example slug="subspace-non-examples" of="subspace-test,subspace-contains-zero" difficulty="routine">
+
+### Sets that are not subspaces
+
+For a fixed non-zero $u\in\mathbb R^n$, the set
+$$
+\{x\in\mathbb R^n:x=\lambda u,\ -10\leq\lambda\leq10\}
+$$
+is not closed under addition: $10u$ belongs to it but $10u+10u=20u$ does not.
+
+The affine line
+$$
+\{x\in\mathbb R^2:x_1+2x_2=1\}
+$$
+does not contain the zero vector. Likewise, neither
+$$
+\{p\in P_3(\mathbb R):p(x)=1\text{ for every }x\in\mathbb R\}
+\qquad\text{nor}\qquad
+\{p\in P_2(\mathbb R):p(0)=1\}
+$$
+contains the zero polynomial. Finally, the invertible matrices in
+$M_{n\times n}(\mathbb R)$ do not form a subspace because the zero matrix is
+not invertible.
+
+Replacing the right-hand side $1$ by $0$ gives homogeneous conditions such
+as $p(x)=0$ for every $x$ or $p(0)=0$ and these do define subspaces. The
+same contrast between homogeneous and non-homogeneous conditions returns
+with kernels of [linear
+transformations](/algebra/linear-transformations/kernel-image-rank).
+
+</Example>
+
+[Spans](/algebra/vector-spaces/spans) build a subspace from chosen vectors.

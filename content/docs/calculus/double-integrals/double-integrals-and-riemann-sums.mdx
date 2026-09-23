@@ -1,0 +1,346 @@
+---
+title: Double integrals and Riemann sums
+description: Define double integrals over rectangles using tagged partitions and upper and lower sums.
+tags: [calculus]
+ideas: [double-integrals, riemann-sums, integrability]
+---
+
+This page defines the double integral over a rectangle as a limit of Riemann
+sums. The construction copies the one-variable integral: small intervals
+become small rectangles and their lengths become areas.
+
+The definition says what the integral means; later pages compute it.
+[Fubini's theorem](/calculus/double-integrals/fubini-and-iterated-integrals)
+replaces the sums by iterated integrals, [regions bounded by
+curves](/calculus/double-integrals/regions-and-order-of-integration) extend the
+construction beyond rectangles and a [change of
+variables](/calculus/double-integrals/change-of-variables-and-polar-coordinates)
+reshapes the iterated integrals.
+
+## From one variable to two
+
+For a one-variable partition
+
+$$
+a=x_0<x_1<\cdots<x_m=b,
+$$
+
+the $i$th subinterval has length $\Delta x_i=x_i-x_{i-1}$. Choosing a tag
+$x_i^*$ in each interval produces
+
+$$
+\sum_{i=1}^m f(x_i^*)\,\Delta x_i.
+$$
+
+The integral is the limit of these sums as the partition becomes fine,
+provided the limit does not depend on the tags. Over a rectangle
+
+$$
+R=[a,b]\times[c,d],
+$$
+
+we partition both coordinates:
+
+$$
+a=x_0<\cdots<x_m=b,
+\qquad
+c=y_0<\cdots<y_n=d.
+$$
+
+The resulting small rectangles are
+
+$$
+R_{ij}=[x_{i-1},x_i]\times[y_{j-1},y_j],
+\qquad
+\Delta A_{ij}=\Delta x_i\,\Delta y_j.
+$$
+
+The mesh of this product partition is the largest side length among the small
+rectangles:
+
+$$
+\lVert P\rVert=\max\left\{\max_i\Delta x_i,\ \max_j\Delta y_j\right\}.
+$$
+
+“The partition becomes fine” means that $\lVert P\rVert\to0$.
+
+<Definition slug="double-riemann-sum">
+
+### Double Riemann sum
+
+<Statement>
+
+For a partition of $R$ into rectangles $R_{ij}$ and tag points
+$(x_{ij}^*,y_{ij}^*)\in R_{ij}$, the corresponding double Riemann sum is
+
+$$
+\sum_{i=1}^{m}\sum_{j=1}^{n}
+f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}.
+$$
+
+</Statement>
+
+When $f\ge 0$, each term approximates the volume of a box above $R_{ij}$.
+When $f$ takes both signs, the sum approximates a signed volume: contributions
+below the $xy$-plane are subtracted.
+
+</Definition>
+
+<Definition slug="double-integral-over-rectangle" of="double-riemann-sum">
+
+### Double integral over a rectangle
+
+<Statement>
+
+Let $f$ be bounded on $R=[a,b]\times[c,d]$. If there is a number $I$ such
+that, for every $\varepsilon>0$, some $\delta>0$ makes every tagged
+partition with $\lVert P\rVert<\delta$ satisfy
+
+$$
+\left|
+\sum_{i=1}^{m}\sum_{j=1}^{n}
+f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}-I
+\right|<\varepsilon,
+$$
+
+then $f$ is Riemann integrable over $R$ and
+
+$$
+\iint_R f(x,y)\,dA
+ =
+\lim
+\sum_{i=1}^{m}\sum_{j=1}^{n}
+f(x_{ij}^*,y_{ij}^*)\,\Delta A_{ij}.
+$$
+
+</Statement>
+
+The notation
+
+$$
+dA=dx\,dy=dy\,dx
+$$
+
+records that area is being accumulated. It does not say which variable is
+integrated first.
+
+</Definition>
+
+## Upper and lower sums
+
+Upper and lower sums remove the arbitrary choice of tags. For each small
+rectangle $R_{ij}$, set
+
+$$
+m_{ij}=\inf_{(x,y)\in R_{ij}}f(x,y),
+\qquad
+M_{ij}=\sup_{(x,y)\in R_{ij}}f(x,y).
+$$
+
+Then
+
+$$
+m_{ij}\le f(x,y)\le M_{ij}
+\qquad ((x,y)\in R_{ij}),
+$$
+
+so multiplying by $\Delta A_{ij}$ and adding gives lower and upper bounds.
+
+<Definition slug="double-upper-lower-sums" of="double-integral-over-rectangle">
+
+### Upper and lower double Riemann sums
+
+<Statement>
+
+For a partition $P$ of $R$ into rectangles $R_{ij}$, the lower and upper
+double Riemann sums are
+
+$$
+L(f,P)=\sum_{i,j}m_{ij}\,\Delta A_{ij},
+\qquad
+U(f,P)=\sum_{i,j}M_{ij}\,\Delta A_{ij},
+$$
+
+where $m_{ij}$ and $M_{ij}$ are the infimum and supremum of $f$ on
+$R_{ij}$.
+
+</Statement>
+
+For a nonnegative $f$, $L(f,P)$ is the volume of the tallest boxes on the
+partition that fit below the graph and $U(f,P)$ is the volume of the shortest
+boxes that reach above it. For a signed $f$, the box heights are signed.
+Whenever the integral exists,
+
+$$
+L(f,P)\le \iint_R f\,dA\le U(f,P).
+$$
+
+</Definition>
+
+<Theorem slug="double-integrability-criterion" of="double-upper-lower-sums">
+
+### Criterion for Riemann integrability
+
+<Statement>
+
+A bounded function $f$ is Riemann integrable over $R$ if and only if, for
+every $\varepsilon>0$, there is a partition $P_\varepsilon$ such that
+
+$$
+0\le U(f,P_\varepsilon)-L(f,P_\varepsilon)<\varepsilon.
+$$
+
+In that case,
+
+$$
+\iint_R f\,dA
+=\sup_P L(f,P)
+=\inf_P U(f,P).
+$$
+
+</Statement>
+
+This is equivalent to requiring that the tagged sums have a common limit. It
+is usually the easier criterion for proving integrability or
+non-integrability.
+
+</Theorem>
+
+<Theorem slug="continuous-double-integrability" of="double-integral-over-rectangle">
+
+### Continuous functions are integrable
+
+<Statement>
+
+Every continuous function on a rectangle is Riemann integrable over that
+rectangle.
+
+</Statement>
+
+On sufficiently small rectangles, continuity prevents large variation in
+$f$, so the upper and lower sums can be made arbitrarily close.
+
+Continuity is sufficient, not necessary: a discontinuous function may still
+be integrable.
+
+</Theorem>
+
+<Example slug="double-midpoint-approximation" of="double-riemann-sum" difficulty="routine">
+
+### A midpoint approximation
+
+Estimate the signed volume under
+
+$$
+f(x,y)=x+y^2
+$$
+
+over
+
+$$
+R=[-2,2]\times[0,4]
+$$
+
+by dividing $R$ into $4\times2$ rectangles and using their midpoints.
+
+Because $f$ is negative on part of this rectangle, the result estimates a
+signed volume, not the geometric volume between the graph and the $xy$-plane.
+For instance, $f(-\tfrac32,1)=-\tfrac12$, so that box contributes negatively.
+
+The subinterval widths are $\Delta x=1$ and $\Delta y=2$, so
+$\Delta A=2$. The midpoint $x$-values are
+
+$$
+-\frac32,\ -\frac12,\ \frac12,\ \frac32,
+$$
+
+and the midpoint $y$-values are $1$ and $3$. For $y=1$, the four function
+values sum to $4$; for $y=3$, they sum to $36$. Therefore
+
+$$
+\iint_R f\,dA
+\approx 2(4+36)=80.
+$$
+
+</Example>
+
+<Example slug="double-upper-lower-example" of="double-upper-lower-sums" difficulty="routine">
+
+### Upper and lower sums on eight squares
+
+Partition
+
+$$
+R=[0,1]\times[0,2]
+$$
+
+into eight squares of side length $\tfrac12$ and let
+
+$$
+f(x,y)=x^2y.
+$$
+
+The function is increasing in both variables on $R$, so on each small square
+the minimum is at the lower-left corner and the maximum at the upper-right
+corner. Every square has area $\tfrac14$, so
+
+$$
+\begin{aligned}
+L(f,P)
+&=
+\sum_{j=0}^{1}\sum_{k=0}^{3}
+\left(\frac j2\right)^2
+\left(\frac k2\right)\frac14
+=\frac{3}{16},\\
+U(f,P)
+&=
+\sum_{j=0}^{1}\sum_{k=0}^{3}
+\left(\frac{j+1}{2}\right)^2
+\left(\frac{k+1}{2}\right)\frac14
+=\frac{25}{16}.
+\end{aligned}
+$$
+
+Thus
+
+$$
+\frac{3}{16}\le\iint_R x^2y\,dA\le\frac{25}{16}.
+$$
+
+Refining the partition narrows the gap.
+
+</Example>
+
+<Example slug="nonintegrable-double-function" of="double-integrability-criterion" difficulty="challenge">
+
+### A function that is not integrable
+
+Define
+
+$$
+f(x,y)=
+\begin{cases}
+1,&\text{if $x$ and $y$ are both rational},\\
+0,&\text{if $x$ or $y$ is irrational}.
+\end{cases}
+$$
+
+Every rectangle contains points where both coordinates are rational and
+points where at least one is irrational. Hence on every small rectangle,
+
+$$
+m_{ij}=0,\qquad M_{ij}=1.
+$$
+
+For every partition $P$,
+
+$$
+L(f,P)=0,
+\qquad
+U(f,P)=\sum_{i,j}\Delta A_{ij}=\operatorname{Area}(R).
+$$
+
+The upper and lower sums never approach one another, so $f$ is not Riemann
+integrable.
+
+</Example>

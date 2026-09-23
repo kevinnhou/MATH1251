@@ -1,0 +1,291 @@
+---
+title: Infinite series
+description: Define infinite sums through partial sums and recognise geometric, telescoping and harmonic behaviour.
+tags: [calculus]
+ideas: [series, partial-sums, geometric-series]
+---
+
+This page gives meaning to an infinite sum
+
+$$
+\sum_{n=1}^{\infty}a_n=a_1+a_2+a_3+\cdots
+$$
+
+by taking the limit of its finite totals and evaluates the series whose totals have an exact formula. A [sequence](/calculus/taylor-series/sequences-and-limits) records individual terms; a series asks whether their accumulated totals settle.
+
+## Define an infinite sum through partial sums
+
+The partial sums are finite, so whether they converge is a question about sequences.
+
+<Recall of="sequence-convergence" />
+
+<Definition slug="partial-sums">
+
+### Partial sums
+
+<Statement>
+
+For a sequence $\{a_n\}$, the $k$-th partial sum is
+
+$$
+s_k=\sum_{n=1}^{k}a_n.
+$$
+
+</Statement>
+
+</Definition>
+
+<Definition slug="infinite-series" of="partial-sums">
+
+### Infinite series
+
+<Statement>
+
+The series $\sum_{n=1}^{\infty}a_n$ converges to $L$ precisely when its partial sums satisfy
+
+$$
+\lim_{k\to\infty}s_k=L,
+\qquad
+s_k=\sum_{n=1}^{k}a_n.
+$$
+
+In that case,
+
+$$
+\sum_{n=1}^{\infty}a_n=L.
+$$
+
+</Statement>
+
+The terms and the series answer different questions:
+
+- $a_n$ asks what happens to one term far out in the sequence;
+- $\sum a_n$ asks what happens to the accumulated totals.
+
+A convergent series must have $a_n\to0$, but this is not sufficient: the harmonic series
+below is the standard counterexample.
+
+</Definition>
+
+<Proposition slug="finite-series-changes" of="infinite-series">
+
+### Finite changes do not affect convergence
+
+<Statement>
+
+Adding, removing or changing finitely many terms does not affect whether a series converges.
+If two series converge, their termwise sum and scalar multiples also converge.
+
+</Statement>
+
+Changing finitely many terms changes the partial sums by a fixed amount after the changed
+terms have been passed. A fixed amount can change the sum, but not whether the partial-sum
+sequence has a finite limit.
+
+</Proposition>
+
+## Series with exact algebraic structure
+
+Some series can be handled without a comparison theorem because their finite partial sums
+have a clear pattern. Geometric series use a closed formula; telescoping series use
+cancellation. In both cases, write the finite sum first and take its limit afterwards.
+
+<Method slug="geometric-series-method" of="infinite-series">
+
+### Evaluate a geometric series
+
+<Statement>
+
+For $r\ne1$, first compute the finite partial sum
+
+$$
+1+r+\cdots+r^N=\frac{1-r^{N+1}}{1-r}.
+$$
+
+Then let $N\to\infty$. The geometric series converges exactly when $|r|<1$ and in that
+case
+
+$$
+\sum_{n=0}^{\infty}r^n=\frac1{1-r}.
+$$
+
+</Statement>
+
+If $|r|>1$, the terms do not approach zero. If $r=1$, the partial sums grow without bound,
+and if $r=-1$, they oscillate.
+
+</Method>
+
+<Example slug="geometric-series-example" of="geometric-series-method" difficulty="routine">
+
+### A geometric sum
+
+For $r=1/2$,
+
+$$
+\sum_{n=1}^{\infty}\frac1{2^n}
+=\frac12+\frac14+\frac18+\cdots
+=\frac{1/2}{1-1/2}=1.
+$$
+
+</Example>
+
+The geometric formula works because every term is a fixed multiple of the preceding one.
+Telescoping uses a different kind of repetition: neighbouring terms cancel, leaving only a
+small boundary contribution.
+
+<Method slug="telescoping-series-method" of="infinite-series">
+
+### Evaluate a telescoping series
+
+<Statement>
+
+If a term can be written as
+
+$$
+a_n=b_n-b_{n+1},
+$$
+
+then the finite partial sum is
+
+$$
+\sum_{n=0}^{N}a_n
+=\sum_{n=0}^{N}(b_n-b_{n+1})
+=b_0-b_{N+1}.
+$$
+
+Take the limit of the single uncancelled tail to decide convergence and find the sum.
+
+</Statement>
+
+Cancelling inside an infinite expression, without first writing the finite sum, can hide a
+divergent tail.
+
+</Method>
+
+<Example slug="factorial-telescoping-series" of="telescoping-series-method" difficulty="exam">
+
+### A factorial telescoping series
+
+Since
+
+$$
+\frac{k}{(k+1)!}
+=\frac1{k!}-\frac1{(k+1)!},
+$$
+
+we have
+
+$$
+\sum_{k=1}^{N}\frac{k}{(k+1)!}
+=1-\frac1{(N+1)!}
+\longrightarrow1.
+$$
+
+Therefore
+
+$$
+\sum_{k=1}^{\infty}\frac{k}{(k+1)!}=1.
+$$
+
+</Example>
+
+## Why vanishing terms are not enough
+
+For a general series there is no exact partial-sum formula, so the first question is whether
+the partial sums converge at all. The terms must vanish, but small terms can still
+accumulate without bound.
+
+<Theorem slug="nth-term-series-test" of="infinite-series">
+
+### The $n$-th term test
+
+<Statement>
+
+If
+
+$$
+\lim_{n\to\infty}a_n\ne0
+$$
+
+or the limit does not exist, then
+
+$$
+\sum_{n=1}^{\infty}a_n
+$$
+
+diverges. Equivalently,
+
+$$
+\sum a_n\text{ convergent}\quad\Longrightarrow\quad a_n\to0.
+$$
+
+</Statement>
+
+This is a divergence test, not a convergence test: when $a_n\to0$, more information is
+needed. Apply it first, because a nonzero term limit settles the question at once.
+
+</Theorem>
+
+<Example slug="nth-term-divergence" of="nth-term-series-test" difficulty="routine">
+
+### When the terms do not vanish
+
+Because
+
+$$
+\frac{2n}{3n+1}\longrightarrow\frac23\ne0,
+$$
+
+the series
+
+$$
+\sum_{n=0}^{\infty}\frac{2n}{3n+1}
+$$
+
+diverges.
+
+</Example>
+
+<Example slug="harmonic-series-divergence" of="nth-term-series-test" difficulty="exam">
+
+### The harmonic series
+
+Although
+
+$$
+\frac1n\longrightarrow0,
+$$
+
+the harmonic series diverges. Group its terms:
+
+$$
+1+\frac12
++\left(\frac13+\frac14\right)
++\left(\frac15+\cdots+\frac18\right)+\cdots.
+$$
+
+Every block after the first has total at least $1/2$: the block from
+$2^{j-1}+1$ to $2^j$ contains $2^{j-1}$ terms, each at least $1/2^j$. Hence the partial
+sums increase by at least $1/2$ from one block to the next and cannot converge.
+
+</Example>
+
+The contrasting series
+
+$$
+\sum_{n=1}^{\infty}\frac1{n^2}
+$$
+
+does converge; for $n\ge2$,
+
+$$
+\frac1{n^2}<\frac1{n(n-1)}
+=\frac1{n-1}-\frac1n,
+$$
+
+so comparison with a telescoping series proves convergence. The exact value
+$\pi^2/6$ is not needed for this convergence argument.
+
+Only special patterns give exact sums. For most series the task is to decide convergence without finding the sum, which is the job of the [convergence tests](/calculus/taylor-series/convergence-tests). The same tests later find the radius and endpoints of each [power series](/calculus/taylor-series/power-series).
+

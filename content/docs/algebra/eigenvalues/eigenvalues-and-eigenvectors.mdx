@@ -1,0 +1,260 @@
+---
+title: Eigenvalues and eigenvectors
+description: Directions that a linear map scales and the determinant test for finding them.
+tags: [algebra]
+ideas: [eigenvalues, eigenvectors, eigenspaces, characteristic-polynomials]
+---
+
+This page defines eigenvalues, eigenvectors and eigenspaces and gives the determinant test for finding them. A [matrix representation](/algebra/linear-transformations/matrix-representations) depends on the chosen [basis](/algebra/vector-spaces/basis-and-dimension) and the most useful basis vectors are those that the map sends to scalar multiples of themselves.
+
+Enough such vectors form an [eigenbasis](/algebra/eigenvalues/diagonalisation). That basis separates [matrix powers](/algebra/eigenvalues/spectral-applications), [linear ODE systems](/algebra/eigenvalues/linear-ode-systems) and [Markov systems](/algebra/eigenvalues/markov-systems) into scalar modes.
+
+## Invariant directions
+
+<Recall of="linear-map" />
+
+<Recall of="matrix-of-linear-map" />
+
+<Recall of="kernel-of-linear-map" />
+
+<Definition slug="eigenvalue" of="linear-map">
+
+### Eigenvalue
+
+<Statement>
+
+Let $T:V\to V$ be a linear map over a field $F$. A scalar
+$\lambda\in F$ is an *eigenvalue* of $T$ if there is a non-zero vector
+$v\in V$ such that
+
+$$
+T(v)=\lambda v.
+$$
+
+</Statement>
+
+The equation says that the line through $v$ is mapped into itself, with
+every vector on that line scaled by $\lambda$. A negative real $\lambda$
+reverses direction and $\lambda=0$ collapses the line to the origin. For
+a matrix $A$, the same condition is
+
+$$
+Av=\lambda v.
+$$
+
+</Definition>
+
+<Definition slug="eigenvector" of="eigenvalue">
+
+### Eigenvector
+
+<Statement>
+
+If $T(v)=\lambda v$ for a non-zero vector $v$, then $v$ is an *eigenvector* of $T$ corresponding to the eigenvalue $\lambda$.
+
+</Statement>
+
+The zero vector is excluded because $T(0)=\lambda 0$ holds for every scalar, so it says nothing about a direction. Any non-zero scalar multiple of an eigenvector is another eigenvector for the same eigenvalue.
+
+</Definition>
+
+<Example of="eigenvalue,eigenvector" difficulty="routine">
+
+### An eigenvector of differentiation
+
+Let $V=C^\infty(\mathbb R,\mathbb R)$, the vector space of smooth real-valued
+functions and let $T:V\to V$ be differentiation, $T(f)=f'$. For any real
+$\lambda$, the function
+
+$$
+f(x)=e^{\lambda x}
+$$
+
+satisfies
+
+$$
+T(f)=f'=\lambda e^{\lambda x}=\lambda f.
+$$
+
+Thus $e^{\lambda x}$ is an eigenvector of differentiation for the eigenvalue $\lambda$. For a matrix, the same test reads $Av=\lambda v$, which is the form used throughout [diagonalisation](/algebra/eigenvalues/diagonalisation).
+
+</Example>
+
+<Definition slug="eigenspace" of="eigenvalue,eigenvector,kernel-of-linear-map">
+
+### Eigenspace
+
+<Statement>
+
+For $A\in M_n(F)$ and an eigenvalue $\lambda\in F$, the *eigenspace*
+corresponding to $\lambda$ is
+
+$$
+E_\lambda=\ker_F(A-\lambda I).
+$$
+
+Its non-zero vectors are precisely the eigenvectors of $A$ corresponding to $\lambda$.
+
+</Statement>
+
+To find the eigenspace, solve the homogeneous system
+
+$$
+(A-\lambda I)v=0.
+$$
+
+The [kernel](/algebra/linear-transformations/kernel-image-rank) description makes the eigenspace a subspace, so it contains the zero vector even though the zero vector is not an eigenvector.
+
+</Definition>
+
+## The characteristic polynomial
+
+<Definition slug="characteristic-polynomial" of="matrix-of-linear-map" see="characteristic-equation">
+
+### Characteristic polynomial
+
+<Statement>
+
+For an $n\times n$ matrix $A$ over $F$, the *characteristic polynomial* is
+
+$$
+p_A(\lambda)=\det(A-\lambda I).
+$$
+
+The equation $p_A(\lambda)=0$ is the associated characteristic equation.
+
+</Statement>
+
+The characteristic polynomial turns the search for a non-zero solution of
+$(A-\lambda I)v=0$ into root-finding over the chosen field. A polynomial with
+no roots in $F$ may gain roots when the scalars are extended, for example
+from $\mathbb R$ to $\mathbb C$.
+
+Some texts define the polynomial as $\det(\lambda I-A)$ instead. For an
+$n\times n$ matrix this is $(-1)^n p_A(\lambda)$, so both conventions give
+the same eigenvalues.
+
+Two names clash with Calculus. The [characteristic equation of a scalar
+ODE](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)
+is a different object with the same name. In [constrained
+extrema](/calculus/functions-of-several-variables/constrained-extrema), the
+letter $\lambda$ denotes a Lagrange multiplier rather than an eigenvalue.
+
+</Definition>
+
+<Theorem slug="eigenvalue-root-criterion" of="eigenvalue,eigenvector,eigenspace,characteristic-polynomial">
+
+### The eigenvalue criterion
+
+<Statement>
+
+A scalar $\lambda\in F$ is an eigenvalue of $A$ if and only if
+
+$$
+p_A(\lambda)=\det(A-\lambda I)=0.
+$$
+
+For such a $\lambda$, the eigenvectors are the non-zero vectors in $\ker(A-\lambda I)$.
+
+</Statement>
+
+This determinant test is how eigenpairs are computed. [Diagonalisation](/algebra/eigenvalues/diagonalisation) then uses the full list of roots to build an eigenbasis.
+
+</Theorem>
+
+<Proof of="eigenvalue-root-criterion">
+
+The equation $Av=\lambda v$ is equivalent to $(A-\lambda I)v=0$. A non-zero solution exists exactly when $A-\lambda I$ is singular and a square matrix is singular exactly when its determinant is zero. The description of the eigenvectors then follows from the definition of the kernel.
+
+</Proof>
+
+<Theorem slug="matrix-eigenvalue-count" of="characteristic-polynomial" see="fundamental-theorem-of-algebra">
+
+### Counting eigenvalues
+
+<Statement>
+
+The characteristic polynomial of an $n\times n$ matrix is degree $n$. Over $\mathbb C$, it has $n$ roots counted with multiplicity and these roots are the eigenvalues of the matrix.
+
+</Statement>
+
+The roots exist by the
+[fundamental theorem of algebra](/algebra/complex-numbers/complex-polynomials).
+Their moduli and real parts later govern growth in [stability of systems](/algebra/complex-numbers/stability-of-systems).
+
+</Theorem>
+
+## Computing eigenpairs
+
+<Proposition slug="triangular-matrix-eigenvalues" of="characteristic-polynomial">
+
+### Eigenvalues of a triangular matrix
+
+<Statement>
+
+For a triangular matrix, the eigenvalues are its diagonal entries, counted with their multiplicities.
+
+</Statement>
+
+The matrix $A-\lambda I$ is still triangular, so its determinant is the product of its diagonal entries and no full expansion is needed.
+
+</Proposition>
+
+<Example slug="eigenvalues-of-ones-matrix" of="eigenvalue-root-criterion,eigenspace" difficulty="routine">
+
+### The matrix with all entries equal to one
+
+Let
+
+$$
+A=
+\begin{pmatrix}
+1&1\\
+1&1
+\end{pmatrix}.
+$$
+
+The characteristic polynomial is
+
+$$
+p_A(\lambda)
+=\det\begin{pmatrix}1-\lambda&1\\1&1-\lambda\end{pmatrix}
+=(1-\lambda)^2-1
+=\lambda(\lambda-2).
+$$
+
+Thus the eigenvalues are $0$ and $2$. For $\lambda=0$,
+
+$$
+A v=0
+\quad\Longrightarrow\quad
+v=\alpha\begin{pmatrix}1\\-1\end{pmatrix},
+$$
+
+so
+
+$$
+E_0=\operatorname{span}\left\{\begin{pmatrix}1\\-1\end{pmatrix}\right\}.
+$$
+
+For $\lambda=2$,
+
+$$
+(A-2I)v=0
+\quad\Longrightarrow\quad
+v=\alpha\begin{pmatrix}1\\1\end{pmatrix},
+$$
+
+so
+
+$$
+E_2=\operatorname{span}\left\{\begin{pmatrix}1\\1\end{pmatrix}\right\}.
+$$
+
+The two eigenspaces are perpendicular lines: $A$ doubles the component
+parallel to $(1,1)^{\mathsf T}$ and removes the component parallel to
+$(1,-1)^{\mathsf T}$. The roots $0$ and $2$ alone do not show this. The
+eigenspaces are what describe the action of the matrix and supply an
+eigenbasis.
+
+</Example>

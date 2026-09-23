@@ -1,0 +1,493 @@
+---
+title: Sequences and limits
+description: Make limits indexed by the integers precise and use them to control approximation and convergence.
+tags: [calculus]
+ideas: [sequences, limits, completeness]
+---
+
+This page makes precise what it means for a sequence to converge and collects the tools for proving that it does. For a fixed $x$, the [Taylor polynomials](/calculus/taylor-series/taylor-polynomials) form a sequence and an infinite Taylor expression means something at that $x$ only if this sequence settles towards a finite number. The same ideas then apply to the [partial sums](/calculus/taylor-series/infinite-series) that define an infinite series.
+
+## From increasing degree to sequences
+
+A sequence is indexed by integers, so its limit is taken as $n\to\infty$ through the
+integers, not as a real variable approaches a point.
+
+<Recall of="taylor-polynomial" />
+
+<Definition slug="real-sequence">
+
+### Real sequence
+
+<Statement>
+
+A real sequence is a function
+
+$$
+a:\mathbb N\to\mathbb R.
+$$
+
+Its value at $n$ is written $a_n$ and the sequence is written $\{a_n\}$.
+
+</Statement>
+
+The starting index may be $0$ or $1$; changing finitely many initial terms does not change
+the limit. We will use the index that makes a given recurrence or series easiest to state.
+
+Examples include
+
+$$
+a_n=n^2,\qquad b_n=(-1)^n,\qquad
+c_n=\frac1{n+1},\qquad d_n=e^{-n}.
+$$
+
+A function of a real variable and a sequence are different objects: a sequence records only
+integer-indexed values, although a function $f$ can generate the sequence $a_n=f(n)$.
+Sequences may also be recursive, as in
+
+$$
+a_1=a_2=1,\qquad a_{n+1}=a_n+a_{n-1}\quad(n\ge2).
+$$
+
+</Definition>
+
+## Convergence means controlling the tail
+
+The first terms of a sequence may be irregular, so convergence is a statement about the
+tail: for every tolerance, all terms after some index lie within that tolerance of one
+number.
+
+<Definition slug="sequence-convergence">
+
+### Convergence of a sequence
+
+<Statement>
+
+The sequence $\{a_n\}$ converges to $L$, written
+
+$$
+\lim_{n\to\infty}a_n=L,
+$$
+
+if
+
+$$
+\forall\varepsilon>0\ \exists N\in\mathbb N
+\text{ such that }n>N\implies |a_n-L|<\varepsilon.
+$$
+
+</Statement>
+
+The index $N$ may depend on $\varepsilon$. The condition says that, for each
+$\varepsilon$, the tail eventually lies inside $(L-\varepsilon,L+\varepsilon)$.
+If no finite $L$ has this property, the sequence diverges.
+
+Divergence includes several behaviours:
+
+- $a_n\to+\infty$, as for $n^2$;
+- $a_n\to-\infty$, as for $-n$;
+- bounded oscillation, as for $\sin n$;
+- unbounded oscillation, as for $(-1)^n n$.
+
+</Definition>
+
+<Example slug="epsilon-proof-sequence-limit" of="sequence-convergence" difficulty="routine">
+
+### Proving $2+\frac1{n+1}\to2$
+
+Let $a_n=2+\frac1{n+1}$. Given $\varepsilon>0$, choose an integer $N$ with
+$N>1/\varepsilon$. If $n>N$, then
+
+$$
+|a_n-2|
+=\frac1{n+1}
+<\frac1N
+<\varepsilon.
+$$
+
+</Example>
+
+The limit laws save repeating an $\varepsilon$ estimate for every algebraic expression.
+
+<Theorem slug="sequence-limit-laws" of="sequence-convergence">
+
+### Algebra and continuity of sequence limits
+
+<Statement>
+
+If $a_n\to K$ and $b_n\to L$, with $K$ and $L$ finite, then
+
+$$
+a_n\pm b_n\to K\pm L,\qquad
+a_nb_n\to KL,\qquad
+\frac{a_n}{b_n}\to\frac KL\quad(L\ne0).
+$$
+
+If $h$ is continuous at $K$, then
+
+$$
+a_n\to K\quad\Longrightarrow\quad h(a_n)\to h(K).
+$$
+
+</Statement>
+
+For example,
+
+$$
+\frac{4n^2-3n+2}{2n^2+6n+1}
+=\frac{4-3/n+2/n^2}{2+6/n+1/n^2}
+\longrightarrow2.
+$$
+
+If a real function has a limit as $x\to\infty$, its sampled sequence $f(n)$ has the same
+limit. The converse is false: $f(x)=\sin(\pi x)$ gives $f(n)=0$ for every integer $n$,
+although $f(x)$ has no limit as $x\to\infty$.
+
+</Theorem>
+
+## Practical limit tools: algebra, growth and squeeze
+
+When the limit laws do not apply directly, three tools help. Rationalisation exposes a
+hidden common scale, logarithms turn powers into products and squeezing replaces an
+unavailable exact formula with two manageable bounds.
+
+Growth rates are compared with asymptotic notation. For sequences, $a_n=O(b_n)$ means
+that $|a_n|\le C|b_n|$ for some constant $C$ and all sufficiently large $n$. When
+$b_n\ne0$ eventually, the stronger statement $a_n=o(b_n)$ means $a_n/b_n\to0$, while
+$a_n\sim b_n$ means $a_n/b_n\to1$.
+
+Thus $O(b_n)$ gives an upper scale, $o(b_n)$ is negligible relative to it and
+$a_n\sim b_n$ records the same leading behaviour. These are comparisons, not exact
+equalities. The [limit comparison test](/calculus/taylor-series/convergence-tests) uses
+the idea behind $\sim$ to transfer convergence between positive-term series.
+
+<Method slug="sequence-limit-techniques" of="sequence-limit-laws">
+
+### Simplify a sequence limit
+
+<Statement>
+
+For a sequence limit:
+
+1. simplify algebraically, dividing by the dominant power of $n$ when appropriate;
+2. rationalise when a square root creates a difference of large, nearly equal quantities;
+3. rewrite positive powers using logarithms and exponentials;
+4. use the squeeze theorem when direct limit laws do not apply;
+5. for a recursively defined sequence, prove convergence before solving the equation
+   obtained by taking its limit.
+
+</Statement>
+
+The order matters for recursive sequences. Solving a fixed-point equation first only finds
+possible limits; it does not prove that the sequence converges to one of them.
+
+</Method>
+
+<Example slug="rationalised-sequence-limit" of="sequence-limit-techniques" difficulty="routine">
+
+### Rationalising a square root
+
+For
+
+$$
+\sqrt{n^2+3n}-n,
+$$
+
+multiply by the conjugate:
+
+$$
+\begin{aligned}
+\sqrt{n^2+3n}-n
+&=\frac{(n^2+3n)-n^2}{\sqrt{n^2+3n}+n}\\
+&=\frac{3}{\sqrt{1+3/n}+1}
+\longrightarrow\frac32.
+\end{aligned}
+$$
+
+</Example>
+
+<Example slug="standard-sequence-limits" of="sequence-limit-techniques" difficulty="routine">
+
+### Logarithmic, root and geometric limits
+
+For every $\alpha>0$,
+
+$$
+\frac{\ln n}{n^\alpha}\longrightarrow0.
+$$
+
+L'Hôpital's rule applied to $\ln x/x^\alpha$ gives
+
+$$
+\frac{(1/x)}{\alpha x^{\alpha-1}}
+=\frac1{\alpha x^\alpha}\longrightarrow0.
+$$
+
+For fixed $x>0$,
+
+$$
+x^{1/n}=e^{(\ln x)/n}\longrightarrow1,
+\qquad
+n^{1/n}=e^{(\ln n)/n}\longrightarrow1.
+$$
+
+For $0<x<1$, geometric decay gives $x^n\to0$. Finally,
+
+$$
+\left(1+\frac1n\right)^n\longrightarrow e.
+$$
+
+Taking logarithms,
+
+$$
+n\ln\left(1+\frac1n\right)
+=\frac{\ln(1+1/n)}{1/n}
+\longrightarrow1,
+$$
+
+and exponentiating gives the result.
+
+</Example>
+
+<Theorem slug="sequence-squeeze-theorem" of="sequence-convergence">
+
+### Squeeze theorem for sequences
+
+<Statement>
+
+If, for all sufficiently large $n$,
+
+$$
+a_n\le b_n\le c_n,
+$$
+
+and $a_n\to L$ and $c_n\to L$, then $b_n\to L$.
+
+</Statement>
+
+Only the tail needs to satisfy the inequalities. This helps with growth estimates when an
+exact formula for the middle sequence is unavailable.
+
+</Theorem>
+
+<Example slug="factorial-growth-squeeze" of="sequence-squeeze-theorem" difficulty="routine">
+
+### A factorial sequence
+
+For
+
+$$
+0<\frac{n!}{n^n}
+=\prod_{k=1}^{n}\frac{k}{n},
+$$
+
+at least $\lfloor n/2\rfloor$ factors are at most $1/2$. Therefore
+
+$$
+0<\frac{n!}{n^n}
+\le\left(\frac12\right)^{\lfloor n/2\rfloor}
+\longrightarrow0.
+$$
+
+The rough hierarchy
+
+$$
+1,\quad \ln n,\quad n^p,\quad c^n,\quad n!,\quad n^n
+$$
+
+for fixed $p>0$ and $c>1$ helps choose comparisons, but it is not itself a proof of a
+limit.
+
+</Example>
+
+## Completeness supplies limits
+
+Some sequences can be shown to converge without any formula for the limit. The
+completeness of the real numbers is what supplies the limit in those cases.
+
+<Definition slug="supremum-and-infimum">
+
+### Supremum and infimum
+
+<Statement>
+
+An upper bound of $S\subseteq\mathbb R$ is a number $M$ satisfying $x\le M$ for every
+$x\in S$. The supremum $\sup S$ is the least upper bound. Dually, a lower bound
+satisfies $m\le x$ for every $x\in S$ and the infimum $\inf S$ is the greatest lower
+bound.
+
+</Statement>
+
+The supremum or infimum need not belong to the set. For $S=(0,1)$, $\sup S=1$ and
+$\inf S=0$, although neither endpoint is in $S$. This distinction will matter when the
+endpoints of a power-series interval are tested.
+
+</Definition>
+
+<Theorem slug="real-number-completeness" of="supremum-and-infimum">
+
+### Completeness of the real numbers
+
+<Statement>
+
+Every non-empty subset of $\mathbb R$ that is bounded above has a supremum and every
+non-empty subset bounded below has an infimum.
+
+</Statement>
+
+The characterisation
+
+$$
+M=\sup S
+$$
+
+is equivalent to:
+
+1. $x\le M$ for every $x\in S$;
+2. for every $\varepsilon>0$, some $x\in S$ satisfies $M-\varepsilon<x$.
+
+The second condition says that no smaller number remains an upper bound. Reversing the
+inequalities gives the corresponding characterisation of an infimum.
+
+</Theorem>
+
+## Bounded monotone and recursive sequences
+
+Monotonicity gives a direction, while a bound prevents the sequence from escaping. Together
+they prove convergence even when no closed formula for $a_n$ is available.
+
+<Definition slug="monotone-sequence">
+
+### Monotone sequence
+
+<Statement>
+
+A sequence is non-decreasing if $a_{n+1}\ge a_n$ for every $n$ and non-increasing
+if $a_{n+1}\le a_n$ for every $n$.
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="monotone-convergence-theorem" of="monotone-sequence">
+
+### Monotone convergence theorem
+
+<Statement>
+
+A non-decreasing sequence bounded above converges. A non-increasing sequence bounded below
+converges.
+
+</Statement>
+
+The theorem guarantees a finite limit without giving a formula for it. Completeness
+supplies the least upper bound or greatest lower bound that becomes the limit.
+
+</Theorem>
+
+<Proof of="monotone-convergence-theorem">
+
+For a non-decreasing sequence bounded above, let $L=\sup\{a_n:n\in\mathbb N\}$.
+Given $\varepsilon>0$, some term $a_N$ is greater than $L-\varepsilon$; otherwise
+$L-\varepsilon$ would be a smaller upper bound. Monotonicity gives
+$L-\varepsilon<a_N\le a_n\le L$ for all $n\ge N$, so $a_n\to L$.
+The non-increasing case uses the infimum in the same way.
+
+</Proof>
+
+<Example slug="monotone-sequence-examples" of="monotone-convergence-theorem" difficulty="routine">
+
+### Two monotone sequences
+
+The sequence
+
+$$
+a_n=\frac n{n+1}
+$$
+
+is increasing and bounded above by $1$, so it converges. Its limit is $1$.
+
+For
+
+$$
+b_n=\frac{2^n}{n!},
+$$
+
+we have
+
+$$
+\frac{b_{n+1}}{b_n}=\frac2{n+1}<1
+$$
+
+once $n\ge2$. It is eventually decreasing and bounded below by $0$, so it converges.
+Its limit is $0$, because the ratio is at most $1/2$ for $n\ge3$, so
+$b_n\le b_3(1/2)^{n-3}$ for all later terms.
+
+</Example>
+
+<Method slug="recursive-sequence-convergence" of="monotone-convergence-theorem">
+
+### Analyse a recursive sequence
+
+<Statement>
+
+For a recursive sequence:
+
+1. find candidate limits by solving the fixed-point equation;
+2. prove a bound that is preserved by the recursion;
+3. prove monotonicity on that bounded region;
+4. invoke the Monotone Convergence Theorem;
+5. use continuity to substitute the now-established limit into the recursion;
+6. select the algebraic root compatible with the bound.
+
+</Statement>
+
+</Method>
+
+<Example slug="recursive-square-root-sequence" of="recursive-sequence-convergence" difficulty="challenge">
+
+### A recursively defined sequence
+
+Let
+
+$$
+a_1=4,\qquad a_{n+1}=\sqrt{1+3a_n}.
+$$
+
+The positive solution of the fixed-point equation $L^2=1+3L$ is
+
+$$
+\alpha=\frac{3+\sqrt{13}}2.
+$$
+
+Since $a_1=4\ge\alpha$ and since
+$$
+a_n\ge\alpha\quad\Longrightarrow\quad
+1+3a_n\ge1+3\alpha=\alpha^2,
+$$
+the recursion gives $a_{n+1}=\sqrt{1+3a_n}\ge\alpha$. Induction therefore
+gives $a_n\ge\alpha$ for every $n$. For $a_n\ge\alpha$,
+
+$$
+a_{n+1}\le a_n
+\quad\Longleftrightarrow\quad
+1+3a_n\le a_n^2,
+$$
+
+and the latter holds because $a_n^2-3a_n-1\ge0$ for $a_n\ge\alpha$. Thus $\{a_n\}$ is
+decreasing and bounded below by $\alpha$, so it converges.
+
+If $a_n\to L$, continuity of the square-root function gives
+
+$$
+L=\sqrt{1+3L}.
+$$
+
+The sequence is positive, so the compatible root is
+
+$$
+{\lim_{n\to\infty}a_n=\frac{3+\sqrt{13}}2.}
+$$
+
+</Example>
+
+Partial sums are themselves sequences, so the tools above decide their convergence. [Infinite series](/calculus/taylor-series/infinite-series) defines convergence through partial sums and [convergence tests](/calculus/taylor-series/convergence-tests) turns that definition into usable tests.

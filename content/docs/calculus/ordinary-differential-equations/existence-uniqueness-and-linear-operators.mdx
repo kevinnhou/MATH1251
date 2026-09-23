@@ -1,0 +1,212 @@
+---
+title: Existence, uniqueness and linear operators
+description: What guarantees a local IVP solution and why linear solutions form an affine translate of a kernel.
+tags: [calculus]
+ideas: [existence-and-uniqueness, linear-operators, solution-spaces]
+---
+
+This page answers two questions that the solution methods leave open. Does an
+initial value problem have a solution near the initial point and do the data
+determine it uniquely? For linear equations, it also explains why every
+solution is one particular solution plus a homogeneous one.
+
+The existence theorem accounts for the different IVP outcomes in [ODE
+fundamentals](/calculus/ordinary-differential-equations/ode-fundamentals) and
+its Lipschitz condition underlies the error estimates for [numerical
+solutions](/calculus/ordinary-differential-equations/numerical-solutions). The
+operator structure is the one used for [second-order constant-coefficient
+equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations).
+
+## Existence and uniqueness
+
+<Definition slug="lipschitz-in-dependent-variable">
+
+### Lipschitz condition in the dependent variable
+
+<Statement>
+
+A function $f(x,y)$ satisfies a Lipschitz condition in $y$ on a region when
+there is a constant $M$ such that, for each fixed $x$ and all $y_1,y_2$ with
+$(x,y_1)$ and $(x,y_2)$ in the region,
+
+$$
+|f(x,y_1)-f(x,y_2)|
+\leq M|y_1-y_2|
+$$
+
+</Statement>
+
+The condition controls how quickly the slope field can change as $y$ changes. It is stronger than continuity in $y$ and prevents two solution curves through the same initial point from separating while they remain in the region.
+
+</Definition>
+
+<Theorem slug="local-existence-uniqueness" of="lipschitz-in-dependent-variable">
+
+### Local existence and uniqueness
+
+<Statement>
+
+For the IVP
+
+$$
+y'=f(x,y),\qquad y(x_0)=y_0,
+$$
+
+if $f$ is continuous and satisfies a Lipschitz condition in $y$ on a
+rectangle contained in its domain and containing $(x_0,y_0)$, then the IVP has
+a unique solution on some interval around $x_0$. The conclusion is local; a
+global solution needs the hypotheses to remain valid along the solution.
+
+</Statement>
+
+The Lipschitz condition is sufficient, not necessary: if it fails, uniqueness
+may still hold.
+
+</Theorem>
+
+<Example slug="existence-uniqueness-examples" of="local-existence-uniqueness" difficulty="challenge">
+
+### Reading the hypotheses
+
+The theorem explains the four outcomes from ODE fundamentals:
+
+- For $f(x,y)=x$, the function is continuous and independent of $y$, so the IVP $y'=x$, $y(0)=1$ is uniquely determined.
+- For $f(y)=3y^{2/3}$ (interpreting the real power as
+  $|y|^{2/3}$), the Lipschitz condition fails near $y=0$. This failure alone
+  does not imply nonuniqueness, but here the IVP $y'=3y^{2/3}$, $y(0)=0$ has
+  the distinct solutions $y=0$ and $y=x^3$, since
+  $(x^3)'=3x^2=3|x^3|^{2/3}$.
+- In $xy'=y-1$, the coefficient of $y'$ vanishes at $x=0$, so the equation cannot be put into the usual normal form $y'=f(x,y)$ at the initial point.
+- The equation $|y'|+|y|=0$ forces $y=0$, which is incompatible with $y(0)=1$; no solution satisfies that data.
+
+</Example>
+
+## Linear differential operators
+
+<Definition slug="linear-differential-operator">
+
+### Linear differential operator
+
+<Statement>
+
+On an interval $I$ where its leading coefficient is nonzero, a linear
+differential operator of order $n$ can be divided by that coefficient and
+written in the normalised form
+
+$$
+T[y]
+=y^{(n)}+a_{n-1}(x)y^{(n-1)}
++\cdots+a_1(x)y'+a_0(x)y.
+$$
+
+It satisfies
+
+$$
+T[y_1+y_2]=T[y_1]+T[y_2],
+\qquad
+T[\lambda y_1]=\lambda T[y_1].
+$$
+
+</Statement>
+
+Linearity follows by distributing derivatives and collecting terms. The constant-coefficient operator $T[y]=y''+ay'+by$ is the operator used in [second-order constant-coefficient equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) and its characteristic equation.
+
+</Definition>
+
+<Definition slug="operator-kernel" see="kernel-of-linear-map">
+
+### Kernel of an operator
+
+<Statement>
+
+The kernel of a linear differential operator $T$ is
+
+$$
+\ker(T)=\{y:T[y]=0\}.
+$$
+
+</Statement>
+
+The kernel is exactly the set of homogeneous solutions. Adding an element of
+the kernel to a particular solution leaves the forcing unchanged. This is the
+differential-equation version of the [kernel of a linear map](/algebra/linear-transformations/kernel-image-rank):
+the kernel contains the inputs the operator sends to zero.
+
+</Definition>
+
+<Theorem slug="affine-solution-set" of="linear-differential-operator,operator-kernel" see="solution-classes-of-ax-b">
+
+### All forced solutions are an affine translate
+
+<Statement>
+
+If $T[y]=f$ and $y_p$ is one particular solution, then
+
+$$
+\{\text{all solutions of }T[y]=f\}
+=y_p+\ker(T).
+$$
+
+Equivalently, every solution is $y_p+y_h$ for some homogeneous solution $y_h$.
+
+</Statement>
+
+The solution set is generally not a vector space when $f\neq0$, because it need not contain the zero function. It is a translate of the homogeneous solution space, as for [solution classes of linear systems](/algebra/linear-transformations/rank-nullity).
+
+</Theorem>
+
+<Proof of="affine-solution-set">
+
+If $y_h\in\ker(T)$, then
+
+$$
+T[y_p+y_h]=T[y_p]+T[y_h]=f+0=f,
+$$
+
+so every element of $y_p+\ker(T)$ is a solution. Conversely, if $y$ is any solution of $T[y]=f$, then
+
+$$
+T[y-y_p]=T[y]-T[y_p]=f-f=0.
+$$
+
+Thus $y-y_p\in\ker(T)$, so $y=y_p+y_h$ for some $y_h\in\ker(T)$.
+
+</Proof>
+
+<Example slug="operator-first-order-example" of="affine-solution-set" difficulty="routine">
+
+### A particular solution translated by the kernel
+
+For
+
+$$
+y'+\frac{y}{x}=x,
+$$
+
+on an interval with $x\neq0$, take
+
+$$
+T[y]=y'+\frac{y}{x}.
+$$
+
+The homogeneous equation $T[y]=0$ has solution
+
+$$
+y_h=\frac{C}{x}.
+$$
+
+A particular solution is $y_p=x^2/3$, since
+
+$$
+T\left[\frac{x^2}{3}\right]
+=\frac{2x}{3}+\frac{x}{3}
+=x.
+$$
+
+Therefore the general solution is
+
+$$
+y=\frac{C}{x}+\frac{x^2}{3}.
+$$
+
+</Example>

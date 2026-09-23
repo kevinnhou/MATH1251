@@ -1,0 +1,320 @@
+---
+title: Language
+description: Foundational words and conventions used throughout the course.
+tags: [core, foundations]
+ideas: [sets, functions, logic, notation, exactness]
+---
+
+This page collects the general vocabulary that the chapters assume before
+their own terminology begins. These words are easy to skim past, but confusing
+two of them can make a straightforward question feel opaque. Each chapter
+defines its own terms where they first appear.
+
+## Objects, sets and membership
+
+- **Mathematical object:** anything being studied, such as a number, vector,
+  matrix, polynomial, function, sequence or set. The word deliberately avoids
+  committing to a particular kind.
+- **Set:** a collection of distinct objects. Order and repetition do not
+  matter. The notation $x\in S$ means “$x$ is an element of $S$”.
+- **Element or member:** one object belonging to a set. $x\in S$ and
+  $S\ni x$ mean the same thing.
+- **Subset:** $A\subseteq B$ means every element of $A$ is also an element of
+  $B$; equality is allowed. Some books write $A\subset B$ for a proper subset,
+  so check the local convention.
+- **Proper subset:** a subset that is not the whole set, written
+  $A\subsetneq B$.
+- **Empty set:** the set $\varnothing$ with no elements. It is a subset of
+  every set.
+- **Set-builder notation:** $\{x\in X: P(x)\}$ is the set of elements of $X$
+  for which the condition $P(x)$ holds. A vertical bar may replace the colon.
+- **Union:** $A\cup B$ contains the elements in $A$, in $B$, or in both.
+- **Intersection:** $A\cap B$ contains the elements common to both sets.
+- **Cartesian product:** $A\times B$ is the set of ordered pairs $(a,b)$ with
+  $a\in A$ and $b\in B$. The plane $\mathbb R^2$ is $\mathbb R\times\mathbb R$.
+- **Family:** an indexed collection, such as $\{v_1,\ldots,v_k\}$ or
+  $\{f_t:t\ge0\}$. Unlike a plain set, the indexing can make order or
+  repetition meaningful.
+
+## Numbers and number systems
+
+- **Natural numbers $\mathbb N$:** in these notes, $\mathbb N=\{0,1,2,\ldots\}$.
+  This suits recurrences that start at $n=0$ and Taylor sums that begin with
+  their constant term. A sum or sequence may still start at $n=1$ or another
+  index; that starting index is part of the displayed definition, not a
+  different convention for $\mathbb N$.
+- **Integers $\mathbb Z$:** the positive and negative whole numbers together
+  with zero.
+- **Rational numbers $\mathbb Q$:** ratios $p/q$ of integers with $q\ne0$.
+- **Real numbers $\mathbb R$:** the numbers on the continuous number line,
+  both rational and irrational. They are the usual scalars for calculus.
+- **Complex numbers $\mathbb C$:** numbers $a+bi$ with $a,b\in\mathbb R$ and
+  $i^2=-1$. They include the real numbers and every nonconstant complex
+  polynomial factors completely over them.
+- **Scalar:** a number used to scale another object, usually real or complex
+  in this course. “Scalar” describes a role, not a new number system.
+- **Coefficient:** a scalar multiplying a term, vector or basis element.
+- **Constant:** a quantity held fixed within the current problem. It may still
+  be an unspecified parameter.
+- **Parameter:** a symbol that labels a family of problems or objects. It is
+  usually held fixed while the other variables are analysed and one then asks
+  how the result changes as the parameter changes.
+
+The number systems are nested:
+
+$$
+\mathbb N\subset\mathbb Z\subset\mathbb Q\subset\mathbb R\subset\mathbb C.
+$$
+
+## Variables, indices and dimensions
+
+- **Variable:** a symbol that can take values in a specified domain.
+- **Independent variable:** the input of a function, often $x$ or time $t$.
+- **Dependent variable:** a quantity determined by the independent variable,
+  such as $y(t)$.
+- **Dummy variable:** a bound symbol whose name carries no meaning, as in
+  $\int_0^1 f(x)\,dx=\int_0^1 f(t)\,dt$.
+- **Index:** a label such as $n$, $i$ or $j$ that selects an entry or term. It
+  need not represent a physical quantity.
+- **Dimension:** the meaning depends on context. The dimension of a vector
+  space is the number of vectors in a basis; the dimensions of a matrix are
+  its row and column counts. A domain $D\subseteq\mathbb R^n$ has ambient
+  dimension $n$; other notions, such as the dimension of a curve inside
+  $\mathbb R^n$, must be specified separately.
+
+## Functions and maps
+
+- **Function or map:** a rule that assigns exactly one output to each allowed
+  input. The notation $f:X\to Y$ names the domain $X$ and codomain $Y$.
+- **Domain:** the set of allowed inputs.
+- **Codomain:** the declared set in which outputs live. It is part of the
+  function's specification.
+- **Image or range:** the outputs actually produced,
+  $\operatorname{im}f=\{f(x):x\in X\}$. It is a subset of the codomain.
+- **Image of a subset:** for $A\subseteq X$, $f(A)=\{f(a):a\in A\}$.
+- **Preimage or inverse image:** for $B\subseteq Y$,
+  $f^{-1}(B)=\{x\in X:f(x)\in B\}$. This makes sense even when $f$ has no
+  inverse function.
+- **Formula:** an expression that describes a function or quantity. A function
+  is more than its formula: the same formula on a different domain or codomain
+  can define a different function.
+- **Composition:** $(g\circ f)(x)=g(f(x))$. The outputs of $f$ must be valid
+  inputs for $g$. Composition is usually not commutative.
+- **Identity map:** $\operatorname{id}_X(x)=x$. Composing a map with it
+  changes nothing.
+- **Restriction:** the same rule applied on a smaller domain.
+- **Injective or one-to-one:** different inputs give different outputs.
+- **Surjective or onto:** every element of the codomain is attained.
+- **Bijective:** both injective and surjective. These are exactly the
+  functions that have an inverse function on their stated domain and codomain.
+
+## Expressions, equations and identities
+
+- **Expression:** a mathematical phrase such as $x^2+1$. It has a value once
+  its variables are specified, but makes no claim by itself.
+- **Equation:** a claim that two expressions are equal under stated
+  conditions. Solving it means finding the values that make the claim true.
+- **Identity:** an equality that holds for every value in its stated domain,
+  such as $\sin^2x+\cos^2x=1$. An equation may hold only for selected values.
+- **Inequality:** a comparison using $<,\le,>,\ge$. Bounds and estimates are
+  written as inequalities.
+- **System:** several equations or conditions required at once.
+- **Solution:** an object that satisfies every condition in the problem.
+- **Solution set:** the collection of all solutions. Finding one solution does
+  not solve the problem unless uniqueness is known.
+- **Constraint:** a condition that restricts the allowed candidates.
+- **Homogeneous equation:** in a linear setting, an equation with zero on the
+  forced side, such as $Ax=0$ or $L[y]=0$.
+- **Inhomogeneous, nonhomogeneous or forced equation:** a linear equation with
+  a nonzero right-hand side, such as $Ax=b$ or $L[y]=g$.
+
+## Logic words inside ordinary sentences
+
+- **For all $\forall$:** every allowed object has the property. One
+  counterexample defeats the statement.
+- **There exists $\exists$:** at least one object has the property. This does
+  not assert uniqueness.
+- **There exists a unique $\exists!$:** exactly one object has the property.
+- **Implies $\Rightarrow$:** whenever the first statement is true, so is the
+  second.
+- **If and only if $\Leftrightarrow$:** each statement implies the other.
+  Often abbreviated “iff”, it expresses an equivalence.
+- **Necessary condition:** $Q$ is necessary for $P$ when $P\Rightarrow Q$.
+  Without $Q$, $P$ cannot occur.
+- **Sufficient condition:** $P$ is sufficient for $Q$ when $P\Rightarrow Q$.
+  $P$ guarantees $Q$, though it may not be the only way to obtain $Q$.
+- **Equivalent conditions:** conditions that imply one another and so
+  describe the same class of objects from different viewpoints.
+- **Contrapositive:** $P\Rightarrow Q$ is logically equivalent to
+  $\neg Q\Rightarrow\neg P$. It is not the converse $Q\Rightarrow P$, which
+  may be false.
+- **Without loss of generality:** a symmetry or relabelling makes the omitted
+  cases genuinely equivalent to the one considered. It is not permission to
+  ignore inconvenient cases.
+
+## Definitions, theorems and proofs
+
+- **Definition:** a convention that fixes the meaning of a term. A definition
+  is not proved, though one may prove that an object satisfies it.
+- **Axiom:** a foundational rule accepted within a mathematical system. The
+  vector-space axioms, for example, specify how the two operations must
+  behave.
+- **Theorem:** a claim proved from definitions, axioms and earlier results.
+- **Proposition:** usually a theorem of more local scope, with the same
+  mathematical status.
+- **Lemma:** a result proved mainly to help prove another.
+- **Corollary:** a result that follows quickly from a previous theorem.
+- **Hypothesis or assumption:** a condition taken as true in a theorem or
+  argument.
+- **Conclusion:** what follows when the hypotheses hold.
+- **Proof:** a logical argument showing that the conclusion follows from the
+  hypotheses.
+- **Example:** an object that illustrates a possibility. It does not prove a
+  universal claim.
+- **Counterexample:** one example that satisfies the hypotheses of a proposed
+  claim but violates its conclusion. It disproves a universal claim.
+- **Conjecture:** a claim believed to be true but not yet proved in the
+  current context.
+
+## Operations and structural adjectives
+
+- **Unary operation:** takes one input, such as complex conjugation.
+- **Binary operation:** combines two inputs, such as addition or matrix
+  multiplication.
+- **Closed under an operation:** applying the operation to allowed elements
+  produces another allowed element.
+- **Commutative:** order does not matter: $a*b=b*a$.
+- **Associative:** grouping does not matter: $(a*b)*c=a*(b*c)$. This does not
+  permit changing the order.
+- **Distributive:** one operation spreads over another, as multiplication does
+  over addition.
+- **Linear:** preserves addition and scalar multiplication. Informally, it has
+  no interaction terms, powers or offsets relative to the stated vector-space
+  structures.
+- **Affine:** linear plus a fixed translation. The map $x\mapsto Ax+b$ is
+  affine and linear only when $b=0$.
+- **Nonlinear:** not linear. This does not mean random or unsolvable; it means
+  superposition cannot be assumed.
+- **Invariant:** kept within itself by an operation or map. An invariant
+  subspace may contain vectors that move, provided they stay in the subspace.
+- **Symmetric:** unchanged by a stated interchange or transformation. The word
+  has several precise uses; a symmetric matrix satisfies $A^{\mathsf T}=A$.
+
+## Exact, approximate and numerical
+
+- **Exact value:** a representation equal to the quantity itself, such as
+  $\sqrt2$ or $\pi/4$, rather than a rounded decimal.
+- **Approximation:** a simpler quantity used in place of the exact one, within
+  an understood context or error.
+- **Error:** exact value minus approximate value, with a sign convention that
+  should be stated. **Absolute error** is the magnitude of this difference;
+  **relative error** divides that magnitude by a nonzero exact or reference
+  magnitude.
+- **Error bound:** a guaranteed upper bound on the magnitude of an error. It
+  need not equal the actual error.
+- **Numerical method:** an algorithm that produces approximations through
+  arithmetic, often using a step size or a finite truncation.
+- **Symbolic method:** manipulates formulas to obtain an exact expression when
+  possible.
+- **Truncation:** stopping an infinite process after finitely many terms or
+  steps.
+- **Rounding:** replacing numbers by finite-precision representations.
+- **Order notation:** $f(x)=O(g(x))$ near a limit point $a$ means there are
+  constants $C,\delta>0$ such that $|f(x)|\le C|g(x)|$ whenever
+  $0<|x-a|<\delta$ on the stated domain. It describes scale, not literal
+  equality of formulas.
+
+## Local, global, discrete and continuous
+
+- **Local:** concerning behaviour near one point or over a short time. A local
+  maximum need not be the largest value on the whole domain.
+- **Global or absolute:** concerning the entire stated domain.
+- **Discrete:** indexed by separated steps, usually integers. Recurrences and
+  sequences describe discrete evolution.
+- **Continuous:** varying over an interval of real values. Differential
+  equations describe continuous-time evolution.
+- **Finite:** containing or using finitely many elements, terms or dimensions.
+- **Infinite:** not finite. Infinite sums and limiting processes are defined
+  through limits; they are not just very large finite calculations.
+- **Bounded:** confined within finite limits. The precise meaning depends on
+  whether the object is a set, function or sequence.
+- **Asymptotic behaviour:** behaviour as a variable approaches a limiting
+  regime, commonly $n\to\infty$, $t\to\infty$ or $x\to a$.
+
+## Distinctions that cut across chapters
+
+Most easily confused pairs are separated in the lists above. Three more come
+up in every chapter:
+
+| Nearby ideas | What changes? |
+|---|---|
+| Existence and uniqueness | Existence gives at least one object; uniqueness says there is at most one. A theorem may establish either or both. |
+| Definition, theorem and example | A definition fixes meaning, a theorem needs proof and an example illustrates a possibility without proving a universal claim. |
+| Object and representation | A vector, map or region is the object; coordinates, matrices and bounds are descriptions chosen for a calculation. |
+
+## When a symbol has several meanings
+
+The same letter can name different kinds of object in different chapters:
+
+- $i$: the imaginary unit or an integer index.
+- $r$: a polar radius, a characteristic root or a geometric-series ratio.
+- $\lambda$: an eigenvalue, a Lagrange multiplier or another parameter.
+- $A$: a matrix, a set, a coefficient or an arbitrary constant.
+- $D$: a region, a differentiation operator or a diagonal matrix.
+- $R$: a region, a Taylor remainder or a radius of convergence.
+- $P$: a polynomial, a probability, a population or a basis-change matrix.
+- $|\cdot|$: real absolute value or complex modulus. These notes usually write
+  determinants with $\det$ to keep the roles clear.
+
+Before a long calculation, note each symbol's object type and its role in that
+problem. In particular, distinguish the polynomial space $P_n(F)$ from a
+Taylor polynomial $P_n(x)$ and a domain $D$ from its coordinate bounds.
+
+## Reading a new definition
+
+Being able to repeat a definition is only the first layer. For each term, aim
+to know five things:
+
+1. **Definition:** the precise condition that makes the term apply.
+2. **Picture:** the informal idea the definition captures.
+3. **Test:** how to decide whether an example has the property.
+4. **Connections:** which earlier ideas it depends on and which later ideas
+   use it.
+5. **Non-example:** the nearest tempting idea that is not the same thing.
+
+When a dense definition appears, rewrite it in five lines:
+
+```text
+Object:              what kind of thing is being classified
+Property:            the name of the property
+Condition:           what the object must satisfy
+Closest non-example: the nearest thing that fails the condition
+Consequence:         what the property lets you do next
+```
+
+For example:
+
+```text
+Object:              a list of vectors
+Property:            linear independence
+Condition:           only the zero coefficients give the zero linear combination
+Closest non-example: a spanning list with a redundant vector
+Consequence:         coefficients in that list are unique
+```
+
+The consequence is often the real reason the term was introduced.
+
+## Before calculating
+
+1. Identify each object and its domain, codomain or feasible set.
+2. Separate the hypotheses from the conclusion you need.
+3. Decide whether the task asks for an exact value, an approximation or a
+   numerical estimate.
+4. Check whether a claim is local or global and whether the setting is
+   discrete or continuous.
+5. When changing coordinates, update the bases, bounds or area factor as the
+   relevant chapter requires.
+6. Check whether division, substitution or square roots have restricted the
+   domain or removed possible solutions.
+7. Decide whether a formula also needs an existence, uniqueness, convergence
+   or error argument.

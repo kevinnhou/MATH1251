@@ -1,0 +1,2230 @@
+---
+title: Seen Questions
+description: Worked solutions on linear maps, projections, kernels, images, rank-nullity and linear operators.
+tags: [seen, algebra, linear-transformations]
+ideas: [revision, linear-maps, kernels, images, rank-nullity, projections]
+---
+
+These past exam questions move between the abstract and coordinate views of a linear transformation. They run from basis data and coordinates, through operators on function spaces and geometric projections, to rank and dimension arguments.
+
+Some questions use eigenvalue or diagonalisation ideas from the [eigenvalues
+chapter](/algebra/eigenvalues/diagonalisation). They are marked
+**Later-topic preview**, so you can skip them on a first reading and return
+after studying that chapter. For the geometric picture, review [geometric
+examples](/algebra/linear-transformations/geometric-examples).
+
+In each solution, first identify the structural fact being tested, such as
+preservation of a linear combination or a kernel inclusion and only then
+carry out the calculation.
+
+<Recall of="linear-map-determined-by-basis" />
+
+<Example
+  slug="seen-linear-transformation-quadrilateral"
+  of="compute-coordinate-vector,linear-map-determined-by-basis,matrix-of-linear-map"
+  difficulty="exam"
+>
+
+### A linear transformation from a quadrilateral
+
+A mapping $T:\mathbb R^2\to\mathbb R^2$ is a linear transformation. A
+quadrilateral $ABCD$ and its image under $T$ have vertices
+
+$$
+A=(-3,1),\qquad B=(-1,1),\qquad C=(1,0),\qquad D=(1,-1),
+$$
+
+and
+
+$$
+T(A)=(-1,-3),\qquad T(B)=(-1,-1),\qquad
+T(C)=(0,1),\qquad T(D)=(1,1).
+$$
+
+(a) Find the coefficients $\alpha_1,\beta_1,\alpha_2,\beta_2$ such that
+
+$$
+\begin{pmatrix}1\\0\end{pmatrix}
+=\alpha_1
+\begin{pmatrix}-3\\1\end{pmatrix}
++\beta_1
+\begin{pmatrix}-1\\1\end{pmatrix};
+\qquad
+\begin{pmatrix}0\\1\end{pmatrix}
+=\alpha_2
+\begin{pmatrix}-3\\1\end{pmatrix}
++\beta_2
+\begin{pmatrix}-1\\1\end{pmatrix}.
+$$
+
+(b) Find a matrix $P$ such that $T(\mathbf{x})=P\mathbf{x}$.
+
+#### Solution
+
+The vectors on the right in part (a) are $A$ and $B$, so part (a) expresses the standard basis vectors $\mathbf e_1=(1,0)^{\mathsf T}$ and $\mathbf e_2=(0,1)^{\mathsf T}$ in terms of $A$ and $B$.
+This is possible because $A$ and $B$ are not parallel: the determinant of
+the matrix with columns $A$ and $B$ is $(-3)(1)-(-1)(1)=-2\ne0$.
+
+For $\mathbf e_1$, comparing coordinates gives
+
+$$
+-3\alpha_1-\beta_1=1,
+\qquad
+\alpha_1+\beta_1=0.
+$$
+
+The second equation gives $\beta_1=-\alpha_1$. Substitution into the first equation gives
+
+$$
+-3\alpha_1+\alpha_1=1
+\quad\Longrightarrow\quad
+-2\alpha_1=1
+\quad\Longrightarrow\quad
+\alpha_1=-\frac12,
+\qquad
+\beta_1=\frac12.
+$$
+
+For $\mathbf e_2$, the coordinate equations are
+
+$$
+-3\alpha_2-\beta_2=0,
+\qquad
+\alpha_2+\beta_2=1.
+$$
+
+Using $\beta_2=1-\alpha_2$ in the first equation gives
+
+$$
+-3\alpha_2-(1-\alpha_2)=0
+\quad\Longrightarrow\quad
+-2\alpha_2-1=0
+\quad\Longrightarrow\quad
+\alpha_2=-\frac12,
+\qquad
+\beta_2=\frac32.
+$$
+
+Hence
+
+$$
+{
+\alpha_1=-\frac12,\quad
+\beta_1=\frac12,\quad
+\alpha_2=-\frac12,\quad
+\beta_2=\frac32
+}.
+$$
+
+Because $T$ is linear, apply $T$ to these coordinate identities:
+
+$$
+\begin{aligned}
+T(\mathbf e_1)
+&=-\frac12T(A)+\frac12T(B)\\
+&=-\frac12
+\begin{pmatrix}-1\\-3\end{pmatrix}
++\frac12
+\begin{pmatrix}-1\\-1\end{pmatrix}\\
+&=\begin{pmatrix}0\\1\end{pmatrix},
+\end{aligned}
+$$
+
+and
+
+$$
+\begin{aligned}
+T(\mathbf e_2)
+&=-\frac12T(A)+\frac32T(B)\\
+&=-\frac12
+\begin{pmatrix}-1\\-3\end{pmatrix}
++\frac32
+\begin{pmatrix}-1\\-1\end{pmatrix}\\
+&=\begin{pmatrix}-1\\0\end{pmatrix}.
+\end{aligned}
+$$
+
+The columns of the standard-coordinate matrix are the images of $\mathbf e_1$ and $\mathbf e_2$. Therefore
+
+$$
+{
+P=
+\begin{pmatrix}
+0&-1\\
+1&0
+\end{pmatrix}
+}.
+$$
+
+For a check, this matrix sends the four given vertices to
+
+$$
+P
+\begin{pmatrix}-3\\1\end{pmatrix}
+=\begin{pmatrix}-1\\-3\end{pmatrix},
+\quad
+P
+\begin{pmatrix}-1\\1\end{pmatrix}
+=\begin{pmatrix}-1\\-1\end{pmatrix},
+$$
+
+$$
+P
+\begin{pmatrix}1\\0\end{pmatrix}
+=\begin{pmatrix}0\\1\end{pmatrix},
+\quad
+P
+\begin{pmatrix}1\\-1\end{pmatrix}
+=\begin{pmatrix}1\\1\end{pmatrix}.
+$$
+
+Thus the matrix agrees with every given image vertex. Part (a) recovers the
+standard-basis images from $T(A)$ and $T(B)$ and those images become the
+columns of $P$. This is the coordinate form of the fact that a linear map is
+determined by its values on a basis.
+
+</Example>
+
+<Recall of="linear-map-determined-by-basis" />
+
+<Example
+  slug="seen-partial-linear-map-values"
+  of="linear-map-determined-by-basis,finite-linear-combination-preservation"
+  difficulty="exam"
+>
+
+### Values of a partially specified linear transformation
+
+Let $T:\mathbb R^3\to\mathbb R^2$ be a linear transformation such that
+
+$$
+T(\mathbf e_1)=
+\begin{pmatrix}
+-9\\
+8
+\end{pmatrix}
+\qquad\text{and}\qquad
+T\begin{pmatrix}
+0\\
+1\\
+1
+\end{pmatrix}
+=
+\begin{pmatrix}
+2\\
+8
+\end{pmatrix},
+$$
+
+where $\mathbf e_1=(1,0,0)^T$.
+
+Using the information given, compute the following, or state that there is not enough information by entering the word **undetermined**.
+
+#### (a)
+
+$$
+T\begin{pmatrix}
+0\\
+0\\
+0
+\end{pmatrix}
+=\ ?
+$$
+
+#### (b)
+
+$$
+T\begin{pmatrix}
+0\\
+1\\
+0
+\end{pmatrix}
+=\ ?
+$$
+
+#### (c)
+
+$$
+T\begin{pmatrix}
+1\\
+1\\
+1
+\end{pmatrix}
+=\ ?
+$$
+
+Now suppose that you also know
+
+$$
+T(\mathbf e_3)=
+\begin{pmatrix}
+4\\
+-9
+\end{pmatrix}.
+$$
+
+#### (d)
+
+Compute all of the vectors that you could not compute above:
+
+$$
+T\begin{pmatrix}
+0\\
+0\\
+0
+\end{pmatrix},
+\qquad
+T\begin{pmatrix}
+0\\
+1\\
+0
+\end{pmatrix},
+\qquad
+T\begin{pmatrix}
+1\\
+1\\
+1
+\end{pmatrix}.
+$$
+
+#### Solution
+
+Rewrite each input as a linear combination of the vectors whose images are known. Linearity applies the same coefficients to the corresponding output vectors.
+
+For (a), every linear transformation sends the zero vector to the zero vector:
+
+$$
+{
+T\begin{pmatrix}0\\0\\0\end{pmatrix}
+=
+\begin{pmatrix}0\\0\end{pmatrix}
+}.
+$$
+
+For (b), the given information does not determine
+$T(\mathbf e_2)$. Let
+$\mathbf r=T(\mathbf e_3)$. Since
+
+$$
+\mathbf e_2
+=
+\begin{pmatrix}0\\1\\1\end{pmatrix}
+-\mathbf e_3,
+$$
+
+linearity gives
+
+$$
+T(\mathbf e_2)
+=
+T\begin{pmatrix}0\\1\\1\end{pmatrix}
+-T(\mathbf e_3)
+=
+\begin{pmatrix}2\\8\end{pmatrix}
+-\mathbf r.
+$$
+
+The vector $\mathbf r$ is not known at this stage, so the answer to (b) is
+
+$$
+{\text{undetermined}}.
+$$
+
+For (c),
+
+$$
+\begin{pmatrix}1\\1\\1\end{pmatrix}
+=\mathbf e_1+
+\begin{pmatrix}0\\1\\1\end{pmatrix}.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+T\begin{pmatrix}1\\1\\1\end{pmatrix}
+&=T(\mathbf e_1)
++T\begin{pmatrix}0\\1\\1\end{pmatrix}\\
+&=\begin{pmatrix}-9\\8\end{pmatrix}
++\begin{pmatrix}2\\8\end{pmatrix}\\
+&={\begin{pmatrix}-7\\16\end{pmatrix}}.
+\end{aligned}
+$$
+
+For (d), the additional information is
+
+$$
+T(\mathbf e_3)=
+\begin{pmatrix}4\\-9\end{pmatrix}.
+$$
+
+For the previously undetermined vector, use
+
+$$
+\mathbf e_2+\mathbf e_3
+=\begin{pmatrix}0\\1\\1\end{pmatrix}.
+$$
+
+Thus
+
+$$
+\begin{aligned}
+T(\mathbf e_2)
+&=T\begin{pmatrix}0\\1\\1\end{pmatrix}-T(\mathbf e_3)\\
+&=\begin{pmatrix}2\\8\end{pmatrix}
+-\begin{pmatrix}4\\-9\end{pmatrix}\\
+&={\begin{pmatrix}-2\\17\end{pmatrix}}.
+\end{aligned}
+$$
+
+The three requested entries in part (d) are therefore
+
+$$
+\begin{aligned}
+T\begin{pmatrix}0\\0\\0\end{pmatrix}
+&=\begin{pmatrix}0\\0\end{pmatrix},\\[2mm]
+T\begin{pmatrix}0\\1\\0\end{pmatrix}
+&=\begin{pmatrix}-2\\17\end{pmatrix},\\[2mm]
+T\begin{pmatrix}1\\1\\1\end{pmatrix}
+&=\begin{pmatrix}-7\\16\end{pmatrix}.
+\end{aligned}
+$$
+
+The first data set fixes $T(\mathbf e_1)$ and the sum
+$T(\mathbf e_2)+T(\mathbf e_3)$, but not the two summands separately. The extra value of $T(\mathbf e_3)$ removes exactly that remaining freedom. Once the images of all three standard basis vectors are known, every value of the linear map is forced by its coordinates.
+
+</Example>
+
+<Recall of="trigonometric-polynomial" />
+
+<Example
+  slug="seen-trigonometric-polynomial-differential-operator"
+  of="trigonometric-polynomial,linear-map,euler-trigonometric-identities"
+  difficulty="exam"
+>
+
+### Trigonometric polynomials and a differential operator
+
+> **Later-topic preview:** the interpretation in terms of eigenvalues uses
+> ideas from the later eigenvalues chapter.
+
+A real trigonometric polynomial of degree $N$, where $N$ is a positive integer, is a function $f:\mathbb R\to\mathbb R$ of the form
+
+$$
+f(x)=a_0+\sum_{n=1}^{N}a_n\cos(nx)+\sum_{n=1}^{N}b_n\sin(nx),
+\tag{1}
+$$
+
+where $a_n,b_n\in\mathbb R$ and the highest-degree coefficients $a_N,b_N$ are not both zero. For $N=0$, the polynomial has degree zero and $f(x)=a_0$ for all $x\in\mathbb R$.
+
+#### (a)
+
+Using Euler's formula, write the function in (1) as
+
+$$
+f(x)=\sum_{n=-N}^{N}c_ne^{inx}.
+$$
+
+Find $c_0$ and $c_n$ for $n\ne0$.
+
+#### (b)
+
+The set of all real trigonometric polynomials of degree at most $45$, denoted by $\operatorname{Trig}_{45}(\mathbb R)$, is a vector space over $\mathbb R$ with the usual addition and scalar multiplication.
+
+For the following statements, let $d$ be an integer satisfying $1\le d\le45$.
+
+Consider the linear transformation
+
+$$
+T:\operatorname{Trig}_{45}(\mathbb R)\longrightarrow
+\operatorname{Trig}_{45}(\mathbb R),
+\qquad
+T(f)=f''+16f.
+$$
+
+##### (i)
+
+Choose all correct statements:
+
+- For all such $d$, $\cos(3x)+\sin(dx)$ is in $\ker(T)$.
+- For all such $d$, $\cos(3x)+\sin(dx)$ is not in $\ker(T)$.
+- For some but not all such $d$, $\cos(3x)+\sin(dx)$ is in $\ker(T)$.
+- For all such $d$, $\cos(3x)+\sin(dx)$ is in $\operatorname{im}(T)$.
+- For all such $d$, $\cos(3x)+\sin(dx)$ is not in $\operatorname{im}(T)$.
+- For some but not all such $d$, $\cos(3x)+\sin(dx)$ is in $\operatorname{im}(T)$.
+
+##### (ii)
+
+Find a basis for $\ker(T)$.
+
+##### (iii)
+
+Find $\operatorname{im}(T)$ and explain your answer.
+
+#### Solution
+
+For part (a), use
+
+$$
+\cos(nx)=\frac{e^{inx}+e^{-inx}}2,
+\qquad
+\sin(nx)=\frac{e^{inx}-e^{-inx}}{2i}.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+a_n\cos(nx)+b_n\sin(nx)
+&=\frac{a_n-ib_n}{2}e^{inx}
++\frac{a_n+ib_n}{2}e^{-inx}.
+\end{aligned}
+$$
+
+The coefficient of the zero-frequency term is unchanged, so
+
+$$
+{c_0=a_0}.
+$$
+
+For $k=1,\ldots,N$, the positive-frequency coefficient is
+
+$$
+{c_k=\frac{a_k-ib_k}{2}.}
+$$
+
+The corresponding negative-frequency coefficient is
+
+$$
+{c_{-k}=\frac{a_k+ib_k}{2}.}
+$$
+
+As a check, because the original polynomial is real-valued,
+
+$$
+c_{-n}=\overline{c_n}.
+$$
+
+For part (b), the restriction $1\le d\le45$ ensures that $\cos(3x)+\sin(dx)$ belongs to $\operatorname{Trig}_{45}(\mathbb R)$.
+The operator $T=D^2+16I$ is linear because differentiation and addition
+preserve linear combinations.
+
+For $k\ge1$,
+
+$$
+\frac{d^2}{dx^2}\cos(kx)=-k^2\cos(kx),
+\qquad
+\frac{d^2}{dx^2}\sin(kx)=-k^2\sin(kx).
+$$
+
+Consequently,
+
+$$
+T(\cos(kx))=(16-k^2)\cos(kx),
+\qquad
+T(\sin(kx))=(16-k^2)\sin(kx),
+$$
+
+and $T(1)=16$.
+
+##### (b)(i)
+
+For the proposed polynomial,
+
+$$
+T\bigl(\cos(3x)+\sin(dx)\bigr)
+=7\cos(3x)+(16-d^2)\sin(dx).
+$$
+
+The coefficient of $\cos(3x)$ is always $7$, so this expression can never be zero. Hence $\cos(3x)+\sin(dx)$ is in the kernel for no integer $d$ with $1\le d\le45$.
+
+The only frequency missing from the image is $4$, because
+
+$$
+16-4^2=0.
+$$
+
+If $d=4$, the term $\sin(4x)$ cannot be produced by $T$, so
+
+$$
+\cos(3x)+\sin(4x)\notin\operatorname{im}(T).
+$$
+
+If $d\ne4$, both frequencies $3$ and $d$ have non-zero multiplier $16-k^2$, so the polynomial is in the image. For example, when $d\ne4$,
+
+$$
+T\left(\frac17\cos(3x)+\frac1{16-d^2}\sin(dx)\right)
+=\cos(3x)+\sin(dx).
+$$
+
+The correct selections are therefore
+
+$$
+{\text{for all integers }d\text{ with }1\le d\le45,\ 
+\cos(3x)+\sin(dx)\notin\ker(T)}
+$$
+
+and
+
+$$
+{\text{for some but not all integers }d\text{ with }1\le d\le45,\ 
+\cos(3x)+\sin(dx)\in\operatorname{im}(T)}.
+$$
+
+##### (b)(ii)
+
+Write
+
+$$
+f(x)=a_0+\sum_{k=1}^{45}
+\bigl(a_k\cos(kx)+b_k\sin(kx)\bigr).
+$$
+
+Then
+
+$$
+T(f)=16a_0+
+\sum_{k=1}^{45}(16-k^2)
+\bigl(a_k\cos(kx)+b_k\sin(kx)\bigr).
+$$
+
+The functions $1,\cos(kx),\sin(kx)$ at distinct frequencies are linearly
+independent. One way to see this is to use part (a), multiply a zero
+exponential sum by $e^{45ix}$ and obtain a complex polynomial in
+$e^{ix}$ that vanishes at infinitely many points of the unit circle; a
+non-zero polynomial cannot do that.
+
+Therefore $T(f)=0$ forces every displayed coefficient to vanish, so the
+constant coefficient and all frequencies except $k=4$ must be zero:
+
+$$
+a_0=0,\qquad a_k=b_k=0\quad(k\ne4).
+$$
+
+The coefficients $a_4,b_4$ are unrestricted because $16-4^2=0$. Hence
+
+$$
+\ker(T)=\operatorname{span}\{\cos(4x),\sin(4x)\},
+$$
+
+so one basis is
+
+$$
+{\{\cos(4x),\sin(4x)\}}.
+$$
+
+##### (b)(iii)
+
+Every output of $T$ has zero $\cos(4x)$ and $\sin(4x)$ coefficients. Conversely, if
+
+$$
+g(x)=\gamma_0+
+\sum_{\substack{1\le k\le45\\k\ne4}}
+\bigl(\gamma_k\cos(kx)+\delta_k\sin(kx)\bigr),
+$$
+
+then the polynomial
+
+$$
+h(x)=\frac{\gamma_0}{16}
++\sum_{\substack{1\le k\le45\\k\ne4}}
+\left(
+\frac{\gamma_k}{16-k^2}\cos(kx)
++\frac{\delta_k}{16-k^2}\sin(kx)
+\right)
+$$
+
+belongs to $\operatorname{Trig}_{45}(\mathbb R)$ and satisfies $T(h)=g$. Therefore
+
+$$
+{
+\operatorname{im}(T)
+=\operatorname{span}
+\left(
+\{1\}\cup
+\{\cos(kx),\sin(kx):1\le k\le45,\ k\ne4\}
+\right)
+}.
+$$
+
+Equivalently, the image is the set of trigonometric polynomials in
+$\operatorname{Trig}_{45}(\mathbb R)$ whose $\cos(4x)$ and $\sin(4x)$ coefficients are both zero. Its dimension is $91-2=89$, in agreement with rank-nullity.
+
+The operator $D^2+16I$ acts diagonally, multiplying each frequency $k$ by $16-k^2$. Frequency $4$ has eigenvalue zero, so its two real directions form the kernel and removing exactly those two directions gives the image.
+
+</Example>
+
+<Recall of="kernel-of-linear-map" />
+
+<Recall of="nullity" />
+
+<Recall of="rank-nullity-theorem" />
+
+<Example
+  slug="seen-projection-nullity-composition-kernel"
+  of="kernel-of-linear-map,nullity,rank-nullity-theorem"
+  difficulty="exam"
+>
+
+### A projection, nullity and a composition
+
+Suppose
+
+$$
+\mathbf b=
+\begin{pmatrix}
+-2\\
+6\\
+-2
+\end{pmatrix},
+$$
+
+and let $T:\mathbb R^3\to\mathbb R^3$ be the linear transformation defined by
+
+$$
+T(\mathbf x)=\operatorname{proj}_{\mathbf b}(\mathbf x)
+=\left(\frac{\mathbf x\cdot\mathbf b}{\mathbf b\cdot\mathbf b}\right)\mathbf b,
+\qquad \mathbf x\in\mathbb R^3.
+$$
+
+Additionally, suppose
+
+$$
+A=
+\begin{pmatrix}
+-7&-9&-4\\
+5&-1&9\\
+7&-2&8
+\end{pmatrix},
+$$
+
+and let $S:\mathbb R^3\to\mathbb R^3$ be the linear transformation defined by
+
+$$
+S(\mathbf x)=A\mathbf x,
+\qquad \mathbf x\in\mathbb R^3.
+$$
+
+You are also given that $\det(A)\ne0$.
+
+#### (a) Nullity of $T$
+
+##### (i)
+
+The nullity of $T$ is $\operatorname{nullity}(T)=$
+
+##### (ii)
+
+Give a brief explanation of how this value is obtained.
+
+#### (b) Kernel of $S\circ T$
+
+The kernel of $S\circ T$ is the set of all $\mathbf x=(x,y,z)^T\in\mathbb R^3$ satisfying a Cartesian equation.
+
+Briefly explain how the formula for this equation is obtained.
+
+#### Solution
+
+Part (a) needs only the projection, whose kernel can be found directly. For part (b), $\det(A)\ne0$ makes $S$ invertible, so $S$ sends no non-zero vector to zero and composing with $S$ does not change the kernel of $T$.
+
+First,
+
+$$
+\mathbf b\cdot\mathbf b=(-2)^2+6^2+(-2)^2=4+36+4=44.
+$$
+
+Every value of $T$ is a scalar multiple of $\mathbf b$, so
+$\operatorname{im}(T)\subseteq\operatorname{span}\{\mathbf b\}$. Also,
+
+$$
+T(\mathbf b)
+=\left(\frac{\mathbf b\cdot\mathbf b}{\mathbf b\cdot\mathbf b}\right)\mathbf b
+=\mathbf b,
+$$
+
+so $\operatorname{im}(T)=\operatorname{span}\{\mathbf b\}$ and
+$\operatorname{rank}(T)=1$. Since the domain has dimension $3$, the rank-nullity theorem gives
+
+$$
+\operatorname{nullity}(T)
+=\dim(\mathbb R^3)-\operatorname{rank}(T)
+=3-1
+={2}.
+$$
+
+This can also be checked by finding the kernel. For
+$\mathbf x=(x,y,z)^T$,
+
+$$
+\begin{aligned}
+T(\mathbf x)=0
+&\Longleftrightarrow
+\left(\frac{\mathbf x\cdot\mathbf b}{44}\right)\mathbf b=0\\
+&\Longleftrightarrow
+\mathbf x\cdot\mathbf b=0,
+\end{aligned}
+$$
+
+because $\mathbf b\ne0$. Therefore
+
+$$
+\ker(T)
+=\left\{
+\begin{pmatrix}x\\y\\z\end{pmatrix}
+:-2x+6y-2z=0
+\right\}.
+$$
+
+Dividing the equation by $-2$ gives $x-3y+z=0$, or $x=3y-z$. Hence
+
+$$
+\ker(T)
+=\left\{
+s\begin{pmatrix}3\\1\\0\end{pmatrix}
++t\begin{pmatrix}-1\\0\\1\end{pmatrix}
+:s,t\in\mathbb R
+\right\},
+$$
+
+which is a two-dimensional plane, agreeing with the nullity calculation.
+
+For part (b), $\det(A)\ne0$ means that $A$ is invertible. Thus
+
+$$
+\ker(S)=\{0\}.
+$$
+
+For any $\mathbf x\in\mathbb R^3$,
+
+$$
+\begin{aligned}
+\mathbf x\in\ker(S\circ T)
+&\Longleftrightarrow S(T(\mathbf x))=0\\
+&\Longleftrightarrow A\,T(\mathbf x)=0\\
+&\Longleftrightarrow T(\mathbf x)=0\\
+&\Longleftrightarrow \mathbf x\in\ker(T).
+\end{aligned}
+$$
+
+Consequently,
+
+$$
+\ker(S\circ T)=\ker(T)
+=\left\{
+\begin{pmatrix}x\\y\\z\end{pmatrix}
+:-2x+6y-2z=0
+\right\}.
+$$
+
+The requested Cartesian equation is therefore
+
+$$
+{-2x+6y-2z=0},
+$$
+
+equivalently $x-3y+z=0$.
+
+In summary, the kernel of the projection is the orthogonal complement of $\mathbf b$ and rank-nullity turns the one-dimensional image into nullity $2$. The determinant condition is used only to show that $S$ is injective, which gives $\ker(S\circ T)=\ker(T)$.
+
+</Example>
+
+<Recall of="subspace" />
+
+<Recall of="eigenvalue" />
+
+<Recall of="eigenvector" />
+
+<Example
+  slug="seen-orthogonal-projection-eigenvectors"
+  of="subspace,eigenvalue,eigenvector"
+  difficulty="exam"
+>
+
+### A projection onto a subspace
+
+> **Later-topic preview:** parts (b) and (c) use eigenvalues and
+> eigenvectors.
+
+Suppose that $H$ is a subspace of $\mathbb R^3$ defined as follows:
+
+$$
+H=\operatorname{span}\left\{
+\begin{pmatrix}1\\0\\-1\end{pmatrix},
+\begin{pmatrix}1\\-1\\0\end{pmatrix},
+\begin{pmatrix}-5\\2\\3\end{pmatrix}
+\right\}.
+$$
+
+#### (a) Choose the correct statement about $H$
+
+1. The subspace $H$ is a plane through the origin.
+2. The subspace $H$ is a line which does **not** go through the origin.
+3. The subspace $H$ is a plane which does **not** go through the origin.
+4. The subspace $H$ is a line through the origin.
+5. The subspace $H$ is the entire space $\mathbb R^3$.
+
+The mapping $T:\mathbb R^3\to\mathbb R^3$ is the *projection onto $H$*,
+defined as follows: for any vector $\mathbf x\in\mathbb R^3$, $T(\mathbf x)$
+is the unique vector in $H$ such that $\mathbf x-T(\mathbf x)$ is
+perpendicular to every vector in $H$.
+
+It can be proved that $T$ is a linear transformation. It is also known that
+$T(\mathbf n)=0$ for any normal $\mathbf n$ to $H$ and
+$T(\mathbf x)=\mathbf x$ for any vector $\mathbf x\in H$. These facts do not
+need to be proved here.
+
+#### (b) Select all that apply
+
+1. Any nonzero vector in $H$ is an eigenvector of $T$.
+2. There exists a nonzero vector in $H$ that is not an eigenvector of $T$.
+3. Any nonzero normal vector to $H$ is an eigenvector of $T$.
+4. The linear transformation $T$ has at least one zero eigenvalue.
+5. All eigenvalues of $T$ are zero.
+6. All eigenvalues of $T$ are nonzero.
+7. The linear transformation $T$ has at least one eigenvalue that equals $1$.
+8. The rank of $T$ is $1$.
+9. The rank of $T$ is $2$.
+10. The nullity of $T$ is $1$.
+11. The nullity of $T$ is $2$.
+
+#### (c) Select all that apply
+
+1. The vector
+   $\begin{pmatrix}-1\\-1\\-1\end{pmatrix}$ is an eigenvector of $T$.
+2. The vector
+   $\begin{pmatrix}1\\0\\-1\end{pmatrix}$ is an eigenvector of $T$.
+3. The vector
+   $\begin{pmatrix}-2\\-1\\0\end{pmatrix}$ is an eigenvector of $T$.
+
+#### Solution
+
+Let
+
+$$
+\mathbf u_1=\begin{pmatrix}1\\0\\-1\end{pmatrix},
+\qquad
+\mathbf u_2=\begin{pmatrix}1\\-1\\0\end{pmatrix},
+\qquad
+\mathbf u_3=\begin{pmatrix}-5\\2\\3\end{pmatrix}.
+$$
+
+The third vector is redundant because
+
+$$
+-3\mathbf u_1-2\mathbf u_2
+=-3\begin{pmatrix}1\\0\\-1\end{pmatrix}
+-2\begin{pmatrix}1\\-1\\0\end{pmatrix}
+=\begin{pmatrix}-5\\2\\3\end{pmatrix}
+=\mathbf u_3.
+$$
+
+The first two vectors are not scalar multiples, so they are linearly
+independent. Therefore
+
+$$
+H=\operatorname{span}\{\mathbf u_1,\mathbf u_2\},
+\qquad
+\dim(H)=2.
+$$
+
+Since a two-dimensional subspace of $\mathbb R^3$ is a plane and every
+subspace contains the zero vector, the correct statement in part (a) is
+
+$$
+{\text{The subspace $H$ is a plane through the origin.}}
+$$
+
+A normal vector is
+
+$$
+\mathbf n=\begin{pmatrix}-1\\-1\\-1\end{pmatrix},
+$$
+
+because
+
+$$
+\mathbf n\cdot\mathbf u_1=(-1)(1)+(-1)(0)+(-1)(-1)=0
+$$
+
+and
+
+$$
+\mathbf n\cdot\mathbf u_2=(-1)(1)+(-1)(-1)+(-1)(0)=0.
+$$
+
+Thus
+
+$$
+H=\left\{
+\begin{pmatrix}x\\y\\z\end{pmatrix}\in\mathbb R^3:x+y+z=0
+\right\},
+$$
+
+and $\mathbb R^3$ decomposes as
+
+$$
+\mathbb R^3=H\oplus\operatorname{span}\{\mathbf n\}.
+$$
+
+The projection is the identity on $H$ and is zero on
+$\operatorname{span}\{\mathbf n\}$. Relative to the basis
+$(\mathbf u_1,\mathbf u_2,\mathbf n)$, its matrix is therefore
+
+$$
+\begin{pmatrix}
+1&0&0\\
+0&1&0\\
+0&0&0
+\end{pmatrix}.
+$$
+
+The matrix shows the eigenvalues and the dimensions of the corresponding
+eigenspaces:
+
+$$
+\lambda=1 \text{ on }H,
+\qquad
+\lambda=0 \text{ on }\operatorname{span}\{\mathbf n\}.
+$$
+
+Consequently, the statements selected in part (b) are
+
+$$
+{
+\begin{gathered}
+\text{Any nonzero vector in $H$ is an eigenvector of $T$},\\
+\text{any nonzero normal vector to $H$ is an eigenvector of $T$},\\
+\text{$T$ has at least one zero eigenvalue},\\
+\text{$T$ has at least one eigenvalue equal to $1$},\\
+\operatorname{rank}(T)=2,\qquad
+\operatorname{nullity}(T)=1.
+\end{gathered}
+}
+$$
+
+Indeed, $\operatorname{im}(T)=H$, so $\operatorname{rank}(T)=\dim(H)=2$,
+while $\ker(T)=\operatorname{span}\{\mathbf n\}$, so
+$\operatorname{nullity}(T)=1$.
+
+For part (c), the first vector is $\mathbf n$, so
+
+$$
+T\begin{pmatrix}-1\\-1\\-1\end{pmatrix}
+=\mathbf 0
+=0\begin{pmatrix}-1\\-1\\-1\end{pmatrix}.
+$$
+
+It is an eigenvector for $\lambda=0$. The second vector is $\mathbf u_1\in H$,
+so
+
+$$
+T\begin{pmatrix}1\\0\\-1\end{pmatrix}
+=\begin{pmatrix}1\\0\\-1\end{pmatrix},
+$$
+
+and it is an eigenvector for $\lambda=1$.
+
+For the third vector, let
+
+$$
+\mathbf w=\begin{pmatrix}-2\\-1\\0\end{pmatrix}.
+$$
+
+The orthogonal projection onto the plane perpendicular to $\mathbf n$ is
+
+$$
+T(\mathbf w)
+=\mathbf w-\frac{\mathbf w\cdot\mathbf n}{\mathbf n\cdot\mathbf n}\mathbf n.
+$$
+
+Here $\mathbf w\cdot\mathbf n=3$ and $\mathbf n\cdot\mathbf n=3$, so
+
+$$
+T(\mathbf w)
+=\begin{pmatrix}-2\\-1\\0\end{pmatrix}
+-\begin{pmatrix}-1\\-1\\-1\end{pmatrix}
+=\begin{pmatrix}-1\\0\\1\end{pmatrix}.
+$$
+
+This is not a scalar multiple of $\mathbf w$: comparing second coordinates
+forces the scalar to be $0$, but then the first coordinates $-1$ and $0$
+disagree. Therefore the third vector is not an eigenvector. The selected vectors in
+part (c) are
+
+$$
+{
+\begin{pmatrix}-1\\-1\\-1\end{pmatrix}
+\quad\text{and}\quad
+\begin{pmatrix}1\\0\\-1\end{pmatrix}.
+}
+$$
+
+Geometrically, vectors in the plane are fixed, with eigenvalue $1$ and
+vectors in the normal direction are sent to zero, with eigenvalue $0$. The
+same split into a two-dimensional image and a one-dimensional kernel gives
+the rank and nullity.
+
+</Example>
+
+<Recall of="kernel-of-linear-map" />
+
+<Recall of="rank-of-linear-map" />
+
+<Recall of="rank-nullity-theorem" />
+
+<Example
+  slug="seen-kernel-rank-powers"
+  of="kernel-of-linear-map,rank-of-linear-map,rank-nullity-theorem"
+  difficulty="exam"
+>
+
+### Kernels, ranks and powers of a matrix
+
+Let $A$ and $B$ be square matrices of the same size $n\times n$. It is
+generally true that
+
+$$
+\ker(B)\subseteq\ker(AB).
+$$
+
+#### (a)
+
+##### (i)
+
+Prove this result by completing the following argument:
+
+If $v\in\ker(B)$ and so $Bv={\phantom{0}}$, then
+$ABv={\phantom{0}}$ and hence $v\in\ker(AB)$.
+
+##### (ii)
+
+Complete the following statement. Some interesting special cases to consider
+are when $A=O$ (the zero matrix) and $A=I$ (the identity matrix). In these
+cases, $\ker(OB)={\phantom{\mathbb R^n}}$ and
+$\ker(IB)={\phantom{\ker(B)}}$.
+
+#### (b)
+
+Choose all the correct statements, which are true for all $A$ and $B$:
+
+- $\operatorname{nullity}(B)=\operatorname{nullity}(AB)$;
+- $\operatorname{rank}(B)=\operatorname{rank}(AB)$;
+- $\operatorname{rank}(B)\ge\operatorname{rank}(AB)$;
+- $\operatorname{rank}(B)\le\operatorname{rank}(AB)$;
+- $\operatorname{nullity}(B)\le\operatorname{nullity}(AB)$;
+- $\operatorname{nullity}(B)\ge\operatorname{nullity}(AB)$.
+
+#### (c)
+
+Let $A$ be a square matrix and let
+
+$$
+r_k=\operatorname{rank}(A^k),
+\qquad k=1,2,3,\ldots.
+$$
+
+Choose all the correct statements, which are true for all square matrices:
+
+- The sequence $\{r_k\}$ is non-decreasing.
+- The sequence $\{r_k\}$ is constant.
+- The sequence $\{r_k\}$ is non-increasing.
+- The sequence $\{r_k\}$ is bounded.
+- The sequence $\{r_k\}$ is unbounded.
+- $\displaystyle\lim_{k\to\infty}r_k$ exists.
+- $\displaystyle\lim_{k\to\infty}r_k$ does not exist.
+
+#### (d)
+
+The following matrix computation and output is available:
+
+```text
+>> A = [5, 7, -6; 10, 12, -11; 20, 24, -22]
+
+A =
+
+     5     7    -6
+    10    12   -11
+    20    24   -22
+
+>> A^2
+
+ans =
+
+   -25   -25    25
+   -50   -50    50
+  -100  -100   100
+
+>> A^3 + 5*A^2
+
+ans =
+
+     0     0     0
+     0     0     0
+     0     0     0
+```
+
+Find the smallest integer $N$ such that
+
+$$
+\operatorname{rank}(A^k)=\operatorname{rank}(A^{k+1})
+\qquad\text{for all }k\ge N.
+$$
+
+Justify the answer using the displayed computation.
+
+#### Solution
+
+The kernel inclusion in part (a) gives a nullity inequality. Because $B$ and
+$AB$ have the same number of columns, rank-nullity turns it into a rank
+inequality, which part (c) applies to consecutive powers of $A$.
+
+#### (a) Kernel inclusion and the special cases
+
+By definition,
+
+$$
+v\in\ker(B)\Longrightarrow Bv=0.
+$$
+
+Therefore
+
+$$
+ABv=A(Bv)=A0=0.
+$$
+
+This is exactly the condition $v\in\ker(AB)$. The completed argument is
+
+$$
+{Bv=0},
+\qquad
+{ABv=0}.
+$$
+
+If $A=O$, then $OB=O$, so every vector in $\mathbb R^n$ is sent to zero:
+
+$$
+{\ker(OB)=\mathbb R^n}.
+$$
+
+If $A=I$, then $IB=B$, so
+
+$$
+{\ker(IB)=\ker(B)}.
+$$
+
+The identity case shows that the inclusion can be an equality, while the
+zero-matrix case shows that $\ker(AB)$ can be much larger.
+
+#### (b) Comparing rank and nullity
+
+The inclusion from part (a) implies
+
+$$
+\dim\ker(B)\le\dim\ker(AB),
+$$
+
+so
+
+$$
+{\operatorname{nullity}(B)
+\le\operatorname{nullity}(AB)}.
+$$
+
+Both $B$ and $AB$ are $n\times n$, so rank-nullity gives
+
+$$
+\operatorname{rank}(B)
+=n-\operatorname{nullity}(B),
+\qquad
+\operatorname{rank}(AB)
+=n-\operatorname{nullity}(AB).
+$$
+
+Reversing the inequality after subtracting from $n$ gives
+
+$$
+{\operatorname{rank}(B)\ge\operatorname{rank}(AB)}.
+$$
+
+Thus the correct selections in part (b) are exactly
+
+$$
+{
+\operatorname{rank}(B)\ge\operatorname{rank}(AB),
+\qquad
+\operatorname{nullity}(B)\le\operatorname{nullity}(AB).
+}
+$$
+
+The equality statements are not always true: taking $A=O$ gives $AB=O$, so
+both inequalities are strict whenever $B$ is non-zero.
+
+#### (c) The rank sequence
+
+Apply the rank inequality from part (b) with the left factor $A$ and the
+right factor $A^k$:
+
+$$
+\operatorname{rank}(A^{k+1})
+=\operatorname{rank}(AA^k)
+\le\operatorname{rank}(A^k).
+$$
+
+Therefore $\{r_k\}$ is non-increasing. Since an $n\times n$ matrix has rank
+between $0$ and $n$,
+
+$$
+0\le r_k\le n
+\qquad\text{for every }k,
+$$
+
+so the sequence is bounded. A non-increasing sequence of integers bounded
+below must eventually be constant and therefore its limit exists.
+
+The sequence need not be constant from the start. For example, a non-zero
+nilpotent matrix can have $\operatorname{rank}(A)>\operatorname{rank}(A^2)$.
+The correct selections are
+
+$$
+{
+\text{the sequence is non-increasing, it is bounded and }
+\lim_{k\to\infty}r_k\text{ exists}.
+}
+$$
+
+#### (d) Finding the smallest stabilisation index
+
+First determine $\operatorname{rank}(A)$ explicitly. Row operations give
+
+$$
+\begin{aligned}
+A
+&=
+\begin{pmatrix}
+5&7&-6\\
+10&12&-11\\
+20&24&-22
+\end{pmatrix}\\
+&\xrightarrow{\substack{R_2\leftarrow R_2-2R_1\\
+R_3\leftarrow R_3-4R_1}}
+\begin{pmatrix}
+5&7&-6\\
+0&-2&1\\
+0&-4&2
+\end{pmatrix}
+\xrightarrow{R_3\leftarrow R_3-2R_2}
+\begin{pmatrix}
+5&7&-6\\
+0&-2&1\\
+0&0&0
+\end{pmatrix}.
+\end{aligned}
+$$
+
+There are two pivots, so
+
+$$
+\operatorname{rank}(A)=2.
+$$
+
+The displayed value of $A^2$ is non-zero and its rows are multiples of the
+first row:
+
+$$
+\begin{pmatrix}
+-25&-25&25\\
+-50&-50&50\\
+-100&-100&100
+\end{pmatrix}
+\sim
+\begin{pmatrix}
+-25&-25&25\\
+0&0&0\\
+0&0&0
+\end{pmatrix}.
+$$
+
+Thus
+
+$$
+\operatorname{rank}(A^2)=1.
+$$
+
+The second MATLAB output says
+
+$$
+A^3+5A^2=O,
+\qquad\text{so}\qquad
+A^3=-5A^2.
+$$
+
+Multiplying by $A^{k-2}$ for any $k\ge2$ gives
+
+$$
+A^{k+1}=A^{k-2}A^3
+=-5A^{k-2}A^2
+=-5A^k.
+$$
+
+Because multiplying a matrix by the non-zero scalar $-5$ does not change its
+rank,
+
+$$
+\operatorname{rank}(A^{k+1})
+=\operatorname{rank}(A^k)
+\qquad(k\ge2).
+$$
+
+However,
+
+$$
+\operatorname{rank}(A)=2\ne1=\operatorname{rank}(A^2),
+$$
+
+so the equality does not hold at $k=1$. Therefore the smallest possible
+integer is
+
+$$
+{N=2}.
+$$
+
+</Example>
+
+<Recall of="rank-nullity-theorem" />
+
+<Example
+  slug="seen-rank-transpose-products"
+  of="rank-nullity-theorem,rank-of-linear-map"
+  difficulty="exam"
+>
+
+### Ranks of products involving a matrix and its transpose
+
+Wenbo is given the matrix
+
+$$
+A=
+\begin{pmatrix}
+1&-1&2&12\\
+-1&1&-2&-8\\
+-1&-1&-8&-2\\
+-5&-4&-37&-13
+\end{pmatrix}.
+$$
+
+Jess has found the eigenvalues of $A$ to be approximately
+
+$$
+0,\qquad -1.72981886,\qquad -18.03929570,\qquad 0.76911457,
+$$
+
+where any integer eigenvalues are exact, not approximations.
+
+The eigenvalue list is supplied as data; the rank calculation below is
+verified directly from $A$ by row reduction.
+
+Calculate:
+
+(a) $\operatorname{rank}(A^{\mathsf T}A)$;
+
+(b) $\operatorname{rank}(AA^{\mathsf T})$.
+
+(c) If $B$ is another $4\times4$ matrix with $\operatorname{rank}(B)=1$,
+what are the possible values of $\operatorname{rank}(BA^{\mathsf T})$?
+
+#### Solution
+
+Find $\operatorname{rank}(A)$ first, then compare kernels. For any real
+matrix, the quadratic forms
+$x^{\mathsf T}A^{\mathsf T}Ax$ and $y^{\mathsf T}AA^{\mathsf T}y$ are squared
+Euclidean lengths, so the two products have the same kernels as $A$ and
+$A^{\mathsf T}$. Rank-nullity then gives their ranks.
+
+Row reduction gives
+
+$$
+\begin{aligned}
+A
+&=
+\begin{pmatrix}
+1&-1&2&12\\
+-1&1&-2&-8\\
+-1&-1&-8&-2\\
+-5&-4&-37&-13
+\end{pmatrix}\\
+&\xrightarrow[\ R_3\leftarrow R_3+R_1\ ]{
+\substack{R_2\leftarrow R_2+R_1\\R_4\leftarrow R_4+5R_1}}
+\begin{pmatrix}
+1&-1&2&12\\
+0&0&0&4\\
+0&-2&-6&10\\
+0&-9&-27&47
+\end{pmatrix}\\
+&\xrightarrow{R_2\leftrightarrow R_3}
+\begin{pmatrix}
+1&-1&2&12\\
+0&-2&-6&10\\
+0&0&0&4\\
+0&-9&-27&47
+\end{pmatrix}\\
+&\xrightarrow{R_2\leftarrow-\frac12R_2}
+\begin{pmatrix}
+1&-1&2&12\\
+0&1&3&-5\\
+0&0&0&4\\
+0&-9&-27&47
+\end{pmatrix}\\
+&\xrightarrow{R_4\leftarrow R_4+9R_2}
+\begin{pmatrix}
+1&-1&2&12\\
+0&1&3&-5\\
+0&0&0&4\\
+0&0&0&2
+\end{pmatrix}\\
+&\xrightarrow{\substack{R_3\leftarrow R_3-2R_4\\R_4\leftarrow\frac12R_4}}
+\begin{pmatrix}
+1&-1&2&12\\
+0&1&3&-5\\
+0&0&0&0\\
+0&0&0&1
+\end{pmatrix}
+\xrightarrow{R_3\leftrightarrow R_4}
+\begin{pmatrix}
+1&-1&2&12\\
+0&1&3&-5\\
+0&0&0&1\\
+0&0&0&0
+\end{pmatrix}.
+\end{aligned}
+$$
+
+There are pivots in columns $1$, $2$ and $4$, so
+
+$$
+\operatorname{rank}(A)=3.
+$$
+
+The exact zero eigenvalue agrees with this singularity, but it is the row
+reduction that shows the nullity is exactly one; the rounded eigenvalues
+alone would not.
+
+For part (a), if $x\in\ker(A)$ then $A^{\mathsf T}Ax=0$. Conversely, if
+$A^{\mathsf T}Ax=0$, then
+
+$$
+0=x^{\mathsf T}A^{\mathsf T}Ax
+=(Ax)^{\mathsf T}(Ax)
+=\|Ax\|^2,
+$$
+
+so $Ax=0$. Hence
+
+$$
+\ker(A^{\mathsf T}A)=\ker(A).
+$$
+
+Both matrices have four columns. Since $\operatorname{nullity}(A)=4-3=1$,
+rank-nullity gives
+
+$$
+{\operatorname{rank}(A^{\mathsf T}A)=4-1=3}.
+$$
+
+Similarly,
+
+$$
+\ker(AA^{\mathsf T})=\ker(A^{\mathsf T}),
+$$
+
+because
+
+$$
+y^{\mathsf T}AA^{\mathsf T}y
+=(A^{\mathsf T}y)^{\mathsf T}(A^{\mathsf T}y)
+=\|A^{\mathsf T}y\|^2.
+$$
+
+Transposition preserves rank, so $\operatorname{rank}(A^{\mathsf T})=3$ and
+$\operatorname{nullity}(A^{\mathsf T})=1$. Therefore
+
+$$
+{\operatorname{rank}(AA^{\mathsf T})=4-1=3}.
+$$
+
+For part (c), write a rank-one matrix as
+
+$$
+B=uv^{\mathsf T},
+\qquad u\ne0,\quad v\ne0.
+$$
+
+Then
+
+$$
+BA^{\mathsf T}
+=uv^{\mathsf T}A^{\mathsf T}
+=u(Av)^{\mathsf T}.
+$$
+
+This product has rank at most $1$. It has rank $0$ when $Av=0$. Such a
+non-zero $v$ exists because $\operatorname{nullity}(A)=1$. It has rank $1$
+when $Av\ne0$, which can be achieved by choosing $v\notin\ker(A)$.
+Consequently, the possible values are
+
+$$
+{\operatorname{rank}(BA^{\mathsf T})\in\{0,1\}.}
+$$
+
+The kernel identities give the product ranks without multiplying the
+matrices and the rank-one factorisation $B=uv^{\mathsf T}$ reduces part (c)
+to whether $Av$ is zero.
+
+</Example>
+
+<Recall of="rank-nullity-theorem" />
+
+<Recall of="dimension" />
+
+<Recall of="surjective-map" />
+
+<Example
+  slug="seen-rank-nullity-matrix-polynomial-map"
+  of="rank-nullity-theorem,dimension,surjective-map"
+  difficulty="routine"
+>
+
+### Possible nullities of a linear map
+
+Let
+
+$$
+T:M_{9\times7}(\mathbb R)\longrightarrow P_{25}(\mathbb R)
+$$
+
+be a linear map. Suppose the kernel of $T$ has dimension $k$. Then:
+
+(a) the maximum possible value of $k$ is ___;
+
+(b) the minimum possible value of $k$ is ___; and
+
+(c) $T$ is surjective if and only if $k=$ ___.
+
+#### Solution
+
+The domain consists of $9\times7$ matrices, so one basis is given by the
+matrices with a single $1$ and all other entries $0$. Hence
+
+$$
+\dim\bigl(M_{9\times7}(\mathbb R)\bigr)=9\cdot7=63.
+$$
+
+The space $P_{25}(\mathbb R)$ has basis
+$\{1,x,\ldots,x^{25}\}$, so
+
+$$
+\dim\bigl(P_{25}(\mathbb R)\bigr)=26.
+$$
+
+Let $r=\operatorname{rank}(T)$. Rank-nullity gives
+
+$$
+r+k=\dim\bigl(M_{9\times7}(\mathbb R)\bigr)=63,
+$$
+
+so
+
+$$
+k=63-r.
+$$
+
+The rank is at least $0$ and cannot exceed the dimension of the codomain:
+
+$$
+0\le r\le26.
+$$
+
+Therefore
+
+$$
+37=63-26\le k\le63=63-0.
+$$
+
+The upper bound is attained by the zero map, whose kernel is the whole
+63-dimensional domain. The lower bound is attainable because a
+63-dimensional domain can map onto the 26-dimensional codomain by sending
+26 domain basis vectors to a basis of $P_{25}(\mathbb R)$ and the remaining
+37 basis vectors to zero. Thus
+
+$$
+{\text{(a) the maximum possible value of $k$ is }63}
+$$
+
+and
+
+$$
+{\text{(b) the minimum possible value of $k$ is }37}.
+$$
+
+Finally, $T$ is surjective exactly when its image is the whole codomain.
+This is equivalent to
+
+$$
+\operatorname{rank}(T)=\dim\bigl(P_{25}(\mathbb R)\bigr)=26.
+$$
+
+Using $k=63-r$,
+
+$$
+T\text{ is surjective}
+\Longleftrightarrow r=26
+\Longleftrightarrow k=63-26=37.
+$$
+
+Hence
+
+$$
+{\text{(c) $T$ is surjective if and only if $k=37$.}}
+$$
+
+</Example>
+
+<Recall of="dimension" />
+
+<Recall of="rank-nullity-theorem" />
+
+<Recall of="eigenvalue" />
+
+<Example
+  slug="seen-linear-algebra-object-classification"
+  of="dimension,rank-nullity-theorem,eigenvalue"
+  difficulty="exam"
+>
+
+### Classifying mathematical objects
+
+> **Later-topic preview:** several classifications use eigenvalues,
+> eigenspaces or diagonalisation.
+
+Consider the following mathematical objects that we encountered in MATH1251:
+
+1. $\displaystyle
+\begin{pmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1
+\end{pmatrix}$.
+
+2. $T:V\to\mathbb R$ defined by
+   $$
+   T(f)=\int_0^1f(x)\,dx,
+   $$
+   where $V$ is the vector space of all integrable functions on the interval
+   $[0,1]$.
+
+3. $\displaystyle
+\begin{pmatrix}
+11&12&0&3&-5\\
+1&-1&1&4&2\\
+0&-1&3&-1&-2\\
+0&0&0&7&1
+\end{pmatrix}$.
+
+4. $T:\mathbb R^3\to\mathbb R$ defined by
+   $$
+   T(\mathbf v)
+   =\mathbf v\cdot
+   \begin{pmatrix}-5\\11\\1\end{pmatrix}.
+   $$
+
+5. $\displaystyle
+\begin{pmatrix}
+1&-1\\
+5&-5
+\end{pmatrix}$.
+
+6. $P_3$.
+
+7. $\displaystyle
+\operatorname{span}\left\{
+\begin{pmatrix}1\\0\\0\\0\end{pmatrix},
+\begin{pmatrix}-1\\0\\0\\0\end{pmatrix},
+\begin{pmatrix}0\\-5\\-1\\0\end{pmatrix},
+\begin{pmatrix}1\\1\\1\\1\end{pmatrix}
+\right\}$.
+
+8. $T:P_1\to P_1$ defined by
+   $$
+   T(p)=\frac{dp}{dx}.
+   $$
+
+9. $\displaystyle
+\begin{pmatrix}
+0&1\\
+1&0
+\end{pmatrix}$.
+
+10. $P_4$.
+
+11. $\displaystyle\operatorname{span}\{1,x^2,x^4,x^6\}$.
+
+(a) Select all examples on the list above for which the following
+requirements are well-defined and are satisfied.
+
+(i) ___ has at least 3 linearly independent columns.
+
+(ii) ___ is rank 1.
+
+(iii) ___ has a 3-dimensional eigenspace.
+
+(iv) ___ is a 4-dimensional vector space.
+
+(v) ___ has a positive eigenvalue.
+
+(vi) ___ has positive nullity.
+
+(vii) ___ is a subspace of $P_{11}$.
+
+(viii) ___ is diagonalisable.
+
+(ix) ___ has linearly dependent columns.
+
+#### Solution
+
+A requirement can be satisfied only where it is well defined for the object.
+Rank and nullity apply to linear maps and matrices. Eigenvalues, eigenspaces
+and diagonalisation apply to endomorphisms, such as square matrices or maps
+from a vector space to itself. Statements about columns apply to matrices,
+and the vector-space and subspace statements apply to the listed sets or
+spaces.
+
+For object 3, denote the matrix by $A_3$. Row reduction gives
+
+$$
+\begin{aligned}
+A_3
+&=
+\begin{pmatrix}
+11&12&0&3&-5\\
+1&-1&1&4&2\\
+0&-1&3&-1&-2\\
+0&0&0&7&1
+\end{pmatrix}\\
+&\xrightarrow{R_1\leftrightarrow R_2}
+\begin{pmatrix}
+1&-1&1&4&2\\
+11&12&0&3&-5\\
+0&-1&3&-1&-2\\
+0&0&0&7&1
+\end{pmatrix}\\
+&\xrightarrow{R_2\leftarrow R_2-11R_1}
+\begin{pmatrix}
+1&-1&1&4&2\\
+0&23&-11&-41&-27\\
+0&-1&3&-1&-2\\
+0&0&0&7&1
+\end{pmatrix}\\
+&\xrightarrow{R_2\leftrightarrow R_3}
+\begin{pmatrix}
+1&-1&1&4&2\\
+0&-1&3&-1&-2\\
+0&23&-11&-41&-27\\
+0&0&0&7&1
+\end{pmatrix}\\
+&\xrightarrow{R_3\leftarrow R_3+23R_2}
+\begin{pmatrix}
+1&-1&1&4&2\\
+0&-1&3&-1&-2\\
+0&0&58&-64&-73\\
+0&0&0&7&1
+\end{pmatrix}.
+\end{aligned}
+$$
+
+There are pivots in columns $1,2,3,4$, so
+
+$$
+\operatorname{rank}(A_3)=4.
+$$
+
+Consequently, object 3 has at least three linearly independent columns. It
+also has five columns in $\mathbb R^4$, so its columns are linearly
+dependent and rank-nullity gives
+
+$$
+\operatorname{nullity}(A_3)=5-4=1.
+$$
+
+The matrix in object 1 is the $3\times3$ identity matrix. Its columns are
+independent, its rank is $3$, its nullity is $0$ and its only eigenvalue is
+$1$, with a three-dimensional eigenspace. It is already diagonal, so it is
+diagonalisable.
+
+For object 5, write
+
+$$
+A_5=
+\begin{pmatrix}
+1&-1\\
+5&-5
+\end{pmatrix}.
+$$
+
+Its second column is the negative of its first column, while the first
+column is nonzero. Therefore $\operatorname{rank}(A_5)=1$ and its columns
+are linearly dependent. Its characteristic polynomial is
+
+$$
+\det(A_5-\lambda I)
+=\det\begin{pmatrix}1-\lambda&-1\\5&-5-\lambda\end{pmatrix}
+=\lambda(\lambda+4).
+$$
+
+Thus its eigenvalues are $0$ and $-4$. They are distinct, so $A_5$ is
+diagonalisable, but it has no positive eigenvalue.
+
+For object 9,
+
+$$
+A_9=
+\begin{pmatrix}0&1\\1&0\end{pmatrix},
+\qquad
+A_9\begin{pmatrix}1\\1\end{pmatrix}
+=\begin{pmatrix}1\\1\end{pmatrix},
+\qquad
+A_9\begin{pmatrix}1\\-1\end{pmatrix}
+=-\begin{pmatrix}1\\-1\end{pmatrix}.
+$$
+
+Its eigenvalues are $1$ and $-1$, so it has a positive eigenvalue and is
+diagonalisable. Its columns are independent and its nullity is $0$.
+
+For object 2, linearity of integration makes this a linear map. It is
+nonzero because
+
+$$
+T(1)=\int_0^1 1\,dx=1.
+$$
+
+Its codomain is one-dimensional, so its nonzero image is all of $\mathbb R$:
+
+$$
+\operatorname{rank}(T)=1.
+$$
+
+Its kernel is nontrivial, since, for example,
+
+$$
+\int_0^1\left(x-\frac12\right)\,dx
+=\left[\frac{x^2}{2}-\frac{x}{2}\right]_0^1=0.
+$$
+
+Thus object 2 has positive nullity.
+
+For object 4, the vector
+$(-5,11,1)^{\mathsf T}$ is nonzero. The dot-product map therefore has image
+$\mathbb R$ and rank $1$. Its kernel is the plane perpendicular to this
+vector, so its nullity is $3-1=2$, which is positive.
+
+For object 8, write $p=a+bx$. Then
+
+$$
+T(p)=b.
+$$
+
+The image consists of the constant polynomials, so
+
+$$
+\operatorname{rank}(T)=1,
+\qquad
+\ker(T)=\operatorname{span}\{1\},
+\qquad
+\operatorname{nullity}(T)=1.
+$$
+
+With respect to the basis $(1,x)$, the matrix of $T$ is
+
+$$
+\begin{pmatrix}0&1\\0&0\end{pmatrix}.
+$$
+
+Its only eigenvalue is $0$ and its eigenspace is the one-dimensional space
+of constant polynomials. Since $P_1$ has dimension $2$, object 8 is not
+diagonalisable and has no positive eigenvalue.
+
+The remaining vector-space dimensions are
+
+$$
+\dim(P_3)=4,
+\qquad
+\dim(P_4)=5.
+$$
+
+Object 7 is not four-dimensional. Its second displayed vector is the
+negative of the first and the other three vectors are independent: if
+
+$$
+a\begin{pmatrix}1\\0\\0\\0\end{pmatrix}
++b\begin{pmatrix}0\\-5\\-1\\0\end{pmatrix}
++c\begin{pmatrix}1\\1\\1\\1\end{pmatrix}
+=\begin{pmatrix}0\\0\\0\\0\end{pmatrix},
+$$
+
+then the fourth coordinate gives $c=0$, the first gives $a=0$ and the
+second gives $b=0$. Hence object 7 has dimension $3$.
+
+The four polynomials $1,x^2,x^4,x^6$ in object 11 are linearly independent
+because a linear combination equal to the zero polynomial has all four
+coefficients equal to zero. Therefore object 11 has dimension $4$.
+
+Each of $P_3$, $P_4$ and object 11 is a subspace of $P_{11}$: every
+polynomial in these spaces has degree at most $11$ and the span in object
+11 is closed under addition and scalar multiplication. Object 7 is a
+subspace of $\mathbb R^4$, not of $P_{11}$.
+
+Collecting the results, the selected object numbers are:
+
+$$
+{
+\begin{aligned}
+(\mathrm{i})&\quad 1,3,\\
+(\mathrm{ii})&\quad 2,4,5,8,\\
+(\mathrm{iii})&\quad 1,\\
+(\mathrm{iv})&\quad 6,11,\\
+(\mathrm{v})&\quad 1,9,\\
+(\mathrm{vi})&\quad 2,3,4,5,8,\\
+(\mathrm{vii})&\quad 6,10,11,\\
+(\mathrm{viii})&\quad 1,5,9,\\
+(\mathrm{ix})&\quad 3,5.
+\end{aligned}
+}
+$$
+
+Different objects need different tests: row reduction counts pivots and
+free variables, coefficient comparison gives polynomial dimensions and
+eigenvalue statements require a square map.
+
+</Example>
+
+<Recall of="kernel-is-subspace" />
+
+<Recall of="image-is-subspace" />
+
+<Recall of="rank-nullity-theorem" />
+
+<Example
+  slug="seen-abstract-kernel-image-independence"
+  of="kernel-is-subspace,image-is-subspace,rank-nullity-theorem"
+  difficulty="exam"
+>
+
+### Consequences of prescribed kernel and image vectors
+
+Let $V$ and $W$ be vector spaces and let
+
+$$
+T:V\to W
+$$
+
+be a linear transformation. Let $v_1,v_2,v_3,v_4$ be vectors in $V$ and let $p,q$ be vectors in $W$.
+
+It is given that $v_1,v_2$ are linearly independent and also $p,q$ are linearly independent. It is also given that
+
+$$
+T(v_1)=0,\qquad
+T(v_2)=0,\qquad
+T(v_3)=p,\qquad
+T(v_4)=q.
+$$
+
+#### (a)
+
+Select the statements which are definitely true. If it is not possible to be certain whether a statement is true or false, do not select it.
+
+- $\ker(T)$ is a subspace of $V$.
+- $\ker(T)$ is a subspace of $W$.
+- $\operatorname{nullity}(T)\le2$.
+- $\operatorname{nullity}(T)=2$.
+- $\operatorname{nullity}(T)\ge2$.
+- $-8v_2+5v_3$ is not an element of $\ker(T)$.
+
+#### (b)
+
+Select the statements which are definitely true. If it is not possible to be certain whether a statement is true or false, do not select it.
+
+- $\operatorname{im}(T)$ is a subspace of $V$.
+- $\operatorname{im}(T)$ is a subspace of $W$.
+- $\operatorname{rank}(T)\le2$.
+- $\operatorname{rank}(T)=2$.
+- $\operatorname{rank}(T)\ge2$.
+- $4p+3q$ is not an element of $\operatorname{im}(T)$.
+
+#### (c)
+
+Now suppose that you are told that the vector space $V$ is in fact $\mathbb R^5$. Select the correct statement from the following list, then give a brief explanation:
+
+- $\operatorname{rank}(T)=3$ and $\operatorname{nullity}(T)\ne3$.
+- $\operatorname{nullity}(T)=5$ and $\operatorname{rank}(T)=5$.
+- Either $\operatorname{nullity}(T)=3$ or $\operatorname{rank}(T)=3$, but we do not have enough information to tell which.
+- $\operatorname{nullity}(T)=3$ and $\operatorname{rank}(T)=3$.
+- $\operatorname{nullity}(T)=3$ and $\operatorname{rank}(T)\ne3$.
+- $\operatorname{nullity}(T)=2$ and $\operatorname{rank}(T)=2$.
+
+#### (d)
+
+By selecting a statement from each list, complete a carefully explained proof that $\{v_1,v_2,v_3,v_4\}$ is a linearly independent set.
+
+#### Solution
+
+Write
+
+$$
+K=\ker(T)
+\qquad\text{and}\qquad
+I=\operatorname{im}(T).
+$$
+
+For (a), the kernel is a subspace of the domain $V$, so the first statement is definitely true and the second is false.
+
+Since $T(v_1)=T(v_2)=0$, both $v_1$ and $v_2$ belong to $K$. Being linearly independent, they give $K$ at least two independent directions, so
+
+$$
+\operatorname{nullity}(T)=\dim K\ge2.
+$$
+
+There is no information ruling out further independent vectors in $K$, so neither $\operatorname{nullity}(T)\le2$ nor $\operatorname{nullity}(T)=2$ is forced.
+
+Finally,
+
+$$
+\begin{aligned}
+T(-8v_2+5v_3)
+&=-8T(v_2)+5T(v_3)\\
+&=-8(0)+5p\\
+&=5p.
+\end{aligned}
+$$
+
+The independence of $p,q$ implies $p\ne0$, so $5p\ne0$. Hence
+$-8v_2+5v_3\notin\ker(T)$. The definitely true choices in (a) are
+
+$$
+{\ker(T)\text{ is a subspace of }V,\qquad
+\operatorname{nullity}(T)\ge2,\qquad
+-8v_2+5v_3\notin\ker(T).}
+$$
+
+For (b), the image is a subspace of the codomain $W$, not necessarily a subspace of $V$. Because
+
+$$
+T(v_3)=p,\qquad T(v_4)=q,
+$$
+
+both $p$ and $q$ belong to $I$. Their independence gives
+
+$$
+\operatorname{rank}(T)=\dim I\ge2.
+$$
+
+There may be further independent vectors in the image, so rank at most $2$ and rank equal to $2$ are not forced. Also,
+
+$$
+4p+3q
+=4T(v_3)+3T(v_4)
+=T(4v_3+3v_4),
+$$
+
+so $4p+3q\in\operatorname{im}(T)$. Therefore the definitely true choices in (b) are
+
+$$
+{
+\operatorname{im}(T)\text{ is a subspace of }W,
+\qquad
+\operatorname{rank}(T)\ge2.
+}
+$$
+
+For (c), the rank-nullity theorem applies to the domain $V=\mathbb R^5$:
+
+$$
+\operatorname{rank}(T)+\operatorname{nullity}(T)=5.
+$$
+
+The conclusions from (a) and (b) give
+
+$$
+\operatorname{nullity}(T)\ge2,
+\qquad
+\operatorname{rank}(T)\ge2.
+$$
+
+Thus
+
+$$
+2\le\operatorname{rank}(T)\le3,
+\qquad
+2\le\operatorname{nullity}(T)\le3.
+$$
+
+The only possible pairs are
+
+$$
+(\operatorname{rank}(T),\operatorname{nullity}(T))=(2,3)
+\quad\text{or}\quad
+(3,2).
+$$
+
+The given information does not determine whether an additional independent image direction occurs. Therefore the correct listed statement is
+
+$$
+{
+\text{either }\operatorname{nullity}(T)=3\text{ or }\operatorname{rank}(T)=3,
+\text{ but there is not enough information to tell which}.
+}
+$$
+
+For (d), suppose that scalars $\lambda_1,\lambda_2,\lambda_3,\lambda_4$ satisfy
+
+$$
+\lambda_1v_1+\lambda_2v_2+\lambda_3v_3+\lambda_4v_4=0.
+$$
+
+Apply $T$ to both sides. Since $T$ is linear and $T(0)=0$,
+
+$$
+\begin{aligned}
+0
+&=T\left(\lambda_1v_1+\lambda_2v_2+\lambda_3v_3+\lambda_4v_4\right)\\
+&=\lambda_1T(v_1)+\lambda_2T(v_2)
++\lambda_3T(v_3)+\lambda_4T(v_4)\\
+&=\lambda_3p+\lambda_4q.
+\end{aligned}
+$$
+
+Because $p,q$ are linearly independent, the last equation implies
+
+$$
+\lambda_3=\lambda_4=0.
+$$
+
+Substituting these values into the original relation gives
+
+$$
+\lambda_1v_1+\lambda_2v_2=0.
+$$
+
+Since $v_1,v_2$ are linearly independent,
+
+$$
+\lambda_1=\lambda_2=0.
+$$
+
+Therefore
+
+$$
+\lambda_1=\lambda_2=\lambda_3=\lambda_4=0,
+$$
+
+which is precisely the homogeneous criterion for
+$\{v_1,v_2,v_3,v_4\}$ to be linearly independent.
+
+</Example>

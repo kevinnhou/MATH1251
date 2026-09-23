@@ -1,0 +1,578 @@
+---
+title: Local extrema
+description: Critical points, stationary points and the Hessian test for local maxima, minima and saddles.
+tags: [calculus]
+ideas: [local-extrema, stationary-points, hessian, saddle-points]
+---
+
+This page locates and classifies the local extrema of a function of several
+variables. At a stationary point the [tangent
+plane](/calculus/functions-of-several-variables/geometry-and-approximation) is
+horizontal, which does not say whether the graph is a hill, a valley or a
+saddle. First-order calculus locates the candidates; the quadratic part of the
+[multivariable Taylor
+model](/calculus/functions-of-several-variables/multivariable-approximation)
+classifies them.
+
+## Local and absolute extrema
+
+<Definition slug="local-and-absolute-extrema">
+
+### Local and absolute extrema
+
+<Statement>
+
+Let $f:D\to\mathbb{R}$ and let $\mathbf{x}_0\in D$.
+
+- $f$ has a **local minimum** at $\mathbf{x}_0$ if
+  $f(\mathbf{x})\ge f(\mathbf{x}_0)$ for every $\mathbf{x}$ in $D$ sufficiently
+  close to $\mathbf{x}_0$.
+- $f$ has a **local maximum** at $\mathbf{x}_0$ if
+  $f(\mathbf{x})\le f(\mathbf{x}_0)$ for every $\mathbf{x}$ in $D$ sufficiently
+  close to $\mathbf{x}_0$.
+- $f$ has an **absolute**, or **global**, minimum at $\mathbf{x}_0$ if
+  $f(\mathbf{x})\ge f(\mathbf{x}_0)$ for every $\mathbf{x}\in D$.
+- $f$ has an absolute maximum at $\mathbf{x}_0$ if
+  $f(\mathbf{x})\le f(\mathbf{x}_0)$ for every $\mathbf{x}\in D$.
+
+</Statement>
+
+A local classification cannot settle a global optimisation problem.
+
+</Definition>
+
+## Critical and stationary points
+
+<Definition slug="multivariable-critical-point">
+
+### Critical and stationary points
+
+<Statement>
+
+For $f:D\to\mathbb{R}$, an interior point
+$\mathbf{x}_0\in\operatorname{int}(D)$ is a **critical point** if $f$ is not
+differentiable at $\mathbf{x}_0$ or if
+$\nabla f(\mathbf{x}_0)=\mathbf{0}$. A point at which the gradient exists and
+is zero is called a **stationary point**.
+
+</Statement>
+
+Critical points include points where differentiability fails because such
+points can still be extrema. The stationary-point equations locate only the
+critical points with zero gradient; boundary points are handled separately in
+a global-extrema problem.
+
+</Definition>
+
+<Theorem slug="multivariable-fermat-condition" of="multivariable-critical-point">
+
+### The multivariable Fermat condition
+
+<Statement>
+
+If all first partial derivatives of $f$ exist at an interior local maximum or
+local minimum $\mathbf{x}_0$, then
+
+$$
+{\nabla f(\mathbf{x}_0)=\mathbf{0}}.
+$$
+
+</Statement>
+
+Differentiability is sufficient for the partial derivatives to exist, but is
+stronger than what this coordinatewise condition needs. The condition is
+necessary, not a classification: a stationary point may be a local maximum, a
+local minimum, a saddle, or a point requiring higher-order analysis.
+
+</Theorem>
+
+<Proof of="multivariable-fermat-condition">
+
+Fix a coordinate direction and vary only that coordinate through
+$\mathbf{x}_0$. Since $\mathbf{x}_0$ is an interior local extremum of $f$, the
+resulting one-variable function also has a local extremum at the corresponding
+coordinate value. The one-variable Fermat condition makes the associated
+partial derivative zero. Repeating this for every coordinate gives
+
+$$
+f_{x_1}(\mathbf{x}_0)=\cdots=f_{x_n}(\mathbf{x}_0)=0,
+$$
+
+which is exactly $\nabla f(\mathbf{x}_0)=\mathbf{0}$.
+
+</Proof>
+
+<Method slug="find-stationary-points" of="multivariable-fermat-condition">
+
+### Find stationary points
+
+<Statement>
+
+For a function $f(x,y)$:
+
+1. calculate $f_x$ and $f_y$;
+2. solve
+   $$
+   f_x(x,y)=0,
+   \qquad
+   f_y(x,y)=0;
+   $$
+3. retain the simultaneous solutions in the domain;
+4. classify each candidate using local geometry or the Hessian test.
+
+</Statement>
+
+For a complete search for interior extrema, also inspect points where $f$ is
+not differentiable; the stationary equations cannot detect those points.
+
+</Method>
+
+<Example slug="stationary-points-polynomial" of="find-stationary-points" difficulty="routine">
+
+### Finding two stationary points
+
+Let
+
+$$
+f(x,y)=8x^3+y^2-6xy-2y+3.
+$$
+
+Then
+
+$$
+f_x=24x^2-6y,
+\qquad
+f_y=2y-6x-2.
+$$
+
+The stationary equations give
+
+$$
+y=4x^2,
+\qquad
+y=3x+1.
+$$
+
+Hence
+
+$$
+4x^2=3x+1,
+\qquad
+(4x+1)(x-1)=0.
+$$
+
+The stationary points are
+
+$$
+{(1,4)}
+\qquad\text{and}\qquad
+{\left(-\frac14,\frac14\right)}.
+$$
+
+</Example>
+
+The Fermat condition needs only the coordinate partial derivatives, but their
+existence does not guarantee differentiability, which the tangent-plane and
+directional-derivative formulas require. Partial derivatives inspect only the
+coordinate paths and may miss behaviour along other directions.
+
+<Example slug="zero-gradient-without-continuity" of="multivariable-fermat-condition" difficulty="challenge">
+
+### Zero partial derivatives without differentiability
+
+Define
+
+$$
+f(x,y)=
+\begin{cases}
+\dfrac{xy}{x^2+y^2},&(x,y)\ne(0,0),\\[6pt]
+0,&(x,y)=(0,0).
+\end{cases}
+$$
+
+Along the coordinate axes,
+
+$$
+f(h,0)=0,
+\qquad
+f(0,h)=0,
+$$
+
+so
+
+$$
+f_x(0,0)=0,
+\qquad
+f_y(0,0)=0.
+$$
+
+However, along $y=x$,
+
+$$
+f(t,t)=\frac{t^2}{2t^2}=\frac12
+\qquad(t\ne0).
+$$
+
+The function is therefore not continuous at the origin and cannot be
+differentiable there, even though its two partial derivatives exist and
+vanish.
+
+</Example>
+
+## The geometry of a stationary point
+
+At a stationary point $(x_0,y_0)$ of the graph $z=f(x,y)$, the tangent plane
+has equation
+
+$$
+z=f(x_0,y_0),
+$$
+
+because both first partial derivatives vanish.
+
+A **saddle point** is a point $\mathbf{x}_0$ for which every neighbourhood
+within the domain contains points with both larger and smaller function
+values than $f(\mathbf{x}_0)$. A saddle is neither a local maximum nor a
+local minimum.
+
+<Example slug="product-saddle" of="multivariable-fermat-condition" difficulty="routine">
+
+### A saddle from two directions
+
+For
+
+$$
+f(x,y)=xy,
+$$
+
+the only stationary point is $(0,0)$ because
+
+$$
+\nabla f(x,y)
+=
+\begin{pmatrix}
+y\\
+x
+\end{pmatrix}.
+$$
+
+Along $y=x$,
+
+$$
+f(t,t)=t^2>0
+\qquad(t\ne0),
+$$
+
+whereas along $y=-x$,
+
+$$
+f(t,-t)=-t^2<0.
+$$
+
+Every neighbourhood of the origin contains larger and smaller values than
+$f(0,0)=0$, so the origin is a saddle point.
+
+</Example>
+
+## Classifying stationary points
+
+The gradient gives the linear part of the local model. At a stationary point
+that part vanishes, so the Hessian supplies the next term to inspect. If the
+quadratic part also vanishes in some directions, higher-order terms may matter.
+
+<Recall of="multivariable-hessian" />
+
+<Theorem slug="multivariable-second-derivative-test" of="multivariable-hessian">
+
+### The second-order partial derivative test
+
+<Statement>
+
+Let $\mathbf{x}_0=(x_0,y_0)$ be a stationary point. Assume that $f$ has
+continuous second-order partial derivatives on a neighbourhood of
+$\mathbf{x}_0$ (so $f$ is $C^2$ there). Define
+
+$$
+D
+=\det H_f(\mathbf{x}_0)
+=f_{xx}(\mathbf{x}_0)f_{yy}(\mathbf{x}_0)
+-f_{xy}(\mathbf{x}_0)^2.
+$$
+
+Then:
+
+- if $D>0$ and $f_{xx}(\mathbf{x}_0)>0$, $\mathbf{x}_0$ is a local minimum;
+- if $D>0$ and $f_{xx}(\mathbf{x}_0)<0$, $\mathbf{x}_0$ is a local maximum;
+- if $D<0$, $\mathbf{x}_0$ is a saddle point;
+- if $D=0$, the test is inconclusive.
+
+</Statement>
+
+At a stationary point, the quadratic Taylor term is
+
+$$
+\frac12\mathbf{h}^{\mathsf T}H_f(\mathbf{x}_0)\mathbf{h}.
+$$
+
+For a symmetric Hessian, this quadratic form is **positive definite** if it
+is positive for every nonzero $\mathbf{h}$, **negative definite** if it is
+negative for every nonzero $\mathbf{h}$ and **indefinite** if it takes both
+positive and negative values. The test uses $D$ and $f_{xx}$ to tell these
+cases apart.
+
+When $D>0$, the quadratic form has one sign in all non-zero directions and
+$f_{xx}$ determines whether that sign is positive or negative. When $D<0$,
+the form changes sign, which is the algebraic signature of a saddle. If
+$D=0$, higher-order terms or direct comparisons along curves are required.
+
+To see the determinant rule when $D>0$, write
+$a=f_{xx}(\mathbf{x}_0)$, $b=f_{xy}(\mathbf{x}_0)$ and
+$c=f_{yy}(\mathbf{x}_0)$. Then $a\ne0$ and the quadratic part satisfies
+
+$$
+ah^2+2bhk+ck^2
+=a\left(h+\frac ba k\right)^2+\frac Da k^2.
+$$
+
+Both coefficients on the right have the sign of $a$, so small nonzero
+displacements change $f$ in the same direction.
+
+For intuition, a symmetric Hessian has principal directions described by its
+[eigenvectors](/algebra/eigenvalues/eigenvalues-and-eigenvectors). Its
+eigenvalues give the curvatures in those directions: both positive suggests
+a local minimum, both negative a local maximum and opposite signs a saddle.
+In two variables, $D$ is the product of those two eigenvalues, while
+$f_{xx}$ picks the sign when they agree.
+
+</Theorem>
+
+<Method slug="classify-stationary-points" of="find-stationary-points,multivariable-second-derivative-test">
+
+### Classify a stationary point
+
+<Statement>
+
+For each stationary point:
+
+1. calculate the Hessian entries at the point;
+2. compute $D=f_{xx}f_{yy}-f_{xy}^2$;
+3. use the sign of $D$ and then the sign of $f_{xx}$ when $D>0$;
+4. if $D=0$, inspect higher-order terms or compare the function along
+   carefully chosen curves.
+
+</Statement>
+
+</Method>
+
+<Example slug="standard-quadratic-classifications" of="classify-stationary-points" difficulty="routine">
+
+### Standard quadratic surfaces
+
+For
+
+$$
+f(x,y)=x^2+y^2,
+$$
+
+the Hessian at the origin is
+
+$$
+H_f(0,0)
+=
+\begin{pmatrix}
+2&0\\
+0&2
+\end{pmatrix},
+\qquad
+D=4>0,
+\qquad
+f_{xx}=2>0.
+$$
+
+Thus the origin is a local minimum; $f(x,y)\ge0$ everywhere, so it
+is also a global minimum.
+
+For
+
+$$
+g(x,y)=-x^2-y^2,
+$$
+
+we have $D=4>0$ and $g_{xx}=-2<0$, so the origin is a local maximum.
+
+For
+
+$$
+h(x,y)=x^2-y^2,
+$$
+
+the Hessian is
+
+$$
+H_h(0,0)
+=
+\begin{pmatrix}
+2&0\\
+0&-2
+\end{pmatrix},
+\qquad
+D=-4<0.
+$$
+
+The origin is therefore a saddle; the two coordinate axes show this directly.
+
+</Example>
+
+<Example slug="cubic-hessian-classification" of="classify-stationary-points" difficulty="exam">
+
+### Classifying the stationary points of a cubic
+
+Let
+
+$$
+f(x,y)=x^3-y^3+3xy.
+$$
+
+The first derivatives are
+
+$$
+f_x=3x^2+3y,
+\qquad
+f_y=-3y^2+3x.
+$$
+
+Thus
+
+$$
+y=-x^2,
+\qquad
+x=y^2,
+$$
+
+so $x=x^4$. The stationary points are $(0,0)$ and $(1,-1)$.
+
+The Hessian is
+
+$$
+H_f(x,y)
+=
+\begin{pmatrix}
+6x&3\\
+3&-6y
+\end{pmatrix}.
+$$
+
+At $(0,0)$,
+
+$$
+\det H_f(0,0)=-9<0,
+$$
+
+so the origin is a saddle. At $(1,-1)$,
+
+$$
+H_f(1,-1)
+=
+\begin{pmatrix}
+6&3\\
+3&6
+\end{pmatrix},
+\qquad
+\det H_f(1,-1)=27>0,
+\qquad
+f_{xx}(1,-1)=6>0.
+$$
+
+Therefore $(1,-1)$ is a local minimum. Its value is
+
+$$
+f(1,-1)=1-(-1)^3+3(1)(-1)=-1.
+$$
+
+</Example>
+
+<Example slug="positive-factor-saddle" of="classify-stationary-points" difficulty="challenge">
+
+### Checking a positive factor for new stationary points
+
+Let
+
+$$
+f(x,y)=xy\,e^{x^2+y^2}.
+$$
+
+The derivatives factor as
+
+$$
+f_x=y\,e^{x^2+y^2}(1+2x^2),
+\qquad
+f_y=x\,e^{x^2+y^2}(1+2y^2).
+$$
+
+The exponential factors and the terms $1+2x^2$, $1+2y^2$ are always positive.
+Both derivatives therefore vanish only at $(0,0)$. At that point,
+
+$$
+H_f(0,0)
+=
+\begin{pmatrix}
+0&1\\
+1&0
+\end{pmatrix},
+\qquad
+\det H_f(0,0)=-1.
+$$
+
+The origin is a saddle. In this example, the derivative factors prove that
+the positive exponential adds no stationary points; positivity of a factor
+alone would not guarantee that for every product.
+
+</Example>
+
+<Example slug="revisit-polynomial-stationary-points" of="classify-stationary-points" difficulty="exam">
+
+### Revisiting the polynomial stationary points
+
+For
+
+$$
+f(x,y)=8x^3+y^2-6xy-2y+3,
+$$
+
+the Hessian and its determinant are
+
+$$
+H_f(x,y)
+=
+\begin{pmatrix}
+48x&-6\\
+-6&2
+\end{pmatrix},
+\qquad
+\det H_f(x,y)=96x-36.
+$$
+
+At $(1,4)$,
+
+$$
+\det H_f(1,4)=60>0,
+\qquad
+f_{xx}(1,4)=48>0,
+$$
+
+so $(1,4)$ is a local minimum. At
+$(-1/4,1/4)$,
+
+$$
+\det H_f\left(-\frac14,\frac14\right)=-60<0,
+$$
+
+so that point is a saddle.
+
+</Example>
+
+Local classification compares values only near one point. On a closed and
+bounded region, the absolute maximum and minimum also require every boundary
+piece; the [global
+extrema](/calculus/functions-of-several-variables/global-extrema) page sets out
+that search.

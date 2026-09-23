@@ -1,0 +1,490 @@
+---
+title: Constrained extrema
+description: Lagrange multipliers and distance optimisation on curves and surfaces.
+tags: [calculus]
+ideas: [constraints, lagrange-multipliers, distance, orthogonal-projection]
+---
+
+This page optimises a function on a curve given by an equation $g(x,y)=0$,
+without parameterising the curve. The feasible points form a level curve of
+$g$, so the [gradient-normal
+theorem](/calculus/functions-of-several-variables/geometry-and-approximation)
+makes $\nabla g$ normal to it. At a constrained extremum, $\nabla f$ must point
+along the same normal.
+
+The resulting Lagrange multiplier method replaces the [boundary
+parameterisation](/calculus/functions-of-several-variables/global-extrema)
+whenever $g=0$ is the natural description of a boundary. The page ends with
+distance problems.
+
+<Recall of="multivariable-level-set" />
+
+<Recall of="gradient-normal-level-set" />
+
+## The multiplier condition
+
+<Definition slug="constrained-extremum">
+
+### Constrained extremum
+
+<Statement>
+
+Let $f$ be an objective function and let
+
+$$
+C=\{(x,y):g(x,y)=0\}
+$$
+
+be its feasible set. A constrained maximum or minimum of $f$ is a maximum or
+minimum of $f$ when the comparison is restricted to points in $C$.
+
+</Statement>
+
+The constraint limits the directions in which we may move. A point can fail
+to be an unconstrained stationary point and still be a constrained extremum,
+because the directions in which $f$ would increase or decrease are not
+feasible.
+
+</Definition>
+
+<Theorem slug="lagrange-multiplier-theorem" of="constrained-extremum,gradient-normal-level-set">
+
+### Lagrange multipliers
+
+<Statement>
+
+Suppose $C=\{(x,y):g(x,y)=0\}$ is a nonempty closed and bounded curve and
+$f$ and $g$ have continuous first partial derivatives on an open set
+containing $C$. Then $f$ attains a maximum and a minimum on $C$. At each
+constrained extremum where
+
+$$
+\nabla g(x,y)\ne\mathbf{0},
+$$
+
+there is a scalar $\lambda\in\mathbb{R}$ such that
+
+$$
+{\nabla f(x,y)=\lambda\nabla g(x,y)}
+$$
+
+together with
+
+$$
+{g(x,y)=0}.
+$$
+
+</Statement>
+
+The equation says that the gradients are parallel, not that they have equal
+length: $\lambda$ records a scale and possibly a reversal of direction.
+
+The regularity condition $\nabla g\ne\mathbf{0}$ is essential. A feasible
+point where $\nabla g=\mathbf{0}$ is a singular constraint point, where the
+multiplier condition is not guaranteed, so it must be checked separately
+along with any corners or endpoints introduced by an inequality constraint.
+Compactness and continuity still guarantee that the extrema exist.
+
+</Theorem>
+
+<Proof of="lagrange-multiplier-theorem">
+
+At a regular point of $C$, at least one of $g_x,g_y$ is nonzero, so the
+constraint is locally a smooth curve. A tangent vector $\mathbf{v}$ to that
+curve satisfies
+
+$$
+\nabla g\cdot\mathbf{v}=0
+$$
+
+because $g$ is constant along the constraint. At a constrained extremum, the
+first-order change of $f$ must also vanish for every feasible tangent vector:
+
+$$
+\nabla f\cdot\mathbf{v}=0.
+$$
+
+In the plane, both gradients are therefore normal to the same tangent line.
+Since $\nabla g\ne\mathbf{0}$, the two normals are parallel, so
+$\nabla f=\lambda\nabla g$ for some scalar $\lambda$. The existence of
+maximum and minimum values follows by applying the extreme-value theorem to
+the closed and bounded constraint curve.
+
+</Proof>
+
+<Method slug="lagrange-multiplier-method" of="lagrange-multiplier-theorem">
+
+### Optimise subject to one equality constraint
+
+<Statement>
+
+To optimise $f$ subject to $g=0$:
+
+1. check where $\nabla g=\mathbf{0}$ on the constraint and retain any such
+   singular feasible points for separate analysis;
+2. compute $\nabla f$ and $\nabla g$;
+3. solve
+   $$
+   \nabla f=\lambda\nabla g,
+   \qquad
+   g=0;
+   $$
+4. evaluate $f$ at every solution;
+5. compare the values to identify the constrained maximum and minimum.
+
+</Statement>
+
+The system has three unknowns $x$, $y$ and $\lambda$ in the two-variable
+case. Symmetry and factorisation often reduce the algebra. Solving the
+multiplier equations produces candidates; it does not replace checking
+singular points or comparing objective values.
+
+</Method>
+
+<Example slug="disk-lagrange-calculation" of="lagrange-multiplier-method" difficulty="exam">
+
+### Re-solving the disk problem with multipliers
+
+Optimise
+
+$$
+f(x,y)=x^2+4xy+y^2
+$$
+
+subject to
+
+$$
+g(x,y)=x^2+y^2-1=0.
+$$
+
+The gradients are
+
+$$
+\nabla f
+=
+\begin{pmatrix}
+2x+4y\\
+4x+2y
+\end{pmatrix},
+\qquad
+\nabla g
+=
+\begin{pmatrix}
+2x\\
+2y
+\end{pmatrix}.
+$$
+
+The multiplier equations are
+
+$$
+2x+4y=2\lambda x,
+\qquad
+4x+2y=2\lambda y,
+\qquad
+x^2+y^2=1.
+$$
+
+After dividing the first two equations by $2$,
+
+$$
+(1-\lambda)x+2y=0,
+\qquad
+2x+(1-\lambda)y=0.
+$$
+
+The unit-circle constraint rules out $(x,y)=(0,0)$, so the coefficient
+matrix must have determinant zero:
+
+$$
+(1-\lambda)^2-4=0.
+$$
+
+Thus $\lambda=3$ or $\lambda=-1$.
+
+If $\lambda=3$, then $y=x$. The constraint gives $2x^2=1$, so the two
+same-sign points
+
+$$
+\left(\frac1{\sqrt2},\frac1{\sqrt2}\right),
+\qquad
+\left(-\frac1{\sqrt2},-\frac1{\sqrt2}\right)
+$$
+
+give $f=3$.
+
+If $\lambda=-1$, then $y=-x$. The two opposite-sign points
+
+$$
+\left(\frac1{\sqrt2},-\frac1{\sqrt2}\right),
+\qquad
+\left(-\frac1{\sqrt2},\frac1{\sqrt2}\right)
+$$
+
+give $f=-1$. This reproduces the boundary part of the [closed-disk
+example](/calculus/functions-of-several-variables/global-extrema), found there
+by parameterisation.
+
+</Example>
+
+## Distance optimisation
+
+<Method slug="squared-distance-method" of="constrained-extremum">
+
+### Minimise a distance through its square
+
+<Statement>
+
+For a fixed point $\mathbf{p}$, minimise the squared distance
+
+$$
+D(\mathbf{x})=\|\mathbf{x}-\mathbf{p}\|^2
+$$
+
+instead of the distance $\|\mathbf{x}-\mathbf{p}\|$. Since the square-root
+function is increasing on non-negative values, the points that minimise or
+maximise the two objectives are the same.
+
+</Statement>
+
+The squared expression avoids a square root and usually gives a polynomial
+objective. If the constraint has a visible normal direction, the shortest
+segment can sometimes be found geometrically before writing the multiplier
+system.
+
+</Method>
+
+<Example slug="closest-point-on-plane" of="squared-distance-method,gradient-normal-level-set" difficulty="exam">
+
+### The closest point on a plane
+
+Find the point on
+
+$$
+2x-y+z=3
+$$
+
+closest to
+
+$$
+\mathbf{p}=(-1,1,2).
+$$
+
+The plane has normal vector
+
+$$
+\mathbf{n}=(2,-1,1).
+$$
+
+The shortest segment from $\mathbf{p}$ to the plane is perpendicular to the
+plane, so the desired point has the form
+
+$$
+\mathbf{x}
+=\mathbf{p}+t\mathbf{n}
+=(-1,1,2)+t(2,-1,1).
+$$
+
+Substituting into the plane equation gives
+
+$$
+2(-1+2t)-(1-t)+(2+t)=3,
+$$
+
+so $-1+6t=3$ and $t=2/3$. Therefore
+
+$$
+{
+\mathbf{x}
+=\left(\frac13,\frac13,\frac83\right)
+}.
+$$
+
+This nearest point is the orthogonal projection of $\mathbf{p}$ onto the
+plane. The same point results from minimising
+
+$$
+(x+1)^2+(y-1)^2+(z-2)^2
+$$
+
+subject to $2x-y+z=3$, but the normal direction makes the geometric solution
+shorter.
+
+</Example>
+
+<Example slug="quartic-distance-extrema" of="squared-distance-method,lagrange-multiplier-method" difficulty="challenge">
+
+### Closest and furthest points on a quartic curve
+
+Find the points on
+
+$$
+x^4+7x^2y^2+y^4=1
+$$
+
+that are closest to and furthest from the origin. Minimise and maximise
+
+$$
+d^2=x^2+y^2.
+$$
+
+Both expressions depend only on $x^2$ and $y^2$. Set
+
+$$
+u=x^2,
+\qquad
+v=y^2,
+\qquad
+u,v\ge0.
+$$
+
+The problem becomes optimising $s=u+v$ subject to
+
+$$
+u^2+7uv+v^2=1.
+$$
+
+At an interior constrained extremum in the first quadrant,
+
+$$
+\begin{pmatrix}
+1\\
+1
+\end{pmatrix}
+=\mu
+\begin{pmatrix}
+2u+7v\\
+7u+2v
+\end{pmatrix}.
+$$
+
+The two components on the right must be equal, so
+
+$$
+2u+7v=7u+2v,
+\qquad
+u=v.
+$$
+
+Substituting into the constraint gives
+
+$$
+9u^2=1,
+\qquad
+u=v=\frac13,
+$$
+
+and hence $d^2=u+v=2/3$.
+
+The boundary cases in the first quadrant are $u=0$ or $v=0$. The constraint
+then gives the other variable as $1$, so $d^2=1$. The feasible set in
+$(u,v)$ is closed and bounded and these interior and boundary cases exhaust
+its extrema. Restoring the signs independently, the closest points are
+
+$$
+{
+\left(\pm\frac1{\sqrt3},\pm\frac1{\sqrt3}\right)
+}
+$$
+
+with distance $\sqrt{2/3}$, while the furthest points are
+
+$$
+{(\pm1,0),\ (0,\pm1)}
+$$
+
+with distance $1$.
+
+</Example>
+
+<Example slug="parabola-distance-problem" of="squared-distance-method" difficulty="challenge">
+
+### The closest point on a parabola
+
+Let
+
+$$
+\mathbf{x}_0=(0,a),
+\qquad
+a>0,
+$$
+
+and find the point on $y=x^2$ closest to $\mathbf{x}_0$. A point on the
+parabola is
+
+$$
+\mathbf{p}(x)=(x,x^2).
+$$
+
+The squared distance is
+
+$$
+D(x)
+=\|\mathbf{p}(x)-\mathbf{x}_0\|^2
+=x^2+(x^2-a)^2.
+$$
+
+Differentiate:
+
+$$
+\begin{aligned}
+D'(x)
+&=2x+4x(x^2-a)\\
+&=2x(1+2x^2-2a).
+\end{aligned}
+$$
+
+The stationary values satisfy
+
+$$
+x=0
+\qquad\text{or}\qquad
+x^2=a-\frac12.
+$$
+
+The second possibility exists only when $a\ge1/2$. Since
+$D(x)\to\infty$ as $|x|\to\infty$, compare the stationary candidates:
+
+$$
+D(0)=a^2,
+$$
+
+whereas at $x^2=a-1/2$,
+
+$$
+D(x)=a-\frac14.
+$$
+
+Their difference is
+
+$$
+a^2-\left(a-\frac14\right)
+=\left(a-\frac12\right)^2\ge0.
+$$
+
+Therefore, if $0<a\le1/2$, the closest point is
+
+$$
+{(0,0)}.
+$$
+
+If $a>1/2$, the two closest points are
+
+$$
+{
+\left(
+\pm\sqrt{a-\frac12},
+\ a-\frac12
+\right)
+}.
+$$
+
+At $a=1/2$ the two non-zero candidates merge with the origin.
+
+</Example>
+
+The [economic
+applications](/calculus/functions-of-several-variables/economic-applications)
+page uses the same multiplier geometry to allocate a fixed budget between
+inputs: the budget line is the constraint and the production gradient replaces
+$\nabla f$.

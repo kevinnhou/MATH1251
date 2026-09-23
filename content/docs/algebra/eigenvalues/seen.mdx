@@ -1,0 +1,1222 @@
+---
+title: Seen Questions
+description: Worked solutions on discrete stability, diagonalisation, linear systems, matrix powers and Markov models.
+tags: [seen, algebra, eigenvalues]
+ideas: [revision, eigenvalues, diagonalisation, stability, markov-systems]
+---
+
+These exam questions use eigenvalues and diagonalisation to analyse matrix powers, stability, linear differential systems and the long-term behaviour of Markov models.
+
+<Recall of="spectral-mode-behaviour" />
+
+<Example
+  slug="seen-matrix-dts-stability"
+  of="spectral-mode-behaviour,discrete-stability"
+  difficulty="exam"
+>
+
+### Stability of two discrete-time systems
+
+Let
+
+$$
+A=
+\begin{pmatrix}
+1&1\\
+0&1
+\end{pmatrix},
+\qquad
+B=\frac1{40}
+\begin{pmatrix}
+-4&4\\
+-5&-5
+\end{pmatrix}
+\begin{pmatrix}
+\frac12&0\\
+0&\frac13
+\end{pmatrix}
+\begin{pmatrix}
+-5&-4\\
+5&-4
+\end{pmatrix}.
+$$
+
+Consider the discrete-time systems
+
+$$
+\mathbf a_{n+1}=A\mathbf a_n,
+\qquad
+\mathbf b_{n+1}=B\mathbf b_n,
+\qquad n\in\mathbb Z.
+$$
+
+Here “stable” uses the convention from the discrete stability notes: every
+solution must tend to zero in the stated time direction. A bounded but
+non-decaying unit-modulus mode is a boundary case, not stable under this
+convention.
+
+Select all true statements:
+
+1. The first DTS is stable as $n\to\infty$.
+2. The first DTS is stable as $n\to-\infty$.
+3. The second DTS is stable as $n\to\infty$.
+4. The second DTS is stable as $n\to-\infty$.
+
+#### Solution
+
+Forward behaviour depends on the powers $A^n$ and $B^n$. Eigenmodes with
+modulus less than $1$ decay as $n\to\infty$ and those with modulus greater
+than $1$ grow. A unit-modulus eigenvalue must be checked for Jordan-block
+factors such as $n$. For $n\to-\infty$, the same test applies to the inverse
+matrix.
+
+For the first matrix, write
+
+$$
+A=I+N,
+\qquad
+N=
+\begin{pmatrix}
+0&1\\
+0&0
+\end{pmatrix},
+\qquad N^2=0.
+$$
+
+For $n\ge0$, the binomial theorem truncates because $N^2=0$:
+
+$$
+A^n=(I+N)^n=I+nN
+=
+\begin{pmatrix}
+1&n\\
+0&1
+\end{pmatrix}.
+$$
+
+For $n=-k<0$, $(I+N)^{-1}=I-N$, so the binomial theorem and $N^2=0$
+give
+
+$$
+A^n=(I-N)^k=I-kN=I+nN.
+$$
+
+For example,
+
+$$
+A^n
+\begin{pmatrix}0\\1\end{pmatrix}
+=
+\begin{pmatrix}n\\1\end{pmatrix}.
+$$
+
+This vector is unbounded both as $n\to\infty$ and as $n\to-\infty$. Thus the
+first DTS is not stable in either direction. The cause is not the unit
+eigenvalue alone: the non-trivial Jordan block creates the factor $n$.
+
+Let
+
+$$
+P=\begin{pmatrix}-4&4\\-5&-5\end{pmatrix},
+\qquad
+Q=\begin{pmatrix}-5&-4\\5&-4\end{pmatrix}.
+$$
+
+Their product is
+
+$$
+PQ
+=40I.
+$$
+
+Hence $Q=40P^{-1}$ and the displayed expression is the diagonalisation
+$B=PDP^{-1}$, with $D=\operatorname{diag}(1/2,1/3)$. Its eigenmodes are
+constant multiples of $(1/2)^n$ and $(1/3)^n$. Therefore
+
+$$
+B^n\longrightarrow0
+\qquad\text{as }n\to\infty,
+$$
+
+so the second DTS is stable as $n\to\infty$. In the reverse direction, the
+eigenvalues of $B^{-1}$ are $2$ and $3$. Writing $n=-k$ gives
+$B^n=(B^{-1})^k$ with $k\to\infty$, so non-zero inverse modes grow.
+The second DTS is therefore not stable backwards in time.
+
+The only true statement is
+
+$$
+{\text{The second DTS is stable as }n\to\infty.}
+$$
+
+This is the matrix version of the modulus test for discrete modes. Reversing
+time replaces each non-zero eigenvalue by its reciprocal, which is why the
+second system is stable forwards but not backwards.
+
+</Example>
+
+<Recall of="first-order-linear-system" />
+
+<Example
+  slug="seen-ode-system-zero-initial-derivative"
+  of="first-order-linear-system,basis,dimension"
+  difficulty="exam"
+>
+
+### A system with zero initial derivative
+
+Consider
+
+$$
+A=
+\begin{pmatrix}
+0&-3&-20\\
+0&0&9\\
+0&0&0
+\end{pmatrix}.
+$$
+
+We wish to solve the system of differential equations
+
+$$
+\mathbf{x}'(t)=A\mathbf{x}(t),
+\qquad
+\mathbf{x}(t)=
+\begin{pmatrix}
+x_1(t)\\
+x_2(t)\\
+x_3(t)
+\end{pmatrix},
+$$
+
+subject to the initial condition
+
+$$
+\mathbf{x}'(0)=\mathbf{0}.
+$$
+
+The solutions $\mathbf{x}(t)$ of this system form a vector space $S$.
+
+(a) Find $\dim(S)$.
+
+(b) Find a basis for $S$.
+
+#### Solution
+
+The condition prescribes the initial derivative rather than the initial
+state, so $\mathbf{x}(0)$ may vary and the condition selects a subspace of
+the general solution.
+
+Solve the triangular component equations from the bottom upwards, then impose the condition on the derivative at $t=0$. Multiplying out $A\mathbf{x}$ gives
+
+$$
+\begin{aligned}
+x_1'&=-3x_2-20x_3,\\
+x_2'&=9x_3,\\
+x_3'&=0.
+\end{aligned}
+$$
+
+The last equation gives
+
+$$
+x_3(t)=c_3
+$$
+
+for a constant $c_3$. Substituting this into the second equation and integrating gives
+
+$$
+x_2(t)=9c_3t+c_2.
+$$
+
+Now substitute $x_2(t)$ and $x_3(t)$ into the first equation:
+
+$$
+\begin{aligned}
+x_1'(t)
+&=-3(c_2+9c_3t)-20c_3\\
+&=-3c_2-20c_3-27c_3t.
+\end{aligned}
+$$
+
+Integrating once more gives the general solution
+
+$$
+\mathbf{x}(t)=
+\begin{pmatrix}
+c_1+(-3c_2-20c_3)t-\dfrac{27}{2}c_3t^2\\
+c_2+9c_3t\\
+c_3
+\end{pmatrix},
+\qquad c_1,c_2,c_3\in\mathbb R.
+$$
+
+Differentiate this expression and evaluate at $t=0$:
+
+$$
+\mathbf{x}'(0)=
+\begin{pmatrix}
+-3c_2-20c_3\\
+9c_3\\
+0
+\end{pmatrix}.
+$$
+
+The initial condition $\mathbf{x}'(0)=\mathbf0$ therefore gives
+
+$$
+-3c_2-20c_3=0,
+\qquad
+9c_3=0.
+$$
+
+The second equation forces $c_3=0$ and the first then forces $c_2=0$. The constant $c_1$ remains free, so
+
+$$
+S=
+\left\{
+t\longmapsto c_1
+\begin{pmatrix}
+1\\0\\0
+\end{pmatrix}
+:c_1\in\mathbb R
+\right\}.
+$$
+
+Consequently,
+
+$$
+{\dim(S)=1}
+$$
+
+and one basis is
+
+$$
+{
+\left\{
+t\longmapsto\begin{pmatrix}
+1\\0\\0
+\end{pmatrix}
+\right\}
+}.
+$$
+
+As a check, $A(1,0,0)^{\mathsf T}=\mathbf0$, so every function in the
+displayed family is constant and has zero derivative. Equivalently, the
+condition $\mathbf{x}'(0)=A\mathbf{x}(0)=\mathbf0$ requires the initial
+vector to lie in $\ker(A)=\operatorname{span}\{(1,0,0)^{\mathsf T}\}$,
+which gives the same one-dimensional solution space.
+
+</Example>
+
+<Recall of="diagonalisation" />
+
+<Example
+  slug="seen-diagonalisation-stress-matrix"
+  of="diagonalisation,matrix-power-via-diagonalisation,columns-independent-zero-nullity"
+  difficulty="exam"
+>
+
+### Diagonalisation of a stress matrix
+
+Keegan and Hongyi are engineers studying the stress on a certain physical object. This stress can be expressed as a $3\times3$ matrix $A$ and Keegan and Hongyi are particularly interested in the diagonalisation of $A$. After some computations, Keegan discovers that
+
+$$
+D=B^{-1}AB,
+$$
+
+where
+
+$$
+B=
+\begin{pmatrix}
+-8&9&-9\\
+3&-1&2\\
+-2&7&6
+\end{pmatrix},
+\qquad
+D=
+\begin{pmatrix}
+4&0&0\\
+0&20&0\\
+0&0&x
+\end{pmatrix},
+$$
+
+where $x>20$ is some unknown parameter.
+
+#### (a) Which statements are true?
+
+Which of the following are true about Keegan and Hongyi's matrices? Select all that apply.
+
+1. $\displaystyle \lim_{n\to\infty}A^n=B^3.$
+2. If $\lambda$ is an eigenvalue of $A$, then
+   $$
+   (\lambda+4)(\lambda+20)(\lambda+x)=0.
+   $$
+3. The vectors
+   $$
+   \begin{pmatrix}-6\\0\\0\end{pmatrix},
+   \qquad
+   \begin{pmatrix}0\\2\\0\end{pmatrix},
+   \qquad
+   \begin{pmatrix}0\\0\\7\end{pmatrix}
+   $$
+   are eigenvectors of $D$.
+4. The columns of $A$ are linearly independent.
+5. $A=BDB^{-1}$.
+
+#### (b) A normalised eigenvector
+
+Keegan and Hongyi are also interested in finding a normalised set of the eigenvectors of $A$. That is, they want eigenvectors of length $1$.
+
+Suppose Hongyi writes $v_\lambda$ to denote an eigenvector of $A$ of length $1$ with the corresponding eigenvalue $\lambda$. Using Keegan's diagonalisation of $A$, find a valid choice for $v_4$.
+
+$$
+\begin{pmatrix}1\\2\\3\end{pmatrix}
+\quad\text{is entered as}\quad
+\texttt{[1; 2; 3]}.
+$$
+
+Square roots, multiplication and exponents were to be written in Maple syntax; for example,
+
+$$
+3\sqrt2
+\quad\text{may be entered as}\quad
+\texttt{3*sqrt(2)}
+\quad\text{or}\quad
+\texttt{3*(2)^(1/2)}.
+$$
+
+#### (c) A matrix power applied to a vector
+
+Keegan and Hongyi are also interested in finding the vector $A^nB\mathbf y$, where $\mathbf y\in\mathbb R^3$, for all $n\in\mathbb Z$.
+
+In one trial, suppose Hongyi considers
+
+$$
+\mathbf y=
+\begin{pmatrix}
+4\\0\\9
+\end{pmatrix}.
+$$
+
+Use the above diagonalisation of $A$, or otherwise, to find the components of
+
+$$
+A^nB\mathbf y=
+\begin{pmatrix}
+w_1\\w_2\\w_3
+\end{pmatrix}.
+$$
+
+#### (d) When does the nullity become non-zero?
+
+A second pair of engineers, Max and Mira, uses Keegan's diagonalisation. For this part only, allow $x$ to range over all real values rather than imposing the restriction $x>20$ from parts (a)--(c). In Max's simulations, the program runs whenever $\operatorname{nullity}(A)=0$. There exists only one choice of $x\in\mathbb R$ for which the software fails and Mira is tasked with finding this value.
+
+Which choice of $x$ gives $\operatorname{nullity}(A)\ne0$? In words, briefly explain your answer.
+
+#### Solution
+
+The equation $D=B^{-1}AB$ is a similarity relation. Multiplying it on the left by $B$ and on the right by $B^{-1}$ gives
+
+$$
+A=BDB^{-1}.
+$$
+
+This relation carries eigenvalues, eigenvectors, powers and invertibility between $A$ and the diagonal matrix $D$.
+
+#### (a) Testing the statements
+
+For positive integers $n$, diagonalisation gives
+
+$$
+A^n=BD^nB^{-1},
+\qquad
+D^n=
+\begin{pmatrix}
+4^n&0&0\\
+0&20^n&0\\
+0&0&x^n
+\end{pmatrix}.
+$$
+
+Since $x>20$, the diagonal entries $4^n,20^n,x^n$ do not converge to finite limits. If $A^n$ had a finite limit, then $B^{-1}A^nB=D^n$ would also have a finite limit, which is impossible. Therefore statement 1 is false.
+
+The eigenvalues of $A$ are the diagonal entries of $D$, namely $4,20,x$. Thus the correct characteristic-root equation is
+
+$$
+(\lambda-4)(\lambda-20)(\lambda-x)=0,
+$$
+
+not the equation with plus signs in statement 2. Statement 2 is false.
+
+The three vectors in statement 3 are non-zero scalar multiples of the standard basis vectors. Direct multiplication gives
+
+$$
+D
+\begin{pmatrix}-6\\0\\0\end{pmatrix}
+=4
+\begin{pmatrix}-6\\0\\0\end{pmatrix},
+\qquad
+D
+\begin{pmatrix}0\\2\\0\end{pmatrix}
+=20
+\begin{pmatrix}0\\2\\0\end{pmatrix},
+$$
+
+and
+
+$$
+D
+\begin{pmatrix}0\\0\\7\end{pmatrix}
+=x
+\begin{pmatrix}0\\0\\7\end{pmatrix}.
+$$
+
+Hence statement 3 is true.
+
+Because $4$, $20$ and $x$ are all non-zero, $D$ is invertible. The matrix $B$ is invertible because $B^{-1}$ appears in the given relation, so $A=BDB^{-1}$ is invertible. An invertible square matrix has linearly independent columns, so statement 4 is true. Statement 5 is the relation derived above:
+
+$$
+BDB^{-1}
+=B(B^{-1}AB)B^{-1}
+=A.
+$$
+
+Therefore the true statements are
+
+$$
+{3,\ 4,\ \text{and }5}.
+$$
+
+#### (b) Finding $v_4$
+
+Let
+
+$$
+\mathbf e_1=
+\begin{pmatrix}1\\0\\0\end{pmatrix}.
+$$
+
+Since $D\mathbf e_1=4\mathbf e_1$, the corresponding eigenvector of $A$ is $B\mathbf e_1$:
+
+$$
+A(B\mathbf e_1)
+=BDB^{-1}B\mathbf e_1
+=BD\mathbf e_1
+=4B\mathbf e_1.
+$$
+
+The first column of $B$ is
+
+$$
+B\mathbf e_1=
+\begin{pmatrix}-8\\3\\-2\end{pmatrix},
+$$
+
+whose length is
+
+$$
+\left\|
+\begin{pmatrix}-8\\3\\-2\end{pmatrix}
+\right\|
+=\sqrt{(-8)^2+3^2+(-2)^2}
+=\sqrt{77}.
+$$
+
+Dividing by this length gives the valid normalised choice
+
+$$
+{
+v_4=
+\frac1{\sqrt{77}}
+\begin{pmatrix}-8\\3\\-2\end{pmatrix}
+}.
+$$
+
+Then $\|v_4\|=1$ and $Av_4=4v_4$. Its negative is an equally valid choice.
+
+#### (c) Finding $w_1,w_2,w_3$
+
+The diagonal entries $4$, $20$ and $x$ are non-zero, so $A$ is invertible and the diagonalisation power identity is valid for every $n\in\mathbb Z$, not only for non-negative $n$. Using $A^n=BD^nB^{-1}$,
+
+$$
+\begin{aligned}
+A^nB\mathbf y
+&=BD^nB^{-1}B\mathbf y\\
+&=BD^n\mathbf y.
+\end{aligned}
+$$
+
+For the given vector,
+
+$$
+D^n\mathbf y
+=
+\begin{pmatrix}
+4^n&0&0\\
+0&20^n&0\\
+0&0&x^n
+\end{pmatrix}
+\begin{pmatrix}4\\0\\9\end{pmatrix}
+=
+\begin{pmatrix}
+4^{n+1}\\
+0\\
+9x^n
+\end{pmatrix}.
+$$
+
+Multiplying by $B$ gives
+
+$$
+\begin{aligned}
+\begin{pmatrix}w_1\\w_2\\w_3\end{pmatrix}
+&=
+\begin{pmatrix}
+-8&9&-9\\
+3&-1&2\\
+-2&7&6
+\end{pmatrix}
+\begin{pmatrix}
+4^{n+1}\\0\\9x^n
+\end{pmatrix}\\
+&=
+\begin{pmatrix}
+-8\cdot4^{n+1}-81x^n\\
+3\cdot4^{n+1}+18x^n\\
+-2\cdot4^{n+1}+54x^n
+\end{pmatrix}.
+\end{aligned}
+$$
+
+Therefore
+
+$$
+{
+\begin{aligned}
+w_1&=-8\cdot4^{n+1}-81x^n,\\
+w_2&=3\cdot4^{n+1}+18x^n,\\
+w_3&=-2\cdot4^{n+1}+54x^n.
+\end{aligned}
+}
+$$
+
+The factor $B$ cancels $B^{-1}$, so $\mathbf y$ acts directly as a vector of diagonal coordinates.
+
+#### (d) Finding the value that makes $A$ singular
+
+Similarity preserves the nullity, so
+
+$$
+\operatorname{nullity}(A)
+=\operatorname{nullity}(D).
+$$
+
+The diagonal matrix $D$ is singular exactly when one of its diagonal entries is zero. The entries $4$ and $20$ are non-zero, so
+
+$$
+\operatorname{nullity}(A)\ne0
+\quad\Longleftrightarrow\quad
+x=0.
+$$
+
+At $x=0$, $D$ has rank $2$ and nullity $1$ and so does $A$. The required value is
+
+$$
+{x=0}.
+$$
+
+This value is admissible because part (d) lifts the restriction $x>20$ that applies to parts (a)--(c).
+
+</Example>
+
+<Recall of="matrix-of-linear-map" />
+
+<Recall of="homogeneous-independence-test" />
+
+<Recall of="discrete-stability" />
+
+<Example
+  slug="seen-linear-map-bases-and-discrete-stability"
+  of="matrix-of-linear-map,homogeneous-independence-test,discrete-root-stability"
+  difficulty="exam"
+>
+
+### A linear map, bases and a discrete-time system
+
+Consider the linear map $T:\mathbb R^3\to\mathbb R^3$ given by
+
+$$
+Tx=
+\begin{pmatrix}
+\dfrac{103}{126}x_1-\dfrac{37}{126}x_2+\dfrac{15}{56}x_3\\[2mm]
+-\dfrac{25}{252}x_1+\dfrac{157}{252}x_2+\dfrac{15}{56}x_3\\[2mm]
+-\dfrac{11}{252}x_1+\dfrac{19}{126}x_2+\dfrac{115}{168}x_3
+\end{pmatrix},
+\qquad
+x=
+\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}\in\mathbb R^3.
+$$
+
+The following eigenvalue computation is useful:
+
+```text
+T = [ 103/126  -37/126  15/56
+      -25/252  157/252  15/56
+      -11/252  19/126  115/168 ];
+
+e = eig(T)
+
+e = 3x1
+
+    0.4166
+    0.7916
+    0.9166
+```
+
+#### (a)
+
+Suppose $B=\{\mathbf u,\mathbf v,\mathbf w\}\subset\mathbb R^3$ is a set of
+three vectors. Select all of the following sets for which $B$ is a basis for
+$\mathbb R^3$:
+
+1. $\displaystyle
+B=\left\{
+\begin{pmatrix}-5\\5\\4\end{pmatrix},
+\begin{pmatrix}-4\\-2\\5\end{pmatrix},
+\begin{pmatrix}-1\\5\\-3\end{pmatrix}
+\right\}$;
+2. $\displaystyle
+B=\left\{
+\begin{pmatrix}9\\0\\0\end{pmatrix},
+\begin{pmatrix}9\\0\\9\end{pmatrix},
+\begin{pmatrix}0\\9\\9\end{pmatrix}
+\right\}$;
+3. $\displaystyle
+B=\left\{
+\begin{pmatrix}14\\-11\\7\end{pmatrix},
+\begin{pmatrix}-18\\3\\16\end{pmatrix},
+\begin{pmatrix}-12\\-24\\69\end{pmatrix}
+\right\}$;
+4. $\displaystyle
+B=\left\{
+\begin{pmatrix}-5\\5\\4\end{pmatrix},
+\begin{pmatrix}-4\\-2\\5\end{pmatrix},
+\begin{pmatrix}31\\-7\\-32\end{pmatrix}
+\right\}$;
+5. $\displaystyle
+B=\left\{
+\begin{pmatrix}0\\0\\0\end{pmatrix},
+\begin{pmatrix}2\\1\\0\end{pmatrix},
+\begin{pmatrix}0\\0\\3\end{pmatrix}
+\right\}$;
+6. $\displaystyle
+B=\left\{
+\begin{pmatrix}10\\3\\-15\end{pmatrix},
+\begin{pmatrix}10\\-19\\-19\end{pmatrix},
+\begin{pmatrix}-40\\120\\84\end{pmatrix}
+\right\}$;
+7. $\displaystyle
+B=\left\{
+\begin{pmatrix}-9\\11\\0\end{pmatrix},
+\begin{pmatrix}-9\\0\\11\end{pmatrix},
+\begin{pmatrix}-18\\11\\11\end{pmatrix}
+\right\}$;
+8. $\displaystyle
+B=\left\{
+\begin{pmatrix}10\\3\\-15\end{pmatrix},
+\begin{pmatrix}10\\-19\\-19\end{pmatrix},
+\begin{pmatrix}6\\7\\-5\end{pmatrix}
+\right\}$;
+9. $\displaystyle
+B=\left\{
+\begin{pmatrix}14\\-11\\7\end{pmatrix},
+\begin{pmatrix}-18\\3\\16\end{pmatrix},
+\begin{pmatrix}-2\\6\\-2\end{pmatrix}
+\right\}$;
+10. $\displaystyle
+B=\left\{
+\begin{pmatrix}1\\0\\0\end{pmatrix},
+\begin{pmatrix}0\\1\\0\end{pmatrix},
+\begin{pmatrix}0\\0\\1\end{pmatrix}
+\right\}$.
+
+#### (b)
+
+Suppose $B$ is a basis for $\mathbb R^3$ and let $T_B$ denote the matrix of
+$T$ with respect to the basis $B$. Define the discrete-time system
+
+$$
+x_{n+1}=T_Bx_n,
+\qquad
+x_0\in\mathbb R^3\setminus\{0\},
+\qquad n\in\mathbb Z.
+$$
+
+Select all true statements about $T_B$ and this system:
+
+- The eigenvalues of $T_B$ are not necessarily the same as those of $T$.
+- There exist some $B$ such that the stability of the DTS depends on the choice of $x_0$.
+- There exist some $B$ such that for all $x_0$, the DTS is unstable as $n\to-\infty$.
+- The determinant of $T_B$ does not change depending on $B$.
+- There exist some $B$ such that for all $x_0$, the DTS is stable as $n\to+\infty$.
+- The DTS has undefined behaviour for some choices of $B$.
+
+#### Solution
+
+Put the vectors in each candidate basis into a matrix as columns. A set of
+three vectors in $\mathbb R^3$ is a basis exactly when this matrix has a pivot
+in every column, equivalently when its determinant is non-zero.
+
+For the first, second, eighth, ninth and tenth candidates, elementary row
+reduction gives
+
+$$
+\begin{aligned}
+\begin{pmatrix}
+-5&-4&-1\\
+5&-2&5\\
+4&5&-3
+\end{pmatrix}
+&\sim I_3,
+&
+\begin{pmatrix}
+9&9&0\\
+0&0&9\\
+0&9&9
+\end{pmatrix}
+&\sim I_3,\\[3mm]
+\begin{pmatrix}
+10&10&6\\
+3&-19&7\\
+-15&-19&-5
+\end{pmatrix}
+&\sim I_3,
+&
+\begin{pmatrix}
+14&-18&-2\\
+-11&3&6\\
+7&16&-2
+\end{pmatrix}
+&\sim I_3,\\[3mm]
+I_3&\sim I_3.
+\end{aligned}
+$$
+
+The corresponding determinants are, respectively,
+
+$$
+-78,\qquad -729,\qquad -672,\qquad -1394,\qquad 1,
+$$
+
+so these five sets are bases.
+
+For the remaining candidates, the row reductions give
+
+$$
+\begin{aligned}
+\begin{pmatrix}
+14&-18&-12\\
+-11&3&-24\\
+7&16&69
+\end{pmatrix}
+&\sim
+\begin{pmatrix}
+1&0&3\\
+0&1&3\\
+0&0&0
+\end{pmatrix},
+&
+\begin{pmatrix}
+-5&-4&31\\
+5&-2&-7\\
+4&5&-32
+\end{pmatrix}
+&\sim
+\begin{pmatrix}
+1&0&-3\\
+0&1&-4\\
+0&0&0
+\end{pmatrix},\\[3mm]
+\begin{pmatrix}
+0&2&0\\
+0&1&0\\
+0&0&3
+\end{pmatrix}
+&\sim
+\begin{pmatrix}
+0&1&0\\
+0&0&1\\
+0&0&0
+\end{pmatrix},
+&
+\begin{pmatrix}
+10&10&-40\\
+3&-19&120\\
+-15&-19&84
+\end{pmatrix}
+&\sim
+\begin{pmatrix}
+1&0&2\\
+0&1&-6\\
+0&0&0
+\end{pmatrix},\\[3mm]
+\begin{pmatrix}
+-9&-9&-18\\
+11&0&11\\
+0&11&11
+\end{pmatrix}
+&\sim
+\begin{pmatrix}
+1&0&1\\
+0&1&1\\
+0&0&0
+\end{pmatrix}.
+\end{aligned}
+$$
+
+Each of these has only two pivots and the dependence relations are
+respectively
+
+$$
+\begin{aligned}
+\mathbf w&=3\mathbf u+3\mathbf v,\\
+\mathbf w&=-3\mathbf u-4\mathbf v,\\
+\mathbf u&=\mathbf0,\\
+\mathbf w&=2\mathbf u-6\mathbf v,\\
+\mathbf w&=\mathbf u+\mathbf v.
+\end{aligned}
+$$
+
+The third relation follows because candidate five contains the zero vector.
+Therefore the correct selections in part (a) are
+
+$$
+{1,\ 2,\ 8,\ 9,\ \text{and }10.}
+$$
+
+For part (b), if $P$ is the matrix whose columns are the vectors in the
+ordered basis $B$, then
+
+$$
+T_B=P^{-1}TP.
+$$
+
+Thus $T_B$ is similar to $T$, so they have the same characteristic
+polynomial, eigenvalues and determinant. The decimal output suggests
+rational eigenvalues. For a monic factorisation, use the alternative
+convention $\det(\lambda I-T)=(-1)^3p_T(\lambda)$, which has the same roots
+as the course convention $p_T(\lambda)=\det(T-\lambda I)$. An exact
+calculation gives
+$$
+\det(\lambda I-T)
+=\left(\lambda-\frac5{12}\right)
+\left(\lambda-\frac{19}{24}\right)
+\left(\lambda-\frac{11}{12}\right).
+$$
+Thus the exact eigenvalues are $5/12$, $19/24$ and $11/12$.
+
+All three eigenvalues are distinct and satisfy $0<|\lambda_j|<1$. Therefore
+the eigenvectors form a basis and every forward trajectory has the form
+
+$$
+x_n=c_1\lambda_1^n z_1
++c_2\lambda_2^n z_2
++c_3\lambda_3^n z_3,
+$$
+
+for eigenvectors $z_j$ of $T_B$. Every term tends to zero as
+$n\to+\infty$, so the DTS is asymptotically stable for every basis $B$ and
+every initial state.
+
+Because $T_B$ is invertible, negative times are defined. If $x_0\ne0$,
+at least one coefficient $c_j$ is non-zero. In the eigenbasis, the
+corresponding coordinate is
+
+$$
+\left|c_j\lambda_j^n\right|
+=\frac{|c_j|}{\lambda_j^{-n}}
+\longrightarrow\infty
+\qquad(n\to-\infty).
+$$
+
+Since a fixed change of basis preserves boundedness, every non-zero initial
+state is unbounded backwards in time.
+
+Finally,
+
+$$
+\det(T_B)
+=\det(P^{-1})\det(T)\det(P)
+=\det(T)
+=\frac{1045}{3456},
+$$
+
+which is independent of $B$. The eigenvalues also cannot change and no
+choice of basis makes the system undefined.
+
+Thus the true statements are
+
+$$
+{
+\begin{gathered}
+\text{there exist some }B\text{ such that the DTS is unstable as }n\to-\infty,\\
+\det(T_B)\text{ does not change depending on }B,\\
+\text{there exist some }B\text{ such that the DTS is stable as }n\to+\infty.
+\end{gathered}
+}
+$$
+
+Changing the basis changes coordinates but not the linear map, so the
+eigenvalues and determinant are the same for every $B$. With every eigenvalue
+strictly inside the unit circle, trajectories decay forwards and grow
+backwards, whatever the basis.
+
+</Example>
+
+<Recall of="transition-matrix" />
+
+<Recall of="markov-system" />
+
+<Recall of="markov-long-term-limit" />
+
+<Example
+  slug="seen-three-state-koala-wars-markov-model"
+  of="transition-matrix,markov-system,markov-long-term-limit"
+  difficulty="exam"
+>
+
+### A three-state population model
+
+Each year the populations of South Australia, Western Australia and
+Tasmania migrate as follows:
+
+- four fifths of those in South Australia and four fifths of those in
+  Tasmania move to Western Australia;
+- one quarter of those in Western Australia move to South Australia and one
+  half of those in Western Australia move to Tasmania;
+- because of animosity between South Australia and Tasmania due to the
+  infamous koala wars, no one ever moves directly between these two states.
+
+Let $x_k,y_k,z_k$ be the populations of South Australia, Western Australia,
+and Tasmania, respectively, after $k$ years and let
+
+$$
+\mathbf v(k)=
+\begin{pmatrix}
+x_k\\y_k\\z_k
+\end{pmatrix}.
+$$
+
+Assume that the initial total population of the three states is $10$ million.
+
+The following partially redacted computation supplies the eigenvalues and an
+eigenbasis once the transition matrix has been found.
+
+```text
+>> B = [partially redacted]
+B =
+[partially redacted]
+[partially redacted]
+[partially redacted]
+
+>> [V,D] = eig(B)
+V =
+   -1.0000    0.5000    0.5000
+    0.0000   -1.5000    1.6000
+    1.0000    1.0000    1.0000
+
+D =
+    0.2000         0         0
+         0   -0.5500         0
+         0         0    1.0000
+>>
+```
+
+#### (a) Find the Markov matrix $B$ that describes the population dynamics
+
+$$
+\mathbf v(k+1)=B\mathbf v(k).
+$$
+
+Write the matrix explicitly.
+
+#### (b) State the eigenvalues of $B$
+
+Give the eigenvalues as exact rational values.
+
+#### (c) Find the eventual long-term population distribution
+
+What is the eventual long-term population distribution of the three states
+after $k$ years as $k\to\infty$?
+
+Give each limiting population in millions to at least two decimal places.
+
+#### Solution
+
+Use the column convention in $\mathbf v(k+1)=B\mathbf v(k)$. Each column
+describes where the people from one state go.
+
+For people starting in South Australia, one fifth remain in South
+Australia and four fifths move to Western Australia. For people starting in
+Western Australia, one quarter move to South Australia, one quarter remain
+in Western Australia and one half move to Tasmania. For people starting in
+Tasmania, one fifth remain in Tasmania and four fifths move to Western
+Australia. Therefore
+
+$$
+{
+B=
+\begin{pmatrix}
+\frac15&\frac14&0\\[2pt]
+\frac45&\frac14&\frac45\\[2pt]
+0&\frac12&\frac15
+\end{pmatrix}
+}
+$$
+
+Equivalently,
+
+```text
+[1/5, 1/4, 0; 4/5, 1/4, 4/5; 0, 1/2, 1/5]
+```
+
+The columns sum to $1$, so the total population is preserved:
+
+$$
+\begin{pmatrix}1&1&1\end{pmatrix}B
+=\begin{pmatrix}1&1&1\end{pmatrix}.
+$$
+
+To find the eigenvalues exactly, use the monic convention from the previous
+question:
+
+$$
+\begin{aligned}
+\det(\lambda I-B)
+&=
+\det\begin{pmatrix}
+\lambda-\frac15&-\frac14&0\\
+-\frac45&\lambda-\frac14&-\frac45\\
+0&-\frac12&\lambda-\frac15
+\end{pmatrix}\\
+&=\left(\lambda-\frac15\right)
+\left[
+\left(\lambda-\frac14\right)\left(\lambda-\frac15\right)
+-\frac25
+\right]
+-\frac15\left(\lambda-\frac15\right)\\
+&=\left(\lambda-\frac15\right)
+\left[
+\left(\lambda-\frac14\right)\left(\lambda-\frac15\right)
+-\frac35
+\right]\\
+&=\left(\lambda-\frac15\right)(\lambda-1)
+\left(\lambda+\frac{11}{20}\right).
+\end{aligned}
+$$
+
+Thus
+
+$$
+{
+\det(\lambda I-B)
+=\left(\lambda-\frac15\right)(\lambda-1)
+\left(\lambda+\frac{11}{20}\right)
+}
+$$
+
+The eigenvalues, in the requested row-vector format, are
+
+$$
+{\left[\frac15,-\frac{11}{20},1\right]}.
+$$
+
+For the long-term distribution, observe that the other two eigenvalues satisfy
+
+$$
+\left|\frac15\right|<1,
+\qquad
+\left|-\frac{11}{20}\right|<1,
+$$
+
+while $1$ is a simple eigenvalue. The three distinct eigenvalues give an
+eigenbasis, so the two non-stationary modes decay to zero. Every initial
+population vector with total $10$ million therefore converges to the same
+stationary vector and the initial split between the states is not needed.
+
+The stationary vector spans the eigenspace for $\lambda=1$. Let
+
+$$
+\mathbf p=
+\begin{pmatrix}x\\y\\z\end{pmatrix}
+$$
+
+and solve $B\mathbf p=\mathbf p$. The first and third coordinates give
+
+$$
+\frac15x+\frac14y=x
+\quad\Longrightarrow\quad
+y=\frac{16}{5}x,
+$$
+
+and
+
+$$
+\frac12y+\frac15z=z
+\quad\Longrightarrow\quad
+z=\frac58y=2x.
+$$
+
+Therefore the stationary vector has the ratio
+
+$$
+x:y:z=1:\frac{16}{5}:2=5:16:10.
+$$
+
+Write it as
+
+$$
+\mathbf p=t
+\begin{pmatrix}5\\16\\10\end{pmatrix}.
+$$
+
+The total population is $10$ million, so
+
+$$
+5t+16t+10t=31t=10,
+\qquad
+t=\frac{10}{31}.
+$$
+
+Hence the limiting populations are
+
+$$
+{
+\lim_{k\to\infty}x_k=\frac{50}{31}\approx1.61
+}
+\quad\text{million},
+$$
+
+$$
+{
+\lim_{k\to\infty}y_k=\frac{160}{31}\approx5.16
+}
+\quad\text{million},
+$$
+
+and
+
+$$
+{
+\lim_{k\to\infty}z_k=\frac{100}{31}\approx3.23
+}
+\quad\text{million}.
+$$
+
+The eigenvalue-$1$ mode carries the long-term distribution, while the two
+decaying modes record transient migration.
+
+</Example>

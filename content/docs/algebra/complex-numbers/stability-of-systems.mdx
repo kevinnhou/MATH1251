@@ -1,0 +1,353 @@
+---
+title: Stability of systems
+description: Discrete and continuous growth or decay read from characteristic roots.
+tags: [algebra]
+ideas: [discrete-systems, continuous-systems, stability]
+---
+
+This page uses the roots of [complex polynomials](/algebra/complex-numbers/complex-polynomials) to describe how linear systems evolve. A discrete system is built from modes $r^n$ and a continuous system from modes $e^{rt}$, where $r$ is a characteristic root; a zero root needs separate treatment. The modulus $|r|$ decides whether a discrete mode decays and the real part $\operatorname{Re}(r)$ decides the same for a continuous mode.
+
+In the mode calculations, $r$ denotes a characteristic root, not the polar radius used in [polar form](/algebra/complex-numbers/polar-form).
+
+## General discrete systems
+
+<Recall of="complex-polynomial" />
+<Recall of="polar-form" />
+
+<Definition slug="discrete-time-system">
+
+### Discrete-time system
+
+<Statement>
+
+A discrete-time system describes values $x_n$ at times $n=0,1,2,\ldots$ through a recurrence
+$$
+x_{n+1}=f(n,x_n,x_{n-1},\ldots).
+$$
+A first-order system uses $x_{n+1}=f(n,x_n)$ and needs one initial value; a second-order system uses $x_{n+1}=f(n,x_n,x_{n-1})$ and needs two.
+
+</Statement>
+
+</Definition>
+
+The simplest linear case is the first-order recurrence
+$$
+x_{n+1}=a x_n.
+$$
+Repeated substitution gives $x_n=a^n x_0$ for $n\ge1$, where $x_0$ is the
+initial value. So $|a|<1$ gives decay, $|a|>1$ gives growth and $|a|=1$
+gives boundary behaviour, such as a constant or oscillating mode that does
+not decay. Compound interest is the case $a=1+r$, so its long-term behaviour
+depends only on the powers of one number.
+
+Nonlinear recurrences fall outside the characteristic-root method.
+
+<Example slug="logistic-iteration" of="discrete-time-system" difficulty="routine">
+
+### A nonlinear non-example: logistic iteration
+
+For the parameterised logistic recurrence
+$$
+x_{n+1}=r x_n(1-x_n),\qquad x_0=\frac13,
+$$
+the first terms for $r=2$ are
+$$
+x_1=\frac49,\qquad
+x_2=2\left(\frac49\right)\left(1-\frac49\right)
+=\frac{40}{81}.
+$$
+The factor $1-x_n$ depends on the current value, so this recurrence is not
+linear and has no characteristic polynomial of the kind used below.
+The delayed logistic recurrence
+$$
+x_{n+1}=rx_n(1-x_{n-1}),\qquad
+x_0=\frac15,\quad x_1=\frac14
+$$
+requires both $x_0$ and $x_1$ before it can be iterated.
+
+</Example>
+
+## Linear recurrences and characteristic modes
+
+<Definition slug="discrete-linear-system" of="discrete-time-system">
+
+### Discrete linear system
+
+<Statement>
+
+A homogeneous second-order discrete linear system has the form
+
+$$
+a x_{n+1}+b x_n+c x_{n-1}=0,
+\qquad n\ge1.
+$$
+
+Here $a,b,c\in\mathbb C$, $a\ne0$ and the coefficients are constant, so a
+characteristic-root calculation can replace the recurrence by an algebraic
+equation.
+
+</Statement>
+
+</Definition>
+
+<Method slug="discrete-characteristic-root-method" of="discrete-linear-system,complex-polynomial">
+
+### Find discrete modes from a characteristic equation
+
+<Statement>
+
+For $a\ne0$ and
+$$
+a x_{n+1}+b x_n+c x_{n-1}=0,
+$$
+try a non-trivial solution $x_n=K r^n$ with $K\ne0$ and $r\ne0$. Substitution gives
+$$
+K r^{n-1}(ar^2+br+c)=0.
+$$
+For this nonzero mode, the prefactor is nonzero, so its characteristic equation is
+$$
+ar^2+br+c=0.
+$$
+The zero-root case, if it occurs, is not covered by this $r^{n-1}$
+factorisation and must be checked directly in the recurrence.
+When the non-zero roots $r_1,r_2$ are distinct, the general solution is
+$$
+x_n=K_1r_1^n+K_2r_2^n.
+$$
+If there is a repeated non-zero root $r$, the general solution is instead
+$$
+x_n=(K_1+K_2n)r^n.
+$$
+
+</Statement>
+
+The expression $ar^2+br+c$ is a complex polynomial. Its non-zero roots are
+exactly the numbers for which the proposed exponential mode satisfies the
+substitution. The factor $n$ in the repeated-root solution matters for
+stability: even when $|r|=1$, the term $nr^n$ is unbounded.
+
+If $c=0$, then zero is a characteristic root and the recurrence reduces to
+$a x_{n+1}+b x_n=0$ for $n\ge1$. Here $x_0$ and $x_1$ are independent
+initial values. For $b\ne0$, the later terms are
+$x_n=x_1(-b/a)^{n-1}$ for $n\ge1$; for $b=0$, all terms from $x_2$ onward
+are zero. This handles the zero-root case without using $0^0$.
+
+</Method>
+
+## Discrete stability
+
+<Definition slug="discrete-stability">
+
+### Discrete stability
+
+<Statement>
+
+For the linear systems considered here, a system is *stable* when every
+solution satisfies $|x_n|\to0$ as $n\to\infty$ and *unstable* when some
+solution is unbounded.
+
+</Statement>
+
+Here *stable* means asymptotically stable. A system whose solutions stay
+bounded but do not all decay is a boundary case, neither stable nor unstable
+under this convention.
+
+Informally, “stable” sometimes means only “bounded”. The stricter convention
+stops a unit-modulus mode from being mistaken for a decaying one.
+
+</Definition>
+
+<Theorem slug="discrete-root-stability" of="discrete-characteristic-root-method,discrete-stability,complex-modulus">
+
+### Discrete stability from root moduli
+
+<Statement>
+
+Write a characteristic root in polar form as
+$$
+r_j=\rho_j e^{i\theta_j}.
+$$
+Then
+$$
+|r_j^n|=\rho_j^n.
+$$
+Thus $\rho_j<1$ gives a decaying mode, $\rho_j>1$ gives an unbounded mode and
+$\rho_j=1$ gives a non-decaying mode.
+
+</Statement>
+
+For the whole system, every solution decays precisely when all characteristic
+roots satisfy $|r_j|<1$. A root with $|r_j|>1$ supplies an unbounded solution.
+If all roots satisfy $|r_j|\le1$ and a unit-modulus root is present, its
+multiplicity decides the remaining case: when each such root is simple,
+every solution is bounded but some do not decay; a repeated unit-modulus
+root instead produces an unbounded term $nr_j^n$.
+
+</Theorem>
+
+<Example slug="unstable-discrete-recurrence" of="discrete-root-stability" difficulty="routine">
+
+### Test a recurrence
+
+Consider
+$$
+x_{n+1}=x_n+x_{n-1}.
+$$
+The characteristic equation is
+$$
+r^2-r-1=0,
+$$
+whose roots are
+$$
+r_1=\frac{1+\sqrt5}{2},
+\qquad
+r_2=\frac{1-\sqrt5}{2}.
+$$
+Since $|r_1|>1$, the corresponding mode grows. The system is unstable.
+The second root has modulus less than $1$, but one growing mode is enough:
+choosing initial data with a non-zero coefficient of $r_1^n$ produces an
+unbounded solution.
+
+</Example>
+
+This page keeps the mode calculation scalar. For vector states, eigenvalues
+take over the role of characteristic roots once a matrix system is
+diagonalised: in [matrix powers](/algebra/eigenvalues/spectral-applications),
+in [Markov systems](/algebra/eigenvalues/markov-systems) and, in continuous
+time, in [linear ODE systems](/algebra/eigenvalues/linear-ode-systems). The
+equations differ: a recurrence gives a polynomial in $r$ directly, while a
+matrix $A$ uses $p_A(\lambda)=\det(A-\lambda I)$ in
+[the eigenvalue test](/algebra/eigenvalues/eigenvalues-and-eigenvectors).
+
+## Continuous systems and characteristic modes
+
+This section can be read now or deferred until after
+[second-order constant-coefficient equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)
+in Calculus. The trial-function calculation it needs is stated below.
+
+<Definition slug="continuous-linear-system">
+
+### Continuous-time system
+
+<Statement>
+
+A continuous-time system describes a function $x(t)$ through a differential
+equation with $t\in\mathbb R$. For $a,b,c\in\mathbb C$ with $a\ne0$,
+consider the second-order homogeneous equation
+$$
+a x''(t)+b x'(t)+cx(t)=0.
+$$
+The exponential trial function $x(t)=Ke^{rt}$ leads to the algebraic equation
+$$
+ar^2+br+c=0.
+$$
+
+</Statement>
+
+</Definition>
+
+<Method slug="continuous-characteristic-root-method" of="continuous-linear-system,complex-polynomial">
+
+### Find continuous modes from a characteristic equation
+
+<Statement>
+
+For distinct roots $r_1,r_2$ of $ar^2+br+c=0$, the solution has the form
+$$
+x(t)=K_1e^{r_1t}+K_2e^{r_2t}.
+$$
+For a repeated root $r$, the solution has the form
+$$
+x(t)=(K_1+K_2t)e^{rt}.
+$$
+If $r=\alpha+i\beta$, then
+$$
+e^{rt}=e^{\alpha t}e^{i\beta t}.
+$$
+
+</Statement>
+
+The factor $e^{\alpha t}$ controls growth or decay, while $e^{i\beta t}$
+supplies oscillation. When the coefficients and required solution are real, a
+conjugate pair $\alpha\pm i\beta$ (with $\beta\ne0$) combines into
+$$
+e^{\alpha t}\bigl(A\cos(\beta t)+B\sin(\beta t)\bigr),
+\qquad A,B\in\mathbb R.
+$$
+
+The [constant-coefficient ODE method](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)
+in Calculus is the same calculation, with repeated roots treated in more
+detail. The damped oscillator below shows each case.
+
+</Method>
+
+## Continuous stability
+
+<Definition slug="continuous-stability">
+
+### Continuous stability
+
+<Statement>
+
+For the linear systems considered here, a continuous system is *stable* when
+every solution decays to zero as $t\to\infty$ and *unstable* when some
+solution is unbounded.
+
+</Statement>
+
+As in the discrete case, this is asymptotic stability; bounded non-decaying
+solutions form a boundary case.
+
+</Definition>
+
+<Theorem slug="continuous-root-stability" of="continuous-characteristic-root-method,continuous-stability">
+
+### Continuous stability from real parts
+
+<Statement>
+
+For a characteristic root $r=\alpha+i\beta$,
+$$
+|e^{rt}|=e^{\alpha t}.
+$$
+Therefore $\alpha<0$ gives decay, $\alpha>0$ gives an unbounded mode and, for
+a simple root, $\alpha=0$ gives a non-decaying oscillatory or constant mode.
+A repeated root on the imaginary axis introduces a term $t e^{rt}$, whose
+magnitude is unbounded.
+
+</Statement>
+
+For the whole system, every solution decays precisely when all characteristic
+roots have negative real part. A root with positive real part supplies an
+unbounded solution. If no root has positive real part but a root lies on the
+imaginary axis and each such root is simple, every solution is bounded but
+some do not decay. A repeated root there gives an unbounded solution.
+
+</Theorem>
+
+<Example slug="damped-oscillator-root-classification" of="continuous-root-stability" difficulty="routine">
+
+### Classify a damped oscillator
+
+For
+$$
+m x''+c x'+kx=0,
+$$
+the roots satisfy
+$$
+mr^2+cr+k=0.
+$$
+Take $m=k=1$ and vary the damping $c$.
+
+- If $c>2$, the roots are distinct negative real numbers: the motion is
+  overdamped and decays without oscillating.
+- If $c=2$, the repeated root is $r=-1$, so $(K_1+K_2t)e^{-t}\to0$: the
+  motion is critically damped and decays.
+- If $0<c<2$, the roots are a complex conjugate pair with negative real
+  part: the motion is underdamped and oscillates while its amplitude decays.
+- If $c=0$, the roots are $r=\pm i$, so the motion is periodic rather than
+  decaying.
+- If $-2<c<0$, the conjugate roots have positive real part $-c/2$, so
+  oscillations grow and the system is unstable.
+
+</Example>

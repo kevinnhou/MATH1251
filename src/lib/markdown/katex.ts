@@ -2,10 +2,12 @@ import type { Element, ElementContent, Root, RootContent } from "hast";
 import { fromHtmlIsomorphic } from "hast-util-from-html-isomorphic";
 import katex from "katex";
 import { classList, elementChildren, elementText, isMathElement } from "./hast";
+import { wrapKatexDisplays } from "./katex-display";
 import { KATEX_OPTIONS } from "./math";
 
 export function applyKatex(tree: Root) {
 	tree.children = replaceMathNodes(tree.children);
+	wrapKatexDisplays(tree);
 }
 
 function replaceMathNodes(nodes: RootContent[] | undefined): RootContent[] {
@@ -48,7 +50,7 @@ function katexNodes(tex: string, displayMode: boolean): RootContent[] {
 		const html = renderTex(tex, displayMode);
 		if (html.length > 0) {
 			const fragment = fromHtmlIsomorphic(html, { fragment: true });
-			return fragment.children as RootContent[];
+			return fragment.children;
 		}
 	} catch {
 		// Keep the TeX as text when KaTeX cannot produce markup.

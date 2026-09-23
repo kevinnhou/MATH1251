@@ -20,8 +20,9 @@ import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import type { RelatedLink } from "@/lib/math-env/export-markdown";
 import { getKindViewToc } from "@/lib/math-env/kind-view";
 import { gitConfig } from "@/lib/site/config";
-import { compileCorpus } from "@/lib/site/corpus";
+import { compileCorpus, compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
+import { getDocsRouteSlugs } from "@/lib/site/docs-routes";
 import {
 	getKindViewMarkdownUrl,
 	getPageImageUrl,
@@ -37,10 +38,10 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 		notFound();
 	}
 
+	const corpus = compileCorpus();
 	const { source: sourcePage } = resolved;
 	const { page } = sourcePage;
 	const view = resolved.kind === "kind-view" ? resolved.view : undefined;
-	const corpus = compileCorpus();
 	const MDX = page.data.body;
 	const markdownUrl =
 		view === undefined
@@ -115,16 +116,10 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 	);
 }
 
-export async function generateStaticParams() {
-	const corpus = compileCorpus();
+export const dynamicParams = true;
 
-	return [
-		...source.generateParams(),
-		...corpus.kindViews.map((view) => ({
-			...(view.locale === undefined ? {} : { lang: view.locale }),
-			slug: [...view.pageSlugs, view.slug],
-		})),
-	];
+export async function generateStaticParams() {
+	return getDocsRouteSlugs(compilePageIndex()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(

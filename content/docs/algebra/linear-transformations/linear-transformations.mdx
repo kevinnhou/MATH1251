@@ -1,0 +1,411 @@
+---
+title: Linear transformations
+description: Structure-preserving maps, their linearity tests and values determined by basis data.
+tags: [algebra]
+ideas: [linear-maps, linear-combinations, basis]
+---
+
+This page defines linear maps: functions between [vector spaces](/algebra/vector-spaces/vector-spaces) that preserve addition and scalar multiplication. It gives quick tests for linearity and shows that a linear map is fixed by its values on a basis, which is what later lets a map be written as a matrix.
+
+## Defining and testing linearity
+
+<Recall of="vector-space" />
+
+<Definition slug="linear-map">
+
+### Linear map
+
+<Statement>
+
+Let $V$ and $W$ be vector spaces over the same field $F$. A function $T:V\to W$ is a *linear map* if
+
+$$
+T(u+v)=T(u)+T(v)\qquad\text{for all }u,v\in V,
+$$
+$$
+T(\omega u)=\omega T(u)\qquad\text{for all }\omega\in F,\ u\in V.
+$$
+
+</Statement>
+
+The first identity preserves addition and the second preserves scalar multiplication.
+Together they make $T$ preserve every finite linear combination, so once the
+images of a basis are known, no further choices are possible.
+
+</Definition>
+
+A linear map from a space to itself, $T:V\to V$, is also called a *linear
+operator* or *endomorphism*. [Eigenvalues](/algebra/eigenvalues/eigenvalues-and-eigenvectors)
+are defined for these same-space maps.
+
+<Example of="linear-map" difficulty="routine">
+
+### Scalar multiplication
+
+Fix $a\in\mathbb R$ and define $T:\mathbb R\to\mathbb R$ by $T(x)=ax$. For $x_1,x_2\in\mathbb R$,
+
+$$
+T(x_1+x_2)=a(x_1+x_2)=ax_1+ax_2=T(x_1)+T(x_2).
+$$
+
+For $\lambda\in\mathbb R$,
+
+$$
+T(\lambda x)=a(\lambda x)=\lambda(ax)=\lambda T(x).
+$$
+
+Thus the scalar-multiplication map is linear.
+
+</Example>
+
+For the affine formula $T(x)=ax+b$, the scalar-compatibility expressions are
+
+$$
+T(\lambda x)=a\lambda x+b,
+\qquad
+\lambda T(x)=a\lambda x+\lambda b.
+$$
+
+When $b\ne0$, taking $\lambda=0$ makes these expressions unequal, so scalar compatibility fails. When $b=0$, the formula is the scalar-multiplication example above.
+
+This is the difference between a linear map and a translation: adding a
+non-zero constant moves the origin, whereas every linear map fixes it.
+
+<Example of="linear-map" difficulty="routine">
+
+### A matrix times a vector
+
+For fixed $a,b,c,d\in\mathbb R$, define $T:\mathbb R^2\to\mathbb R^2$ by
+
+$$
+T\begin{pmatrix}x_1\\x_2\end{pmatrix}
+=
+\begin{pmatrix}a&b\\c&d\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\end{pmatrix}
+=
+\begin{pmatrix}ax_1+bx_2\\cx_1+dx_2\end{pmatrix}.
+$$
+
+Write
+$$
+A=\begin{pmatrix}a&b\\c&d\end{pmatrix}.
+$$
+
+For $u,v\in\mathbb R^2$ and $\lambda\in\mathbb R$, matrix multiplication distributes over addition and scalar multiplication:
+
+$$
+T(u+v)=A(u+v)=Au+Av=T(u)+T(v),
+\qquad
+T(\lambda u)=A(\lambda u)=\lambda Au=\lambda T(u).
+$$
+
+Hence this matrix formula defines a linear map.
+
+</Example>
+
+<Proposition slug="linear-map-zero-and-negatives" of="linear-map">
+
+### Zero and additive inverses
+
+<Statement>
+
+If $T:V\to W$ is a linear map, then
+
+$$
+T(0)=0,
+\qquad
+T(-u)=-T(u)\quad\text{for all }u\in V.
+$$
+
+</Statement>
+
+</Proposition>
+
+<Proof of="linear-map-zero-and-negatives">
+
+Linearity gives
+$$
+T(0)=T(0+0)=T(0)+T(0),
+$$
+so cancellation in $W$ gives $T(0)=0$. Also,
+$$
+T(-u)+T(u)=T(-u+u)=T(0)=0,
+$$
+so $T(-u)$ is the additive inverse of $T(u)$.
+
+</Proof>
+
+So a map with $T(0)\ne0$ cannot be linear. This zero test is necessary but not sufficient: a formula may send $0$ to $0$ and still fail one of the two defining identities.
+
+<Example of="linear-map" difficulty="routine">
+
+### Testing proposed maps
+
+The map $T:\mathbb R\to\mathbb R$ given by $T(x)=x^2$ sends $0$ to $0$, but it is not additive:
+
+$$
+T(1+1)=4\ne2=T(1)+T(1).
+$$
+
+The map $T(x)=x^3$ also sends $0$ to $0$, but scalar compatibility fails, for example,
+
+$$
+T(2\cdot1)=8\ne2=2T(1).
+$$
+
+Neither formula is a linear map.
+
+</Example>
+
+## Preserving arbitrary linear combinations
+
+The two defining identities combine into one test. It is usually the
+quickest way to apply linearity in a calculation: write the input as a linear
+combination, then apply the same coefficients to the known outputs.
+
+<Theorem slug="two-term-linear-combination" of="linear-map">
+
+### Preservation of two-term linear combinations
+
+<Statement>
+
+A function $T:V\to W$ is a linear map if and only if
+
+$$
+T(\omega_1u+\omega_2v)
+=
+\omega_1T(u)+\omega_2T(v)
+$$
+
+for all $\omega_1,\omega_2\in F$ and $u,v\in V$.
+
+</Statement>
+
+The two-term identity is the definition in one line: additivity handles the sum and scalar compatibility handles the coefficients.
+
+</Theorem>
+
+<Proof of="two-term-linear-combination">
+
+If $T$ is linear, then
+$$
+T(\omega_1u+\omega_2v)
+=
+T(\omega_1u)+T(\omega_2v)
+=
+\omega_1T(u)+\omega_2T(v).
+$$
+Conversely, choosing $(\omega_1,\omega_2)=(1,1)$ gives additivity. Choosing $(\omega_1,\omega_2)=(\lambda,0)$ gives
+$$
+T(\lambda u)=\lambda T(u)+0T(v)=\lambda T(u),
+$$
+so scalar compatibility also holds.
+
+</Proof>
+
+<Theorem slug="finite-linear-combination-preservation" of="linear-map,two-term-linear-combination">
+
+### Preservation of finite linear combinations
+
+<Statement>
+
+If $T:V\to W$ is a linear map, $u_1,\ldots,u_n\in V$ and $\omega_1,\ldots,\omega_n\in F$, then
+
+$$
+T(\omega_1u_1+\cdots+\omega_nu_n)
+=
+\omega_1T(u_1)+\cdots+\omega_nT(u_n).
+$$
+
+</Statement>
+
+This is the form used when a vector is written in a [basis](/algebra/vector-spaces/basis-and-dimension) or as a linear combination of other vectors.
+
+</Theorem>
+
+<Proof of="finite-linear-combination-preservation">
+
+For $n=1$, the statement is scalar compatibility. Assume it holds for $n$ terms. Separating the last summand gives
+$$
+\begin{aligned}
+T(\omega_1u_1+\cdots+\omega_nu_n+\omega_{n+1}u_{n+1})
+&=T(\omega_1u_1+\cdots+\omega_nu_n)
+  +T(\omega_{n+1}u_{n+1})\\
+&=\omega_1T(u_1)+\cdots+\omega_nT(u_n)
+  +\omega_{n+1}T(u_{n+1}).
+\end{aligned}
+$$
+Thus the identity holds for every finite number of summands.
+
+</Proof>
+
+<Recall of="basis" />
+
+## What basis data determines
+
+Once a linear map's values on a basis are known, every other value is forced by the coefficients that express the input in that basis. Those coefficients form the [coordinate vector](/algebra/vector-spaces/coordinates-and-bases) of the input.
+
+<Theorem slug="linear-map-determined-by-basis" of="linear-map,basis,finite-linear-combination-preservation">
+
+### Values on a basis determine a linear map
+
+<Statement>
+
+Let $B=(u_1,\ldots,u_n)$ be a basis for $V$ and let $T:V\to W$ be linear. If
+
+$$
+v=\omega_1u_1+\cdots+\omega_nu_n,
+$$
+
+then
+
+$$
+T(v)=\omega_1T(u_1)+\cdots+\omega_nT(u_n).
+$$
+
+Therefore the values of $T$ on the basis vectors determine $T(v)$ for every $v\in V$.
+
+</Statement>
+
+Conversely, any chosen values $w_1,\ldots,w_n\in W$ on the basis vectors
+define a linear map by
+$T(\omega_1u_1+\cdots+\omega_nu_n)=\omega_1w_1+\cdots+\omega_nw_n$.
+The rule is well defined because basis coordinates are unique. It is linear
+because coordinates add and scale: if two vectors have coordinate lists
+$(\omega_i)$ and $(\eta_i)$, then their sum has list $(\omega_i+\eta_i)$ and
+$\lambda$ times the first has list $(\lambda\omega_i)$. So basis data both
+constructs a linear map and determines it uniquely.
+
+</Theorem>
+
+<Example of="linear-map-determined-by-basis" difficulty="routine">
+
+### A map from $\mathbb R^3$ to $\mathbb R$
+
+Let $T:\mathbb R^3\to\mathbb R$ be linear and suppose, for the standard basis vectors,
+
+$$
+T\begin{pmatrix}1\\0\\0\end{pmatrix}=7,\qquad
+T\begin{pmatrix}0\\1\\0\end{pmatrix}=-2,\qquad
+T\begin{pmatrix}0\\0\\1\end{pmatrix}=-3.
+$$
+
+Since
+$$
+\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+x_1\begin{pmatrix}1\\0\\0\end{pmatrix}
++x_2\begin{pmatrix}0\\1\\0\end{pmatrix}
++x_3\begin{pmatrix}0\\0\\1\end{pmatrix},
+$$
+linearity gives
+
+$$
+T\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+7x_1-2x_2-3x_3.
+$$
+
+Substituting each standard basis vector recovers the three stated values.
+
+</Example>
+
+<Example of="linear-map-determined-by-basis" difficulty="routine">
+
+### Non-standard basis data
+
+Let $T:\mathbb R^3\to\mathbb R$ be linear and suppose
+
+$$
+T\begin{pmatrix}1\\0\\0\end{pmatrix}=7,\qquad
+T\begin{pmatrix}1\\1\\1\end{pmatrix}=-2,\qquad
+T\begin{pmatrix}0\\0\\1\end{pmatrix}=-3.
+$$
+
+The missing standard basis vector satisfies
+
+$$
+\begin{pmatrix}0\\1\\0\end{pmatrix}
+=
+\begin{pmatrix}1\\1\\1\end{pmatrix}
+-\begin{pmatrix}1\\0\\0\end{pmatrix}
+-\begin{pmatrix}0\\0\\1\end{pmatrix}.
+$$
+
+So the span of the three given inputs contains every standard basis vector,
+and their images determine $T$ everywhere. Applying $T$ to the identity gives
+
+$$
+T\begin{pmatrix}0\\1\\0\end{pmatrix}
+=-2-7-(-3)=-6.
+$$
+
+Therefore
+
+$$
+T\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+7x_1-6x_2-3x_3.
+$$
+
+As a check, the formula gives $7-6-3=-2$ at $(1,1,1)^T$, as required.
+
+</Example>
+
+<Example of="linear-map-determined-by-basis" difficulty="routine">
+
+### A map from $\mathbb R^3$ to $\mathbb R^2$
+
+Let $T:\mathbb R^3\to\mathbb R^2$ be linear and suppose
+
+$$
+T\begin{pmatrix}1\\0\\0\end{pmatrix}
+=
+\begin{pmatrix}7\\-6\end{pmatrix},
+\qquad
+T\begin{pmatrix}0\\1\\0\end{pmatrix}
+=
+\begin{pmatrix}-2\\4\end{pmatrix},
+\qquad
+T\begin{pmatrix}0\\0\\1\end{pmatrix}
+=
+\begin{pmatrix}-3\\5\end{pmatrix}.
+$$
+
+Applying the basis formula componentwise gives
+
+$$
+T\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+\begin{pmatrix}
+7x_1-2x_2-3x_3\\
+-6x_1+4x_2+5x_3
+\end{pmatrix}.
+$$
+
+The coefficient columns are the given images of the standard basis vectors. If $T$ were also required to satisfy
+
+$$
+T\begin{pmatrix}1\\1\\1\end{pmatrix}
+=
+\begin{pmatrix}1\\1\end{pmatrix},
+$$
+
+linearity would instead force
+
+$$
+\begin{pmatrix}7\\-6\end{pmatrix}
++
+\begin{pmatrix}-2\\4\end{pmatrix}
++
+\begin{pmatrix}-3\\5\end{pmatrix}
+=
+\begin{pmatrix}2\\3\end{pmatrix},
+$$
+
+so no linear map can satisfy the additional condition.
+
+</Example>
+
+[Geometric examples](/algebra/linear-transformations/geometric-examples) reads
+matrix maps like these as scalings, reflections, rotations and projections.

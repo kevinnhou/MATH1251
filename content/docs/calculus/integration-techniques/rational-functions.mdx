@@ -1,0 +1,349 @@
+---
+title: Rational functions
+description: Proper fractions, partial fractions and the integrals they become.
+tags: [calculus]
+ideas: [rational-functions, partial-fractions]
+---
+
+This page integrates rational functions, which are ratios of polynomials. If
+the fraction is improper, divide first; the polynomial part integrates
+immediately and the proper remainder decomposes uniquely into partial
+fractions. Linear factors lead to logarithms and negative powers, while
+non-repeated irreducible quadratics lead to logarithms and inverse tangents.
+Repeated quadratics may also need a reduction step or a trigonometric
+substitution.
+
+Other integrands belong elsewhere: trigonometric powers in [trigonometric
+integrals](/calculus/integration-techniques/trigonometric-integrals), quadratic
+surds in [trigonometric and hyperbolic
+substitutions](/calculus/integration-techniques/trigonometric-and-hyperbolic-substitutions),
+and other algebraic surds in [rationalising
+substitutions](/calculus/integration-techniques/rationalising-substitutions).
+
+## Classifying and dividing rational functions
+
+<Definition slug="rational-function">
+
+### Rational function
+
+<Statement>
+
+A function $f$ is a *rational function* if it is of the form
+$f(x)=\frac{P(x)}{Q(x)}$, where $P$ and $Q$ are polynomials and $Q$ is not the
+zero polynomial. Its real domain excludes the zeros of $Q$.
+
+</Statement>
+
+</Definition>
+
+<Definition slug="proper-rational" of="rational-function">
+
+### Proper rational function
+
+<Statement>
+
+A rational function $f$ is *proper* if $\deg P<\deg Q$. If $f$ is not proper, long division writes it as a polynomial plus a proper rational function,
+$$
+\frac{P(x)}{Q(x)}=p(x)+\frac{R(x)}{Q(x)},
+$$
+with $\frac{R(x)}{Q(x)}$ proper.
+
+</Statement>
+
+The polynomial $p$ integrates termwise. Only the proper remainder needs a further decomposition.
+
+</Definition>
+
+<Example slug="classify-rational" of="rational-function" difficulty="routine">
+
+### Which of these are rational?
+
+- $\frac{2x+1}{3x^2-4}$ is rational and proper: $\deg(2x+1)=1<2=\deg(3x^2-4)$.
+- $\frac{\cos x}{x^2+1}$ is not rational: $\cos x$ is not a polynomial.
+- $\frac{x^2}{x-1}$ is rational and improper: $\deg(x^2)=2>1=\deg(x-1)$.
+- $\frac{\sqrt{x}}{x^2+3}$ is not rational: $\sqrt{x}$ is not a polynomial.
+
+</Example>
+
+<Example slug="divide-rational" of="proper-rational" difficulty="exam">
+
+### Polynomial plus proper remainder
+
+Write each rational function as a polynomial plus a proper rational function.
+
+For $\frac{4x-5}{2x+3}$, the leading-term ratio is $2$ and $2(2x+3)=4x+6$, so
+$$
+(4x-5)-(4x+6)=-11.
+$$
+Hence
+$$
+\frac{4x-5}{2x+3}=2-\frac{11}{2x+3}.
+$$
+
+For $\frac{x^3-x+1}{x^2+3x-1}$, divide. The first quotient term is $x$ and
+$$
+x(x^2+3x-1)=x^3+3x^2-x,
+$$
+so
+$$
+(x^3-x+1)-(x^3+3x^2-x)=-3x^2+1.
+$$
+The next quotient term is $-3$ and
+$$
+-3(x^2+3x-1)=-3x^2-9x+3,
+$$
+so
+$$
+(-3x^2+1)-(-3x^2-9x+3)=9x-2.
+$$
+Hence
+$$
+\frac{x^3-x+1}{x^2+3x-1}=x-3+\frac{9x-2}{x^2+3x-1}.
+$$
+
+</Example>
+
+## Decomposing into partial fractions
+
+Once the remainder is proper, cancel any common factors and factor its denominator over $\mathbb{R}$. Cancellation simplifies the formula only on the original domain: any zero of the original denominator remains an excluded point when choosing an integration interval. A separate partial-fraction term is needed for every power of every factor; omitting a power can make the coefficient equations impossible to solve.
+
+<Theorem slug="partial-fractions" of="proper-rational">
+
+### Partial fractions decomposition
+
+<Statement>
+
+For a fixed denominator after cancellation and factorisation, every *proper* rational function $f$ has a unique partial-fraction expansion with terms of the form
+$$
+\frac{A}{(x-a)^k},\qquad \frac{Bx+C}{(x^2+bx+c)^k},
+$$
+where the quadratic $x^2+bx+c$ is irreducible over the real numbers (i.e. $b^2-4c<0$).
+
+</Statement>
+
+The integers $k$ run up to the multiplicity of each factor. Uniqueness means the linear equations for the undetermined coefficients have exactly one solution.
+The real irreducible quadratics arise by pairing a non-real complex root with
+its conjugate, as in [real linear and quadratic
+factorisation](/algebra/complex-numbers/complex-polynomials#real-linear-quadratic-factorisation).
+
+</Theorem>
+
+For $q(x)=ax^2+bx+c$, the quantity $\Delta=b^2-4ac$ is its **discriminant**.
+If $\Delta<0$, the quadratic has no real roots and is irreducible over
+$\mathbb R$; this is the quadratic case in the partial-fraction forms above.
+
+<Method slug="partial-fraction-terms" of="partial-fractions" see="integrate-rational">
+
+### Partial fraction terms
+
+<Statement>
+
+Given a proper rational function, each irreducible factor of the denominator contributes terms as follows.
+
+- Linear factor $ax+b$: $\frac{A}{ax+b}$.
+- Repeated linear factor $(ax+b)^k$: $\frac{A_1}{ax+b}+\frac{A_2}{(ax+b)^2}+\cdots+\frac{A_k}{(ax+b)^k}$.
+- Irreducible quadratic factor $ax^2+bx+c$ with $a\ne0$: $\frac{Ax+B}{ax^2+bx+c}$.
+- Repeated irreducible quadratic factor $(ax^2+bx+c)^k$: $\frac{A_1x+B_1}{ax^2+bx+c}+\frac{A_2x+B_2}{(ax^2+bx+c)^2}+\cdots+\frac{A_kx+B_k}{(ax^2+bx+c)^k}$.
+
+</Statement>
+
+Here each factor has a general leading coefficient $a$, whereas the decomposition theorem used the monic quadratic $x^2+bx+c$, irreducible when $b^2-4c<0$.
+
+</Method>
+
+<Method slug="integrate-rational" of="partial-fractions,proper-rational" see="partial-fraction-terms">
+
+### Integrate a rational function
+
+<Statement>
+
+To integrate a rational function on an interval containing no zero of its
+denominator:
+
+1. If the function is improper, use polynomial division to write it as a polynomial plus a proper rational function and integrate the polynomial.
+2. Decompose the proper part into partial fractions.
+3. Integrate each linear-factor term using $u=ax+b$: its first power gives $\frac{A}{a}\ln|ax+b|$, while a power $k>1$ gives $\frac{A(ax+b)^{1-k}}{a(1-k)}$.
+4. For $q(x)=ax^2+bx+c$ and a term
+$\int\frac{Bx+C}{q(x)^k}\,dx$, split the numerator into a multiple of
+$q'(x)=2ax+b$ and a constant remainder:
+$$
+\frac{Bx+C}{q(x)^k}
+=\frac{B}{2a}\frac{q'(x)}{q(x)^k}+\frac{D}{q(x)^k},
+\qquad D=C-\frac{Bb}{2a}.
+$$
+Then integrate the derivative term directly and complete the square in the
+constant remainder.
+
+</Statement>
+
+The derivative term is immediate:
+$$
+\int\frac{g'(x)}{g(x)}\, dx=\ln|g(x)|+K,
+$$
+and, for $k>1$,
+$$
+\int\frac{g'(x)}{g(x)^k}\,dx
+=\frac{g(x)^{1-k}}{1-k}+K.
+$$
+For the constant term, complete the square. When $k=1$, this produces the
+standard inverse-tangent integral
+$$
+\int\frac{1}{h^2+x^2}\, dx=\frac{1}{h}\tan^{-1}\left(\frac{x}{h}\right)+K,
+\qquad h>0.
+$$
+For $k>1$, reduce the remaining power or use a trigonometric substitution, as
+in the repeated-quadratic example below.
+
+</Method>
+
+## Integrating linear factors
+
+<Example slug="int-distinct-linear" of="partial-fractions" difficulty="exam">
+
+### Distinct linear factors
+
+Find $\int\frac{2x^2+2x-6}{(x-1)(x+1)(x-2)}\, dx$.
+
+The denominator is a product of distinct linear factors, so
+$$
+\frac{2x^2+2x-6}{(x-1)(x+1)(x-2)}=\frac{A}{x-1}+\frac{B}{x+1}+\frac{C}{x-2}.
+$$
+Call this identity $(*)$. Heaviside's cover-up method finds $A$, $B$ and $C$. Multiplying $(*)$ by $x-1$ yields
+$$
+\frac{2x^2+2x-6}{(x+1)(x-2)}=A+\frac{B(x-1)}{x+1}+\frac{C(x-1)}{x-2}.
+$$
+Identity $(*)$ holds for $x\neq 1,-1,2$, but after multiplying through by $x-1$ both sides are defined at $x=1$, so setting $x=1$ is legitimate:
+$$
+\frac{2(1)^2+2(1)-6}{(1+1)(1-2)}=\frac{-2}{2\cdot(-1)}=1,
+$$
+hence $A=1$.
+
+Similarly, multiplying $(*)$ by $x+1$ and setting $x=-1$ gives
+$$
+B=\left.\frac{2x^2+2x-6}{(x-1)(x-2)}\right|_{x=-1}=-1,
+$$
+and doing the same with $x-2$ and $x=2$ gives
+$$
+C=\left.\frac{2x^2+2x-6}{(x-1)(x+1)}\right|_{x=2}=2.
+$$
+Hence
+$$
+\int\frac{2x^2+2x-6}{(x-1)(x+1)(x-2)}\, dx=\int\frac{dx}{x-1}-\int\frac{dx}{x+1}+\int\frac{2}{x-2}\, dx
+$$
+$$
+=\ln|x-1|-\ln|x+1|+2\ln|x-2|+C.
+$$
+
+</Example>
+
+<Example slug="int-repeated-linear" of="partial-fractions" difficulty="exam">
+
+### Repeated linear factors
+
+Find $I=\int\frac{8x+9}{(x-2)(x+3)^2}\, dx$.
+
+The factor $x+3$ is repeated, so
+$$
+\frac{8x+9}{(x-2)(x+3)^2}=\frac{A}{x-2}+\frac{B}{x+3}+\frac{C}{(x+3)^2}
+$$
+(or, equivalently, $\frac{A}{x-2}+\frac{Bx+C}{(x+3)^2}$). With the three-term form, the cover-up method from the [distinct linear factors](/calculus/integration-techniques/rational-functions) example gives $A$ by multiplying by $x-2$ and setting $x=2$:
+$$
+A=\left.\frac{8x+9}{(x+3)^2}\right|_{x=2}=\frac{16+9}{25}=1.
+$$
+Multiplying by $(x+3)^2$ and setting $x=-3$ gives
+$$
+C=\left.\frac{8x+9}{x-2}\right|_{x=-3}=\frac{-24+9}{-5}=3.
+$$
+Cover-up does not give $B$: multiplying by $x+3$ leaves a term $\frac{C}{x+3}$, so $x=-3$ cannot be substituted. Instead, insert the known $A$ and $C$,
+$$
+\frac{8x+9}{(x-2)(x+3)^2}=\frac{1}{x-2}+\frac{B}{x+3}+\frac{3}{(x+3)^2}
+$$
+and set $x=0$:
+$$
+\frac{9}{-18}=-\frac{1}{2}+\frac{B}{3}+\frac{1}{3}\implies B=-1.
+$$
+Hence
+$$
+I=\int\frac{dx}{x-2}-\int\frac{dx}{x+3}+\int\frac{3}{(x+3)^2}\, dx=\ln|x-2|-\ln|x+3|-\frac{3}{x+3}+C.
+$$
+
+This formula is valid on any interval that contains neither pole, $x=2$ nor
+$x=-3$; the constant need not be the same on different such intervals.
+
+</Example>
+
+## Integrating irreducible quadratics
+
+For an irreducible quadratic denominator, rewrite the numerator around the derivative of the quadratic. This splits off a logarithm and the constant remainder becomes an inverse tangent after completing the square.
+
+<Example slug="int-linear-over-quadratic" of="integrate-rational" difficulty="exam">
+
+### Linear numerator over a quadratic
+
+Find $I=\int\frac{2x+1}{x^2+4x+5}\, dx$.
+
+The quadratic $x^2+4x+5$ is irreducible ($4^2-4\cdot5=-4<0$), so write the numerator in terms of the derivative $2x+4$ of the denominator:
+$$
+2x+1=(2x+4)-3.
+$$
+Thus
+$$
+I=\int\frac{2x+4}{x^2+4x+5}\, dx-\int\frac{3}{x^2+4x+5}\, dx.
+$$
+The first integrand is $g'/g$. Completing the square in the second, $x^2+4x+5=(x+2)^2+1$, gives
+$$
+I=\ln|x^2+4x+5|-\int\frac{3}{(x+2)^2+1}\, dx=\ln|x^2+4x+5|-3\tan^{-1}(x+2)+C.
+$$
+
+</Example>
+
+<Example slug="int-repeated-quadratic" of="partial-fractions" see="int-cos-sq-sin-sq,int-a2-plus-x2-three-halves" difficulty="exam">
+
+### A repeated irreducible quadratic
+
+Find $I=\int\frac{2x^2-x}{(x^2+1)^2}\, dx$.
+
+Decompose as
+$$
+\frac{2x^2-x}{(x^2+1)^2}=\frac{Ax+B}{x^2+1}+\frac{Cx+D}{(x^2+1)^2}.
+$$
+Multiplying by $(x^2+1)^2$,
+$$
+2x^2-x=(Ax+B)(x^2+1)+Cx+D=Ax^3+Bx^2+(A+C)x+(B+D).
+$$
+Comparing coefficients, $A=0$, $B=2$, $A+C=-1$ so $C=-1$ and $B+D=0$ so $D=-2$. Hence
+$$
+I=\int\frac{2}{x^2+1}\, dx-\int\frac{x+2}{(x^2+1)^2}\, dx=2\tan^{-1}(x)-\frac{1}{2}\int\frac{2x}{(x^2+1)^2}\, dx-2\int\frac{1}{(x^2+1)^2}\, dx.
+$$
+The middle integral is $\int g'/g^2$ with $g(x)=x^2+1$, so
+$$
+I=2\tan^{-1}(x)+\frac{1}{2}(x^2+1)^{-1}-2\int\frac{1}{(x^2+1)^2}\, dx.
+$$
+
+For the remaining integral, let $x=\tan\theta$, so $dx=\sec^2\theta\, d\theta$ (the $x=a\tan\theta$ row of the [trigonometric and hyperbolic substitutions](/calculus/integration-techniques/trigonometric-and-hyperbolic-substitutions), with $a=1$). Then $\tan^2\theta+1=\sec^2\theta$ and
+$$
+\int\frac{1}{(x^2+1)^2}\, dx=\int\frac{\sec^2\theta}{(\sec^2\theta)^2}\, d\theta=\int\cos^2\theta\, d\theta.
+$$
+Using $\cos^2\theta=\frac{1+\cos 2\theta}{2}$, as in [trigonometric integrals](/calculus/integration-techniques/trigonometric-integrals),
+$$
+\int\cos^2\theta\, d\theta=\frac{\theta}{2}+\frac{\sin(2\theta)}{4}+C=\frac{1}{2}\tan^{-1}(x)+\frac{1}{4}\sin(2\tan^{-1}(x))+C.
+$$
+Altogether,
+$$
+I=\tan^{-1}(x)+\frac{1}{2}(x^2+1)^{-1}-\frac{1}{2}\sin(2\tan^{-1}(x))+C.
+$$
+
+To rewrite the sine, let $\alpha=\tan^{-1}(x)$, so $\tan\alpha=x$ and $\cos\alpha>0$. From $1+\tan^2\alpha=\sec^2\alpha$ and the sign of $\cos\alpha$,
+$$
+\sin\alpha=\frac{x}{\sqrt{x^2+1}},\qquad \cos\alpha=\frac{1}{\sqrt{x^2+1}}.
+$$
+The double-angle formula $\sin(2\alpha)=2\sin\alpha\cos\alpha$ then gives
+$$
+\sin(2\tan^{-1}(x))=2\left(\frac{x}{\sqrt{x^2+1}}\right)\left(\frac{1}{\sqrt{x^2+1}}\right)=\frac{2x}{x^2+1}.
+$$
+Thus
+$$
+I=\tan^{-1}(x)+\frac{1-2x}{2(x^2+1)}+C.
+$$
+
+</Example>

@@ -1,0 +1,540 @@
+---
+title: Derivatives and level-set geometry
+description: Partial derivatives, gradients, level-set normals and tangent planes for functions of several variables.
+tags: [calculus]
+ideas: [partial-derivatives, gradient, level-sets, tangent-planes]
+---
+
+This page sets up first-order calculus for functions of several variables,
+where a change in the input has a direction as well as a size. [Partial
+derivatives](#partial-derivatives-and-the-gradient) measure change along the
+coordinate directions and the [gradient](#partial-derivatives-and-the-gradient)
+collects them into one vector.
+
+The gradient also gives geometry: it is normal to every [level
+set](#functions-graphs-and-level-sets), meaning perpendicular to all its
+tangent directions. That fact leads to the [tangent
+plane](#tangent-plane-to-a-graph), the first local model of a surface.
+
+## Functions, graphs and level sets
+
+<Definition slug="several-variable-function">
+
+### Function of several variables
+
+<Statement>
+
+A function of several variables is a map
+
+$$
+f:D\to\mathbb{R},\qquad D\subseteq\mathbb{R}^n,
+\qquad
+\mathbf{x}=(x_1,\ldots,x_n)\mapsto f(\mathbf{x}),
+$$
+
+where $n\ge2$ and $D$ is the domain of allowed inputs.
+
+</Statement>
+
+When $n=2$, the graph of $f$ is the surface $z=f(x,y)$ in
+$\mathbb{R}^3$. A function of three variables has a graph in
+$\mathbb{R}^4$, which is harder to visualise, but the coordinate and vector
+formulas remain the same.
+
+</Definition>
+
+An explicit graph solves for one coordinate. An implicit description instead
+keeps all coordinates in one equation; this is the setting for level-set
+normals.
+
+<Definition slug="multivariable-level-set">
+
+### Level set
+
+<Statement>
+
+For $F:D\to\mathbb{R}$, with $D\subseteq\mathbb{R}^n$ and $c\in\mathbb{R}$, the level set of $F$
+at level $c$ is
+
+$$
+\{\mathbf{x}\in D:F(\mathbf{x})=c\}.
+$$
+
+</Statement>
+
+For example, the graph $z=x^2-y^2$ is the level set
+$x^2-y^2-z=0$ and the unit sphere is the level set
+$x^2+y^2+z^2=1$. The function defining the level set need not be the same
+function whose graph we are studying.
+
+</Definition>
+
+Level sets also appear in [exact differential
+equations](/calculus/ordinary-differential-equations/seen#seen-exact-equations-linear-approximation-level-curves):
+the solution curves of an exact equation with potential $F$ are the level
+curves $F(x,y)=c$, so the geometry below applies to them.
+
+## Partial derivatives and the gradient
+
+<Definition slug="multivariable-partial-derivative">
+
+### Partial derivative
+
+<Statement>
+
+For $f:D\to\mathbb{R}$ with $D\subseteq\mathbb{R}^n$, at an interior point
+$\mathbf{x}\in D$, the partial derivative with respect to
+$x_i$ is the one-variable derivative obtained by varying
+$x_i$ and holding every other coordinate fixed:
+
+$$
+\frac{\partial f}{\partial x_i}(\mathbf{x})
+=
+\lim_{h\to0}
+\frac{
+f(x_1,\ldots,x_i+h,\ldots,x_n)-f(\mathbf{x})
+}{h},
+$$
+
+when the limit exists.
+
+</Statement>
+
+The ordinary sum, product, quotient and chain rules still apply. Treat every
+variable other than the one being differentiated as a constant. For two
+variables we write
+$f_x=\partial f/\partial x$ and $f_y=\partial f/\partial y$.
+
+</Definition>
+
+<Definition slug="multivariable-gradient" of="multivariable-partial-derivative">
+
+### Gradient
+
+<Statement>
+
+For $g:D\to\mathbb{R}$ with $D\subseteq\mathbb{R}^n$, at points where all
+first partial derivatives exist, the gradient is the vector-valued function
+
+$$
+\nabla g(\mathbf{x})
+=
+\begin{pmatrix}
+\dfrac{\partial g}{\partial x_1}(\mathbf{x})\\
+\vdots\\
+\dfrac{\partial g}{\partial x_n}(\mathbf{x})
+\end{pmatrix}.
+$$
+
+</Statement>
+
+When $g$ is differentiable, the gradient has a second interpretation. For a
+unit direction $\mathbf u$, the rate of change along the line
+$\mathbf x+t\mathbf u$ is
+
+$$
+D_{\mathbf u}g(\mathbf x)
+=\left.\frac{d}{dt}g(\mathbf x+t\mathbf u)\right|_{t=0}
+=\nabla g(\mathbf x)\cdot\mathbf u.
+$$
+
+The Cauchy–Schwarz inequality gives
+$|D_{\mathbf u}g|\le\|\nabla g\|$. When the gradient is non-zero, the
+maximum directional derivative is attained by taking $\mathbf u$ in the
+gradient direction (and the most negative rate in the opposite direction).
+Thus $\nabla g$ points in the direction of steepest increase and its length is
+that maximum directional rate.
+
+The linear map that gives first-order change is the **total derivative** (or
+derivative map). At a differentiable point it is represented by the gradient:
+
+$$
+Dg(\mathbf{x})[\mathbf{h}]
+=\nabla g(\mathbf{x})\cdot\mathbf{h},
+\qquad
+D_{\mathbf{u}}g(\mathbf{x})=Dg(\mathbf{x})[\mathbf{u}].
+$$
+
+Differentiability means this one linear map approximates change in every
+direction. The coordinate partial derivatives alone do not establish that, so
+they do not guarantee the directional-derivative formula above.
+
+</Definition>
+
+<Example slug="multivariable-gradient-calculation" of="multivariable-gradient" difficulty="routine">
+
+### Computing a gradient
+
+Let
+
+$$
+f(x,y,z)=x^2y+2xz+\cos(z^3).
+$$
+
+Holding the other variables fixed gives
+
+$$
+f_x=2xy+2z,
+\qquad
+f_y=x^2,
+\qquad
+f_z=2x-3z^2\sin(z^3).
+$$
+
+Therefore
+
+$$
+\nabla f(x,y,z)
+=
+\begin{pmatrix}
+2xy+2z\\
+x^2\\
+2x-3z^2\sin(z^3)
+\end{pmatrix}.
+$$
+
+At a specified point this vector also predicts directional change. For
+example,
+
+$$
+\nabla f(1,0,0)
+=\begin{pmatrix}0\\1\\2\end{pmatrix},
+$$
+
+so a small displacement $\mathbf h$ from $(1,0,0)$ changes $f$ to first
+order by $\nabla f(1,0,0)\cdot\mathbf h$. This is the same linear term used
+later in the tangent-plane approximation.
+
+</Example>
+
+Second derivatives describe how the first-order rates change. The order of
+mixed differentiation can be exchanged when the relevant mixed partials are
+continuous, but domain restrictions must still be recorded.
+
+<Example slug="mixed-partial-calculation" of="multivariable-partial-derivative" difficulty="routine">
+
+### First and second partial derivatives
+
+Consider
+
+$$
+f(x,y)=e^{xy}+x^2y.
+$$
+
+Treating the other coordinate as constant gives
+
+$$
+f_x=ye^{xy}+2xy,
+\qquad
+f_y=xe^{xy}+x^2.
+$$
+
+Differentiate $f_x$ with respect to $y$ and $f_y$ with respect to $x$:
+
+$$
+f_{xy}=e^{xy}+xye^{xy}+2x
+=f_{yx}.
+$$
+
+The two mixed partials agree, as Clairaut's theorem guarantees because they
+are continuous everywhere. The other second partials are
+$f_{xx}=y^2e^{xy}+2y$ and $f_{yy}=x^2e^{xy}$.
+
+</Example>
+
+<Example slug="domain-restricted-partials" of="multivariable-partial-derivative" difficulty="routine">
+
+### Domain restrictions are part of the derivative
+
+For
+
+$$
+f(x,y,z)=\frac{x\ln z}{y^2},
+$$
+
+the domain requires $y\ne0$ and $z>0$. The first partial derivatives are
+
+$$
+f_x=\frac{\ln z}{y^2},
+\qquad
+f_y=-\frac{2x\ln z}{y^3},
+\qquad
+f_z=\frac{x}{y^2z},
+$$
+
+and the second partial derivatives are
+
+$$
+f_{xx}=0,
+\qquad
+f_{xy}=-\frac{2\ln z}{y^3},
+\qquad
+f_{xz}=\frac{1}{y^2z},
+$$
+
+$$
+f_{yy}=\frac{6x\ln z}{y^4},
+\qquad
+f_{yz}=-\frac{2x}{y^3z},
+\qquad
+f_{zz}=-\frac{x}{y^2z^2}.
+$$
+
+</Example>
+
+## Gradients and level-set geometry
+
+Suppose $\boldsymbol{\gamma}(t)$ is a differentiable curve that stays in a
+level set. The value of the defining function does not change along the
+curve, so differentiating that constant value forces the gradient to be
+orthogonal to the curve's tangent.
+
+<Theorem slug="gradient-normal-level-set" of="multivariable-gradient,multivariable-level-set">
+
+### Gradient normal to a level set
+
+<Statement>
+
+Let $F:D\to\mathbb{R}$ be $C^1$ on an open neighbourhood of
+$\mathbf{x}_0$ and let
+
+$$
+S=\{\mathbf{x}\in D:F(\mathbf{x})=c\}.
+$$
+
+If $\mathbf{x}_0\in S$ and
+$\nabla F(\mathbf{x}_0)\ne\mathbf{0}$, then
+$\nabla F(\mathbf{x}_0)$ is normal to $S$ at $\mathbf{x}_0$.
+
+</Statement>
+
+The non-zero-gradient condition makes the level set regular at the point.
+When the gradient vanishes, the level set may have a corner, crossing or
+other singular behaviour for which no single gradient direction gives a
+normal.
+
+</Theorem>
+
+<Proof of="gradient-normal-level-set">
+
+Let $\boldsymbol{\gamma}(t)$ be a differentiable curve in $S$ with
+$\boldsymbol{\gamma}(t_0)=\mathbf{x}_0$. Since $F$ has the constant value $c$
+along the curve,
+
+$$
+F(\boldsymbol{\gamma}(t))=c.
+$$
+
+The chain rule gives
+
+$$
+\nabla F(\boldsymbol{\gamma}(t_0))
+\cdot
+\boldsymbol{\gamma}'(t_0)=0.
+$$
+
+Thus the gradient is perpendicular to every tangent vector supplied by a
+curve in the level set. It is therefore a normal vector at
+$\mathbf{x}_0$.
+
+</Proof>
+
+<Example slug="circle-level-set-normal" of="gradient-normal-level-set" difficulty="routine">
+
+### The normal to the unit circle
+
+The unit circle is the level set
+
+$$
+F(x,y)=x^2+y^2-1=0.
+$$
+
+Its gradient is
+
+$$
+\nabla F(x,y)
+=
+\begin{pmatrix}
+2x\\
+2y
+\end{pmatrix}.
+$$
+
+At
+
+$$
+\mathbf{x}_0=(\cos\varepsilon,\sin\varepsilon),
+$$
+
+a normal vector is
+
+$$
+\nabla F(\mathbf{x}_0)
+=
+\begin{pmatrix}
+2\cos\varepsilon\\
+2\sin\varepsilon
+\end{pmatrix}.
+$$
+
+Any non-zero scalar multiple is also normal, so the radius
+$(\cos\varepsilon,\sin\varepsilon)$ gives the same direction.
+
+</Example>
+
+An explicit graph can be treated as a level surface by moving everything to
+one side:
+
+$$
+F(x,y,z)=z-f(x,y)=0.
+$$
+
+The resulting normal is $(-f_x,-f_y,1)$. Equivalently, parametrising the graph
+by $\mathbf{r}(x,y)=(x,y,f(x,y))$ gives tangent vectors
+
+$$
+\mathbf{v}_1=
+\begin{pmatrix}
+1\\
+0\\
+f_x
+\end{pmatrix},
+\qquad
+\mathbf{v}_2=
+\begin{pmatrix}
+0\\
+1\\
+f_y
+\end{pmatrix},
+$$
+
+whose cross product is the same normal vector.
+
+<Theorem slug="graph-tangent-plane" of="gradient-normal-level-set">
+
+### Tangent plane to a graph
+
+<Statement>
+
+If $f$ is differentiable at $\mathbf{a}=(x_0,y_0)$ and
+$z_0=f(x_0,y_0)$, then the tangent plane to $z=f(x,y)$ at
+$(x_0,y_0,z_0)$ is
+
+$$
+z
+=f(x_0,y_0)
++f_x(x_0,y_0)(x-x_0)
++f_y(x_0,y_0)(y-y_0).
+$$
+
+</Statement>
+
+The point-normal form uses the normal $(-f_x(\mathbf{a}),-f_y(\mathbf{a}),1)$.
+The formula is also the first-order Taylor approximation, so the geometric
+tangent plane and the analytic linear model are the same object.
+
+</Theorem>
+
+<Proof of="graph-tangent-plane">
+
+The graph is the level surface $F=z-f(x,y)=0$. Its gradient at the base point
+is
+
+$$
+\nabla F(x_0,y_0,z_0)
+=
+\begin{pmatrix}
+-f_x(x_0,y_0)\\
+-f_y(x_0,y_0)\\
+1
+\end{pmatrix}.
+$$
+
+The point-normal equation is therefore
+
+$$
+\begin{pmatrix}
+-f_x(x_0,y_0)\\
+-f_y(x_0,y_0)\\
+1
+\end{pmatrix}
+\cdot
+\begin{pmatrix}
+x-x_0\\
+y-y_0\\
+z-z_0
+\end{pmatrix}
+=0.
+$$
+
+Solving for $z$ and using $z_0=f(x_0,y_0)$ gives the stated equation.
+
+</Proof>
+
+<Example slug="implicit-tangent-plane" of="gradient-normal-level-set" difficulty="exam">
+
+### Tangent plane to an implicit surface
+
+Consider
+
+$$
+x^2+y^2-xyz=1.
+$$
+
+Set
+
+$$
+F(x,y,z)=x^2+y^2-xyz-1.
+$$
+
+Then
+
+$$
+\nabla F(x,y,z)
+=
+\begin{pmatrix}
+2x-yz\\
+2y-xz\\
+-xy
+\end{pmatrix}.
+$$
+
+The point $(1,2,2)$ lies on the surface because $1^2+2^2-(1)(2)(2)=1$.
+At this point,
+
+$$
+\nabla F(1,2,2)
+=
+\begin{pmatrix}
+-2\\
+2\\
+-2
+\end{pmatrix}.
+$$
+
+The parallel vector $(1,-1,1)$ is a simpler normal. Hence the tangent plane
+through $(1,2,2)$ is
+
+$$
+(1,-1,1)\cdot
+\begin{pmatrix}
+x-1\\
+y-2\\
+z-2
+\end{pmatrix}
+=0,
+$$
+
+or
+
+$$
+{x-y+z=1}.
+$$
+
+</Example>
+
+The next page reads the [tangent-plane
+model](/calculus/functions-of-several-variables/multivariable-approximation) as
+a first-order Taylor polynomial and adds higher-degree terms. The quadratic
+part, built from the Hessian, later classifies [stationary
+points](/calculus/functions-of-several-variables/local-extrema).

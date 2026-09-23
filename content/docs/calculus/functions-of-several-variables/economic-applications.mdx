@@ -1,0 +1,221 @@
+---
+title: Economic applications
+description: Production, budget constraints and optimal input allocation.
+tags: [calculus, economics]
+ideas: [production, budget-constraints, constrained-optimisation]
+---
+
+This page applies [constrained
+optimisation](/calculus/functions-of-several-variables/constrained-extrema) to
+production: a firm chooses inputs to maximise output within a budget. Each
+problem starts by identifying the output, the feasible input choices and
+whether the budget constraint binds.
+
+## Production and budget
+
+<Definition slug="production-function">
+
+### Production function
+
+<Statement>
+
+A production function describes output $Q$ as a function of input quantities:
+
+$$
+Q=f(E,L),
+$$
+
+where $E,L\ge0$, $E$ denotes capital equipment or investment and $L$ denotes
+labour. The formula is understood on the economically feasible part of this
+non-negative quadrant.
+
+</Statement>
+
+The gradient of $Q$ records how output changes when either input changes. An optimal
+allocation compares those changes with input prices through the [multiplier condition](/calculus/functions-of-several-variables/constrained-extrema), which requires $\nabla Q$ to be parallel to the budget-line normal.
+
+</Definition>
+
+<Definition slug="budget-constraint">
+
+### Budget constraint
+
+<Statement>
+
+If $q>0$ is the price per unit of capital, $p>0$ is the price per unit of
+labour and $B>0$ is the available budget, the feasible input choices satisfy
+
+$$
+qE+pL\le B,
+\qquad
+E\ge0,\quad L\ge0.
+$$
+
+The products $qE$ and $pL$ are both measured in currency units, as is $B$;
+this keeps the budget equation dimensionally meaningful.
+
+</Statement>
+
+The inequality includes every affordable input bundle. Its boundary
+$qE+pL=B$ is the budget line: the bundles that spend the entire budget.
+
+</Definition>
+
+<Method slug="budget-constrained-production" of="production-function,budget-constraint">
+
+### Formulate a production problem
+
+<Statement>
+
+To maximise production under a budget:
+
+1. identify the production function $Q=f(E,L)$;
+2. write the feasible set
+   $$
+   qE+pL\le B,
+   \qquad
+   E,L\ge0;
+   $$
+3. if increasing either input increases output, replace the inequality by the binding budget equation $qE+pL=B$;
+4. apply the [constrained-extrema method](/calculus/functions-of-several-variables/constrained-extrema) and interpret the resulting inputs.
+
+</Statement>
+
+If output increases with either input, an allocation leaving budget unused
+cannot be optimal, because some additional productive input could be
+purchased. Without this monotonicity
+assumption (or if inputs are indivisible), keep the inequality and compare
+interior, axis and slack candidates instead.
+
+</Method>
+
+## Cobb-Douglas allocation
+
+<Definition slug="cobb-douglas-production" of="production-function">
+
+### Cobb-Douglas production function
+
+<Statement>
+
+A Cobb-Douglas production function has the form
+
+$$
+Q(E,L)=AE^\varepsilon L^{1-\varepsilon},
+\qquad
+A>0,
+\qquad
+0<\varepsilon<1.
+$$
+
+</Statement>
+
+The exponent $\varepsilon$ controls the relative contribution of capital and
+$1-\varepsilon$ controls the relative contribution of labour. The positive
+scale parameter $A$ changes output levels but, under the linear budget
+constraint, does not change the optimal input shares.
+
+</Definition>
+
+<Example slug="cobb-douglas-optimal-allocation" of="cobb-douglas-production,budget-constrained-production,lagrange-multiplier-method" difficulty="exam">
+
+### Optimal Cobb-Douglas allocation
+
+Maximise
+
+$$
+Q(E,L)=AE^\varepsilon L^{1-\varepsilon}
+$$
+
+subject to
+
+$$
+qE+pL=B.
+$$
+
+Assume $p,q,B>0$. A feasible bundle with $E,L>0$ produces positive output,
+whereas a bundle with $E=0$ or $L=0$ produces zero output. Hence an optimum
+has $E,L>0$, so the following first-order equations and division are valid.
+
+The multiplier equations are
+
+$$
+\varepsilon AE^{\varepsilon-1}L^{1-\varepsilon}
+=\lambda q,
+$$
+
+$$
+(1-\varepsilon)AE^\varepsilon L^{-\varepsilon}
+=\lambda p,
+$$
+
+together with $qE+pL=B$.
+
+Divide the first equation by the second. The common factors simplify to
+
+$$
+\frac{\varepsilon}{1-\varepsilon}\frac{L}{E}
+=\frac{q}{p}.
+$$
+
+Equivalently,
+
+$$
+p\varepsilon L=q(1-\varepsilon)E.
+$$
+
+Combining this relation with the budget equation gives
+
+$$
+qE=\varepsilon B,
+\qquad
+pL=(1-\varepsilon)B.
+$$
+
+Thus the optimal input quantities are
+
+$$
+{
+E=\frac{\varepsilon B}{q},
+\qquad
+L=\frac{(1-\varepsilon)B}{p}
+}.
+$$
+
+The firm spends the fraction $\varepsilon$ of its budget on capital and the
+fraction $1-\varepsilon$ on labour:
+
+$$
+\frac{qE}{B}=\varepsilon,
+\qquad
+\frac{pL}{B}=1-\varepsilon.
+$$
+
+The scale parameter $A$ cancels from the allocation because it multiplies
+both multiplier equations in the same way.
+
+Here $\lambda$ has units of output per currency unit and measures the
+marginal value of relaxing the budget. Then $\lambda q$ and $\lambda p$ have
+the units of the marginal products $Q_E$ and $Q_L$: output per unit of capital
+and output per unit of labour.
+
+This interpretation can be checked directly. The first
+multiplier equation gives
+$\lambda=\varepsilon Q/(qE)=Q/B$ at the optimum. Since both optimal inputs
+are proportional to $B$, the optimal output is also proportional to $B$;
+thus $dQ_{\max}/dB=Q_{\max}/B=\lambda$.
+
+The multiplier equations locate a candidate, not by themselves a global
+maximum. Along the budget line,
+$L=(B-qE)/p$ for $0<E<B/q$ and
+
+$$
+\frac{d}{dE}\log Q\left(E,\frac{B-qE}{p}\right)
+=\frac{\varepsilon}{E}
+-\frac{(1-\varepsilon)q}{B-qE}.
+$$
+
+This derivative is positive before $E=\varepsilon B/q$ and negative after it;
+output is zero at both endpoints. The candidate is therefore the global
+maximum on the feasible budget segment.
+
+</Example>

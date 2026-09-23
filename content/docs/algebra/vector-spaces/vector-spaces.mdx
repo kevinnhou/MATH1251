@@ -1,0 +1,202 @@
+---
+title: Vector spaces
+description: The axioms, consequences and standard examples of vector spaces.
+tags: [algebra]
+ideas: [vector-space, vector-space-axioms]
+---
+
+This page sets out the rules that addition and scalar multiplication must
+obey for linear combinations to make sense. It then gives the standard
+examples and the first facts that follow from the rules.
+
+## The operations that define a vector space
+
+<Recall of="field" />
+
+Vectors in $\mathbb R^n$, matrices in $M_{m\times n}(F)$ and polynomials in
+$P_n(F)$ can all be added and scaled. A vector space asks only that these
+operations stay inside the set and obey the same rules.
+
+<Definition slug="vector-space">
+
+### Vector space
+
+<Statement>
+
+A *vector space* $V$ over a field $F$ is a non-empty set of vectors
+equipped with an addition rule $V\times V\to V$ and a scalar-multiplication
+rule $F\times V\to V$ satisfying:
+
+1. **Closure under addition:** if $u,v\in V$, then $u+v\in V$.
+2. **Associativity of addition:** $(u+v)+w=u+(v+w)$.
+3. **Commutativity of addition:** $u+v=v+u$.
+4. **Zero vector:** there is a $0\in V$ such that $0+u=u+0=u$.
+5. **Additive inverses:** for every $u\in V$, there is a $-u\in V$ such that $u+(-u)=(-u)+u=0$.
+6. **Closure under scalar multiplication:** if $u\in V$ and $\lambda\in F$, then $\lambda u\in V$.
+7. **Associativity of scalar multiplication:** $\lambda(\mu u)=(\lambda\mu)u$.
+8. **Multiplication by one:** $1u=u$.
+9. **Scalar distributivity:** $(\lambda+\mu)u=\lambda u+\mu u$.
+10. **Vector distributivity:** $\lambda(u+v)=\lambda u+\lambda v$.
+
+</Statement>
+
+The field supplies the scalar arithmetic; $V$ supplies the vectors and the
+two operations. The axioms make an expression such as
+$\lambda_1v_1+\cdots+\lambda_nv_n$ independent of how the additions are
+bracketed or ordered.
+
+</Definition>
+
+The scalar field is part of the definition. $\mathbb C$ is a vector space
+over $\mathbb C$ and also over $\mathbb R$ if only real scalars are allowed.
+Over $\mathbb R$, no real multiple of $1$ equals $i$. This changes the basis
+count: $\{1\}$ is a basis over $\mathbb C$, whereas $\{1,i\}$ is a basis over
+$\mathbb R$.
+
+## Familiar spaces and a first counterexample
+
+<Recall of="complex-number" />
+
+<Example slug="standard-vector-spaces" of="vector-space" difficulty="routine">
+
+### Standard vector spaces
+
+The most familiar example is $\mathbb R^n$ over $\mathbb R$. For
+$$
+u=\begin{pmatrix}x_1\\x_2\\\vdots\\x_n\end{pmatrix},
+\qquad
+v=\begin{pmatrix}y_1\\y_2\\\vdots\\y_n\end{pmatrix},
+$$
+addition is componentwise:
+$$
+u+v=
+\begin{pmatrix}
+x_1+y_1\\x_2+y_2\\\vdots\\x_n+y_n
+\end{pmatrix}.
+$$
+The zero vector has every entry equal to zero.
+
+Other examples are:
+
+- $\mathbb C^n$ over $\mathbb C$, or over $\mathbb R$ when scalar
+  multiplication is restricted to real scalars;
+- $M_{m\times n}(F)$, the set of $m\times n$ matrices with entries in $F$, over $F$;
+- $P_n(F)$, the polynomials of degree at most $n$ with coefficients in $F$, over $F$;
+- $P(F)$, the set of all polynomials with coefficients in $F$, over $F$.
+
+A polynomial in $P_n(F)$ is determined by its coefficient list
+$(a_0,\ldots,a_n)$, which gives $\dim P_n(F)=n+1$ once
+[dimension](/algebra/vector-spaces/basis-and-dimension) is defined. An
+unqualified $P_n$ means $P_n(\mathbb R)$ unless a lesson states otherwise.
+This space notation differs from the calculus notation $P_n(x)$ for a
+[Taylor polynomial](/calculus/taylor-series/taylor-polynomials).
+
+To show that these are vector spaces, verify the ten axioms. For matrices, the zero vector is the zero matrix and additive inverses are obtained by negating each entry. For $P_n(F)$, the zero vector is the zero polynomial. If
+$$
+p(z)=\sum_{k=0}^{n}a_kz^k\in P_n(F),
+$$
+then
+$$
+\lambda p(z)=\sum_{k=0}^{n}(\lambda a_k)z^k\in P_n(F),
+$$
+so scalar multiplication stays inside the polynomial space.
+
+</Example>
+
+One failed axiom is enough to show that a set is not a vector space under
+the given operations.
+
+<Example slug="non-vector-space-first-quadrant" of="vector-space" difficulty="routine">
+
+### A set that is not a vector space
+
+Consider
+$$
+S=\{(x,y)\in\mathbb R^2:x\geq0,\ y\geq0\}
+$$
+with the usual addition and scalar multiplication. The element $(1,1)$ belongs to $S$, but
+$$
+-1(1,1)=(-1,-1)\notin S.
+$$
+Thus $S$ is not closed under scalar multiplication and lacks the additive inverse of $(1,1)$.
+
+</Example>
+
+## Consequences of the axioms
+
+The axioms imply a few facts that later pages use without further proof.
+
+<Proposition slug="vector-space-additive-properties" of="vector-space">
+
+### Properties of addition
+
+<Statement>
+
+In a vector space, the zero vector is unique, cancellation holds,
+$$
+u+v=u+w\quad\Longrightarrow\quad v=w,
+$$
+and each vector has a unique additive inverse.
+
+</Statement>
+
+</Proposition>
+
+<Proof of="vector-space-additive-properties">
+
+If $0_1$ and $0_2$ are zero vectors, then
+$$
+0_1=0_1+0_2=0_2.
+$$
+If $u+v=u+w$, add $-u$ to both sides and use associativity and the zero-vector property to obtain $v=w$. If $u+v=0=u+w$, cancellation gives $v=w$, so the additive inverse is unique.
+
+</Proof>
+
+<Proposition slug="vector-space-scalar-properties" of="vector-space">
+
+### Properties of scalar multiplication
+
+<Statement>
+
+For every vector $u$ and scalars $\lambda,\mu$,
+$$
+0u=0,\qquad \lambda0=0,\qquad (-1)u=-u,
+$$
+$$
+\lambda u=0\Longrightarrow \lambda=0\text{ or }u=0,
+$$
+and, if $u\neq0$,
+$$
+\lambda u=\mu u\Longrightarrow \lambda=\mu.
+$$
+
+</Statement>
+
+</Proposition>
+
+<Proof of="vector-space-scalar-properties">
+
+Because $0+0=0$, distributivity gives
+$$
+0u=(0+0)u=0u+0u,
+$$
+and cancellation gives $0u=0$. Similarly,
+$$
+\lambda0=\lambda(0+0)=\lambda0+\lambda0,
+$$
+so $\lambda0=0$. Also,
+$$
+(-1)u+u=(({-1})+1)u=0u=0,
+$$
+so $(-1)u=-u$. If $\lambda u=0$ and $\lambda\neq0$, multiply by the field inverse $\lambda^{-1}$ to obtain $u=0$. Finally, if $\lambda u=\mu u$ and $u\neq0$, then
+$$
+(\lambda-\mu)u=0,
+$$
+so $\lambda-\mu=0$ and hence $\lambda=\mu$.
+
+</Proof>
+
+[Subspaces](/algebra/vector-spaces/subspaces) gives the test for whether a
+subset inherits these operations. Later, the kernel and image of a [linear
+transformation](/algebra/linear-transformations/linear-transformations), a
+map that preserves both operations, give important examples.

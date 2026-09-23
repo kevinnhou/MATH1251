@@ -1,0 +1,310 @@
+---
+title: Mass, centroids and probability
+description: Interpret double integrals as mass, moments, centres of mass, population and expected value.
+tags: [calculus]
+ideas: [mass, centroid, probability-density, expectation]
+---
+
+This page integrates a density over a region to find total mass, centres of
+mass and expected values. The [area
+formula](/calculus/double-integrals/regions-and-order-of-integration) uses
+unit density, so every point has the same weight. A varying density weights
+some parts of the region more than others.
+
+The same weighted integrals describe a thin plate, a population spread over a
+region and a continuous probability model. They are evaluated by slicing, as
+in [Fubini's theorem](/calculus/double-integrals/fubini-and-iterated-integrals),
+often after a [change of
+variables](/calculus/double-integrals/change-of-variables-and-polar-coordinates).
+
+## Density on a lamina
+
+A **lamina** is a flat sheet of material with negligible thickness. If
+$\rho(x,y)$ is its mass density, then a small area $\Delta A$ near $(x,y)$
+has approximate mass $\rho(x,y)\Delta A$.
+
+<Definition slug="lamina-mass-density">
+
+### Mass density of a lamina
+
+<Statement>
+
+A mass density $\rho(x,y)$ assigns mass per unit area to a lamina occupying a
+region $\Omega$. For a physical lamina, $\rho\ge0$ and $\rho$ is integrable.
+The total mass is
+
+$$
+M=\iint_\Omega\rho(x,y)\,dA.
+$$
+
+</Statement>
+
+When $\rho=1$, the mass is the area of $\Omega$.
+
+</Definition>
+
+<Theorem slug="lamina-centre-of-mass" of="lamina-mass-density">
+
+### Centre of mass and moments
+
+<Statement>
+
+For a lamina with mass density $\rho$ and total mass $M>0$, the centre of
+mass is
+
+$$
+{
+\bar x=\frac1M\iint_\Omega x\rho(x,y)\,dA,
+\qquad
+\bar y=\frac1M\iint_\Omega y\rho(x,y)\,dA
+}.
+$$
+
+The density-weighted first moments are
+
+$$
+M_y=\iint_\Omega x\rho(x,y)\,dA,
+\qquad
+M_x=\iint_\Omega y\rho(x,y)\,dA.
+$$
+
+</Statement>
+
+The factor $x$ weights mass by horizontal position and the factor $y$
+weights it by vertical position. For uniform density, the centre of mass is
+the centroid, the geometric centre of the region.
+
+Units give a check: if $x$ and $y$ are measured in units of length
+and $\rho$ in mass per unit area, then $M$ has units of mass, each first
+moment has units of mass\,$\times$\,length and $(\bar x,\bar y)$ has units
+of length.
+
+</Theorem>
+
+<Example slug="variable-density-triangular-lamina" of="lamina-centre-of-mass" difficulty="exam">
+
+### A symmetric region with nonconstant density
+
+Let
+
+$$
+\Omega=\{(x,y):|x|\le y\le1\},
+\qquad
+\rho(x,y)=x^2+y^2.
+$$
+
+Horizontal slices give
+
+$$
+0\le y\le1,\qquad-y\le x\le y.
+$$
+
+The mass is
+
+$$
+\begin{aligned}
+M
+&=\int_0^1\int_{-y}^{y}(x^2+y^2)\,dx\,dy\\
+&=\int_0^1\left[\frac{x^3}{3}+xy^2\right]_{-y}^{y}dy\\
+&=\int_0^1\frac{8y^3}{3}\,dy
+=\frac23.
+\end{aligned}
+$$
+
+The region and density are symmetric under $x\mapsto-x$, so
+
+$$
+\bar x=0.
+$$
+
+The vertical moment is
+
+$$
+\begin{aligned}
+\iint_\Omega y\rho\,dA
+&=\int_0^1\int_{-y}^{y}y(x^2+y^2)\,dx\,dy\\
+&=\int_0^1\frac{8y^4}{3}\,dy
+=\frac{8}{15}.
+\end{aligned}
+$$
+
+Thus
+
+$$
+\bar y=\frac{8/15}{2/3}=\frac45,
+$$
+
+and the centre of mass is
+
+$$
+{\left(0,\frac45\right)}.
+$$
+
+For uniform density, this triangle's centroid has $y$-coordinate $2/3$.
+Here the density increases with $y$, so the centre of mass lies higher.
+
+</Example>
+
+## A semicircular lamina in three densities
+
+Let $\Omega$ be the upper half of the unit disk:
+
+$$
+0\le r\le1,\qquad0\le\theta\le\pi.
+$$
+
+The example compares three densities on this region. Each is symmetric under
+$x\mapsto-x$, so $\bar x=0$ and only $\bar y$ needs computing. Coordinates
+are treated as pure numbers; in a physical model, the coefficients
+multiplying $y$ or $r$ would carry the units needed to make $\rho$ a mass per
+unit area.
+
+<Example slug="semicircular-lamina-densities" of="lamina-centre-of-mass,polar-double-integral" difficulty="exam">
+
+### Uniform, vertical and radial density
+
+For uniform density $\rho=1$, the mass is the area:
+
+$$
+M=\frac{\pi}{2}.
+$$
+
+The vertical moment is
+
+$$
+\begin{aligned}
+\iint_\Omega y\,dA
+&=\int_0^\pi\int_0^1
+(r\sin\theta)r\,dr\,d\theta\\
+&=\left(\int_0^\pi\sin\theta\,d\theta\right)
+\left(\int_0^1r^2\,dr\right)
+=\frac23.
+\end{aligned}
+$$
+
+Therefore
+
+$$
+\bar y=\frac{4}{3\pi}.
+$$
+
+For $\rho=y$, the mass is
+
+$$
+\begin{aligned}
+M
+&=\iint_\Omega y\,dA\\
+&=\int_0^\pi\int_0^1r^2\sin\theta\,dr\,d\theta
+=\frac23.
+\end{aligned}
+$$
+
+The vertical moment becomes
+
+$$
+\begin{aligned}
+\iint_\Omega y\rho\,dA
+&=\iint_\Omega y^2\,dA\\
+&=\int_0^\pi\int_0^1
+r^3\sin^2\theta\,dr\,d\theta
+=\frac{\pi}{8}.
+\end{aligned}
+$$
+
+Hence
+
+$$
+\bar y=\frac{\pi/8}{2/3}=\frac{3\pi}{16}.
+$$
+
+For radial density
+
+$$
+\rho=\sqrt{x^2+y^2}=r,
+$$
+
+the mass is
+
+$$
+\begin{aligned}
+M
+&=\int_0^\pi\int_0^1r\cdot r\,dr\,d\theta
+=\frac{\pi}{3},
+\end{aligned}
+$$
+
+and the vertical moment is
+
+$$
+\begin{aligned}
+\iint_\Omega y\rho\,dA
+&=\int_0^\pi\int_0^1
+(r\sin\theta)\,r\,r\,dr\,d\theta
+=\frac12.
+\end{aligned}
+$$
+
+Thus
+
+$$
+\bar y=\frac{1/2}{\pi/3}=\frac{3}{2\pi}.
+$$
+
+The three heights are approximately $0.424$, $0.589$ and $0.477$. Radial
+density moves weight away from the origin and density proportional to $y$
+moves it more strongly towards the top.
+
+</Example>
+
+## Population and probability
+
+<Proposition slug="density-to-probability" of="lamina-mass-density">
+
+### Normalising a density
+
+<Statement>
+
+If $\rho\ge0$ on $\Omega$ and
+
+$$
+0<M=\iint_\Omega\rho(x,y)\,dA<\infty,
+$$
+
+then
+
+$$
+p(x,y)=\frac{\rho(x,y)}{M}
+$$
+
+is a two-dimensional probability density on $\Omega$, because
+
+$$
+\iint_\Omega p(x,y)\,dA=1.
+$$
+
+</Statement>
+
+If $\rho$ is a population density, $\iint_R\rho\,dA$ is the population in a
+subregion $R\subseteq\Omega$. The normalised density $p$ has units of
+inverse area, so $p\,dA$ is dimensionless.
+
+After normalisation, the centre-of-mass coordinates become expected values:
+
+$$
+\mathbb E[X]=\iint_\Omega xp(x,y)\,dA,
+\qquad
+\mathbb E[Y]=\iint_\Omega yp(x,y)\,dA.
+$$
+
+For an event represented by a subregion $E\subseteq\Omega$, the probability
+is
+
+$$
+\mathbb P((X,Y)\in E)=\iint_E p(x,y)\,dA.
+$$
+
+This is the population formula with the normalisation making the whole
+region have probability $1$. Mass, a population centre and an expected value
+are all the same weighted-average construction.
+
+</Proposition>

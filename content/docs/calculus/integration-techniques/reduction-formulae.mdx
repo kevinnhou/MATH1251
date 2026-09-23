@@ -1,0 +1,415 @@
+---
+title: Reduction formulae
+description: Recurrences that replace repeated integration by parts.
+tags: [calculus]
+ideas: [reduction-formulae, integration-by-parts]
+---
+
+A reduction formula replaces repeated integration by parts with a single recurrence. The integral $\int x e^x \, dx$ takes one integration by parts and $\int x^5 e^x \, dx$ takes five of the same step; a reduction formula does the step once, in general, by writing $I_n$ in terms of $I_{n-1}$ or $I_{n-2}$. Trigonometric integrands also need a Pythagorean identity. For low trigonometric powers, the direct identities in [trigonometric integrals](/calculus/integration-techniques/trigonometric-integrals) are quicker.
+
+## Reduction formulae as recurrences
+
+<Definition slug="reduction-formula">
+
+### Reduction formula
+
+<Statement>
+
+A reduction formula expresses an integral $I_n$ in terms of $I_{n-k}$ for a
+smaller index, typically by integration by parts.
+
+</Statement>
+
+Here and below, power indices are non-negative integers. The step $k$ is $1$
+for $x^n e^x$. For trigonometric powers it is $2$, because
+$\sin^2 x+\cos^2 x=1$ or $\sec^2 x=1+\tan^2 x$ returns a copy of $I_n$ that is
+then collected.
+
+</Definition>
+
+## Reducing powers of $x$ times $e^x$
+
+<Theorem slug="reduction-xn-ex" of="reduction-formula">
+
+### Powers of $x$ times $e^x$
+
+<Statement>
+
+For an integer $n\ge0$, choose compatible representatives
+$I_n$ of the antiderivatives of $x^n e^x$. Then
+
+$$
+I_n=x^n e^x-n I_{n-1},\qquad n\ge 1.
+$$
+
+</Statement>
+
+Each application lowers the power of $x$ by one. Two antiderivatives can
+differ by a constant, so use the recurrence to construct one representative
+and add a single arbitrary constant when the reduction stops.
+
+</Theorem>
+
+<Proof of="reduction-xn-ex">
+
+Integrate by parts with $u=x^n$ and $\frac{dv}{dx}=e^x$, so $du=n x^{n-1} \, dx$ and $v=e^x$. Then
+
+$$
+I_n=x^n e^x-n\int x^{n-1} e^x \, dx=x^n e^x-n I_{n-1}.
+$$
+
+</Proof>
+
+<Example slug="int-x3-ex" of="reduction-xn-ex" difficulty="exam">
+
+### $\int x^3 e^x \, dx$
+
+The recurrence with $n=3$, then $n=2$, then $n=1$ and $I_0=\int e^x \, dx$, gives
+
+$$
+\begin{aligned}
+I_3&=x^3 e^x-3 I_2 \\
+&=x^3 e^x-3\bigl(x^2 e^x-2 I_1\bigr) \\
+&=x^3 e^x-3x^2 e^x+6 I_1 \\
+&=x^3 e^x-3x^2 e^x+6\bigl(x e^x-I_0\bigr) \\
+&=x^3 e^x-3x^2 e^x+6x e^x-6\int e^x \, dx \\
+&=x^3 e^x-3x^2 e^x+6x e^x-6e^x+C.
+\end{aligned}
+$$
+
+</Example>
+
+## Reducing sine and cosine powers
+
+On $\bigl[0,\frac{\pi}{2}\bigr]$ the boundary term from parts vanishes, so parts and a Pythagorean identity give a multiple of the integral two powers lower.
+
+<Theorem slug="reduction-sine-power" of="reduction-formula">
+
+### Sine and cosine powers on $\bigl[0,\frac{\pi}{2}\bigr]$
+
+<Statement>
+
+Let $I_n=\int_0^{\pi/2}\sin^n x \, dx$ and $J_n=\int_0^{\pi/2}\cos^n x \, dx$. Then
+
+$$
+I_n=\frac{n-1}{n} I_{n-2},\qquad J_n=\frac{n-1}{n} J_{n-2},
+$$
+
+for $n\ge 2$.
+
+</Statement>
+
+The recurrence stops at $I_0=\frac{\pi}{2}$ when $n$ is even and at $I_1=1$ when $n$ is odd and likewise for $J_n$. In the proof, collect the reintroduced copy of $I_n$ before dividing by $n$.
+
+</Theorem>
+
+<Proof of="reduction-sine-power">
+
+For $I_n$, integrate by parts with $u=\sin^{n-1}x$ and $\frac{dv}{dx}=\sin x$, so $du=(n-1)\sin^{n-2}x\cos x \, dx$ and $v=-\cos x$. Then
+
+$$
+I_n=\bigl[-\sin^{n-1}x\cos x\bigr]_0^{\pi/2}+(n-1)\int_0^{\pi/2}\sin^{n-2}x\cos^2 x \, dx.
+$$
+
+The boundary term is $0$, since $\cos\frac{\pi}{2}=0$ and $\sin 0=0$. Replace $\cos^2 x=1-\sin^2 x$:
+
+$$
+\begin{aligned}
+I_n&=(n-1)\int_0^{\pi/2}\sin^{n-2}x\bigl(1-\sin^2 x\bigr) \, dx \\
+&=(n-1)\bigl(I_{n-2}-I_n\bigr).
+\end{aligned}
+$$
+
+Hence $I_n=(n-1)I_{n-2}-(n-1)I_n$, so $n I_n=(n-1)I_{n-2}$ and therefore
+
+$$
+I_n=\frac{n-1}{n} I_{n-2},\qquad n\ge 2.
+$$
+
+For $J_n$, take $u=\cos^{n-1}x$ and $\frac{dv}{dx}=\cos x$, so $du=-(n-1)\cos^{n-2}x\sin x \, dx$ and $v=\sin x$. Then
+
+$$
+J_n=\bigl[\cos^{n-1}x\sin x\bigr]_0^{\pi/2}+(n-1)\int_0^{\pi/2}\cos^{n-2}x\sin^2 x \, dx.
+$$
+
+The boundary term is $0$. Replace $\sin^2 x=1-\cos^2 x$:
+
+$$
+J_n=(n-1)\bigl(J_{n-2}-J_n\bigr).
+$$
+
+The same rearrangement yields $J_n=\frac{n-1}{n} J_{n-2}$ for $n\ge 2$.
+
+</Proof>
+
+<Example slug="int-sin5-wallis" of="reduction-sine-power" difficulty="exam">
+
+### $\int_0^{\pi/2}\sin^5 x \, dx$
+
+$$
+I_5=\frac{4}{5} I_3=\frac{4}{5}\cdot\frac{2}{3} I_1=\frac{8}{15}\int_0^{\pi/2}\sin x \, dx=\frac{8}{15}\bigl[-\cos x\bigr]_0^{\pi/2}=\frac{8}{15}.
+$$
+
+</Example>
+
+<Example slug="int-cos7-wallis" of="reduction-sine-power" difficulty="exam">
+
+### $\int_0^{\pi/2}\cos^7 x \, dx$
+
+$$
+J_7=\frac{6}{7} J_5=\frac{6}{7}\cdot\frac{4}{5} J_3=\frac{24}{35}\cdot\frac{2}{3} J_1=\frac{16}{35}\int_0^{\pi/2}\cos x \, dx=\frac{16}{35}\bigl[\sin x\bigr]_0^{\pi/2}=\frac{16}{35}.
+$$
+
+</Example>
+
+## Reducing secant and tangent powers
+
+On $\bigl[0,\frac{\pi}{4}\bigr]$ the boundary term from parts does not vanish: $\tan\frac{\pi}{4}=1$ and $\sec\frac{\pi}{4}=\sqrt{2}$ leave a power of $2$ in the recurrence for $\sec^n x$. Tangent powers need no parts at all.
+
+<Theorem slug="reduction-sec-power" of="reduction-formula" see="int-sec-cubed">
+
+### Secant powers on $\bigl[0,\frac{\pi}{4}\bigr]$
+
+<Statement>
+
+Let $I_n=\int_0^{\pi/4}\sec^n x \, dx$. Then
+
+$$
+I_n=\frac{1}{n-1}\bigl(2^{(n-2)/2}+(n-2)I_{n-2}\bigr)
+$$
+
+for $n\ge 2$.
+
+</Statement>
+
+The base values are
+$I_0=\int_0^{\pi/4}1\,dx=\frac{\pi}{4}$ and
+$I_1=\int_0^{\pi/4}\sec x\,dx=\ln(1+\sqrt{2})$.
+
+Without the limits, the same splitting $\sec^n x=\sec^{n-2}x\sec^2 x$ produces the [antiderivative of $\sec^3 x$](/calculus/integration-techniques/trigonometric-integrals).
+
+</Theorem>
+
+<Proof of="reduction-sec-power">
+
+Integrate by parts with $u=\sec^{n-2}x$ and $\frac{dv}{dx}=\sec^2 x$, so
+
+$$
+\frac{du}{dx}=(n-2)\sec^{n-2}x\tan x,\qquad v=\tan x.
+$$
+
+Then
+
+$$
+I_n=\bigl[\sec^{n-2}x\tan x\bigr]_0^{\pi/4}-(n-2)\int_0^{\pi/4}\sec^{n-2}x\tan^2 x \, dx.
+$$
+
+The boundary term is $2^{(n-2)/2}$, since $\sec\frac{\pi}{4}=\sqrt{2}$ and $\tan\frac{\pi}{4}=1$, while the lower limit is $0$. Replace $\tan^2 x=\sec^2 x-1$:
+
+$$
+\begin{aligned}
+I_n&=2^{(n-2)/2}-(n-2)\int_0^{\pi/4}\sec^{n-2}x\bigl(\sec^2 x-1\bigr) \, dx \\
+&=2^{(n-2)/2}-(n-2)\bigl(I_n-I_{n-2}\bigr) \\
+&=2^{(n-2)/2}-(n-2)I_n+(n-2)I_{n-2}.
+\end{aligned}
+$$
+
+Hence $(n-1)I_n=2^{(n-2)/2}+(n-2)I_{n-2}$ and therefore
+
+$$
+I_n=\frac{1}{n-1}\bigl(2^{(n-2)/2}+(n-2)I_{n-2}\bigr),\qquad n\ge 2.
+$$
+
+</Proof>
+
+<Theorem slug="reduction-tan-power" of="reduction-formula">
+
+### Tangent powers on $\bigl[0,\frac{\pi}{4}\bigr]$
+
+<Statement>
+
+Let $J_n=\int_0^{\pi/4}\tan^n x \, dx$. Then
+
+$$
+J_n=\frac{1}{n-1}-J_{n-2},\qquad n\ge 2.
+$$
+
+</Statement>
+
+This recurrence needs no parts: the identity $\tan^2 x=\sec^2 x-1$ turns the leftover into an elementary integral in $u=\tan x$.
+
+Its base values are $J_0=\frac{\pi}{4}$ and
+$J_1=\int_0^{\pi/4}\tan x\,dx=\ln\sqrt{2}$.
+
+</Theorem>
+
+<Proof of="reduction-tan-power">
+
+Write $\tan^n x=\tan^{n-2}x\tan^2 x$ and replace $\tan^2 x=\sec^2 x-1$:
+
+$$
+J_n=\int_0^{\pi/4}\tan^{n-2}x\bigl(\sec^2 x-1\bigr) \, dx=\int_0^{\pi/4}\tan^{n-2}x\sec^2 x \, dx-J_{n-2}.
+$$
+
+Let $u=\tan x$, so $du=\sec^2 x \, dx$. The limits change from $x=0$ to $x=\frac{\pi}{4}$ into $u=0$ to $u=1$. Then
+
+$$
+J_n=\int_0^1 u^{n-2} \, du-J_{n-2}=\biggl[\frac{u^{n-1}}{n-1}\biggr]_0^1-J_{n-2}=\frac{1}{n-1}-J_{n-2}
+$$
+
+for $n\ge 2$.
+
+</Proof>
+
+The mixed integrand $\tan^n\theta\sec\theta$ on the same interval also drops by two, now with a factor $\sqrt{2}$ from the upper limit. Its integrals are written $K_n$ to keep them apart from the secant powers $I_n$ above.
+
+<Theorem slug="reduction-tan-n-sec" of="reduction-formula">
+
+### Tangent powers times secant
+
+<Statement>
+
+Let $K_n=\int_0^{\pi/4}\tan^n\theta\sec\theta \, d\theta$. Then
+
+$$
+K_n=\frac{1}{n}\bigl(\sqrt{2}-(n-1)K_{n-2}\bigr)
+$$
+
+for $n\ge 2$.
+
+</Statement>
+
+Its base values are
+$K_0=\int_0^{\pi/4}\sec\theta\,d\theta=\ln(1+\sqrt{2})$ and
+$K_1=\int_0^{\pi/4}\tan\theta\sec\theta\,d\theta=\sqrt{2}-1$.
+
+</Theorem>
+
+<Proof of="reduction-tan-n-sec">
+
+Integrate by parts with $u=\tan^{n-1}\theta$ and $\frac{dv}{d\theta}=\tan\theta\sec\theta$, so $du=(n-1)\tan^{n-2}\theta\sec^2\theta \, d\theta$ and $v=\sec\theta$. Then
+
+$$
+K_n=\bigl[\tan^{n-1}\theta\sec\theta\bigr]_0^{\pi/4}-(n-1)\int_0^{\pi/4}\tan^{n-2}\theta\sec^3\theta \, d\theta.
+$$
+
+The boundary term is $\sqrt{2}$. Replace $\sec^2\theta=1+\tan^2\theta$ in the remaining integral:
+
+$$
+\begin{aligned}
+K_n&=\sqrt{2}-(n-1)\int_0^{\pi/4}\tan^{n-2}\theta\bigl(1+\tan^2\theta\bigr)\sec\theta \, d\theta \\
+&=\sqrt{2}-(n-1)\bigl(K_{n-2}+K_n\bigr).
+\end{aligned}
+$$
+
+Collecting the $K_n$ terms gives $nK_n=\sqrt{2}-(n-1)K_{n-2}$, so
+
+$$
+K_n=\frac{1}{n}\bigl(\sqrt{2}-(n-1)K_{n-2}\bigr),\qquad n\ge 2.
+$$
+
+</Proof>
+
+<Example slug="use-sec-tan-reductions" of="reduction-sec-power,reduction-tan-power,reduction-tan-n-sec" difficulty="routine">
+
+### Secant and tangent recurrences on $\bigl[0,\frac{\pi}{4}\bigr]$
+
+The base value $I_2=\int_0^{\pi/4}\sec^2 x \, dx=\bigl[\tan x\bigr]_0^{\pi/4}=1$ gives
+$$
+\int_0^{\pi/4}\sec^4 x \, dx=I_4=\frac{1}{3}\bigl(2^{(4-2)/2}+2I_2\bigr)=\frac{1}{3}(2+2)=\frac{4}{3}.
+$$
+The base value $J_2=\int_0^{\pi/4}\tan^2 x \, dx=\int_0^{\pi/4}(\sec^2 x-1)\, dx=\bigl[\tan x-x\bigr]_0^{\pi/4}=1-\frac{\pi}{4}$ gives
+$$
+\int_0^{\pi/4}\tan^4 x \, dx=J_4=\frac{1}{3}-J_2=\frac{1}{3}-\bigl(1-\frac{\pi}{4}\bigr)=\frac{\pi}{4}-\frac{2}{3}.
+$$
+For mixed powers, $K_1=\int_0^{\pi/4}\tan\theta\sec\theta \, d\theta=\bigl[\sec\theta\bigr]_0^{\pi/4}=\sqrt{2}-1$, so
+$$
+\int_0^{\pi/4}\tan^3\theta\sec\theta \, d\theta=K_3=\frac{1}{3}\bigl(\sqrt{2}-2K_1\bigr)=\frac{1}{3}\bigl(\sqrt{2}-2(\sqrt{2}-1)\bigr)=\frac{2-\sqrt{2}}{3}.
+$$
+
+</Example>
+
+## Reducing two powers together
+
+When both exponents vary, each reduction drops one index by two, as in the one-parameter trigonometric recurrences. Reduce whichever index leads to a known base integral.
+
+<Recall of="reduction-formula" />
+
+<Proposition slug="two-parameter-recurrence" of="reduction-formula">
+
+### A two-parameter recurrence
+
+<Statement>
+
+Let $I_{m,n}=\int_0^{\pi/2}\cos^m x\sin^n x \, dx$. Then
+
+$$
+I_{m,n}=\frac{m-1}{m+n} I_{m-2,n}
+$$
+
+if $m\ge 2$ and
+
+$$
+I_{m,n}=\frac{n-1}{m+n} I_{m,n-2}
+$$
+
+if $n\ge 2$.
+
+</Statement>
+
+The case $m=0$ recovers the sine-power recurrence; the case $n=0$ recovers the cosine-power recurrence. The base values needed to stop the reduction are $I_{0,0}=\frac{\pi}{2}$, $I_{0,1}=1$, $I_{1,0}=1$ and $I_{1,1}=\frac{1}{2}$.
+
+</Proposition>
+
+<Proof of="two-parameter-recurrence">
+
+Assume $m\ge 2$. Integrate by parts with $u=\cos^{m-1}x$ and $dv=\cos x\sin^n x \, dx$, so $du=-(m-1)\cos^{m-2}x\sin x \, dx$ and $v=\frac{\sin^{n+1}x}{n+1}$. Then
+
+$$
+I_{m,n}=\biggl[\frac{\cos^{m-1}x\sin^{n+1}x}{n+1}\biggr]_0^{\pi/2}+\frac{m-1}{n+1}\int_0^{\pi/2}\cos^{m-2}x\sin^{n+2}x \, dx.
+$$
+
+The boundary term is $0$. Replace $\sin^2 x=1-\cos^2 x$:
+
+$$
+\begin{aligned}
+I_{m,n}&=\frac{m-1}{n+1}\int_0^{\pi/2}\cos^{m-2}x\sin^n x\bigl(1-\cos^2 x\bigr) \, dx \\
+&=\frac{m-1}{n+1}\bigl(I_{m-2,n}-I_{m,n}\bigr).
+\end{aligned}
+$$
+
+Hence $\frac{m+n}{n+1} I_{m,n}=\frac{m-1}{n+1} I_{m-2,n}$ and therefore
+
+$$
+I_{m,n}=\frac{m-1}{m+n} I_{m-2,n}.
+$$
+
+For $n\ge 2$ reverse the roles. Take
+$u=\sin^{n-1}x$ and $dv=\sin x\cos^m x\,dx$, so
+$v=-\frac{\cos^{m+1}x}{m+1}$. The boundary term vanishes and
+$\cos^2x=1-\sin^2x$ gives
+$$
+I_{m,n}=\frac{n-1}{m+1}\bigl(I_{m,n-2}-I_{m,n}\bigr).
+$$
+Rearranging this equation yields
+$I_{m,n}=\frac{n-1}{m+n}I_{m,n-2}$.
+
+</Proof>
+
+<Example slug="int-cos5-sin4-recurrence" of="two-parameter-recurrence" see="int-cos5-sin4" difficulty="exam">
+
+### $\int_0^{\pi/2}\cos^5 x\sin^4 x \, dx$
+
+This is the definite version of the [odd-power evaluation](/calculus/integration-techniques/trigonometric-integrals)
+of $\int\cos^5 x\sin^4 x \, dx$. Reduce the cosine power twice, then the
+sine power twice and use $I_{1,0}=1$:
+
+$$
+\begin{aligned}
+I_{5,4}&=\frac{4}{9} I_{3,4}=\frac{4}{9}\cdot\frac{2}{7} I_{1,4}=\frac{8}{63} I_{1,4} \\
+&=\frac{8}{63}\cdot\frac{3}{5} I_{1,2}=\frac{8}{105} I_{1,2} \\
+&=\frac{8}{105}\cdot\frac{1}{3} I_{1,0}=\frac{8}{315}.
+\end{aligned}
+$$
+
+</Example>

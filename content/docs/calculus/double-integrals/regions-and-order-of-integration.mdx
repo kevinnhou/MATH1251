@@ -1,0 +1,319 @@
+---
+title: Regions and order of integration
+description: Describe non-rectangular regions by slices and set up double integrals with the correct bounds.
+tags: [calculus]
+ideas: [regions, iterated-integrals, area]
+---
+
+This page extends double integrals from rectangles to regions bounded by
+curves and shows how to read the limits of integration from a sketch.
+
+The idea is to place a bounded region inside a rectangle and extend the
+function by zero outside the region. When that zero extension is bounded and
+piecewise continuous, with discontinuities only along boundary curves,
+[Fubini's theorem](/calculus/double-integrals/fubini-and-iterated-integrals)
+applies to the enclosing rectangle because those curves have area zero.
+
+Finding the limits is a separate geometric task: each slice must start and
+stop on the boundary of the original region. When neither vertical nor
+horizontal slices give workable bounds, reshape the region with a [change of
+variables](/calculus/double-integrals/change-of-variables-and-polar-coordinates).
+
+## Extending the integrand by zero
+
+<Definition slug="double-integral-zero-extension" of="double-integral-over-rectangle">
+
+### Zero extension to a rectangle
+
+<Statement>
+
+Let $\Omega$ be a bounded region contained in a rectangle $R$. Define
+
+$$
+f_\Omega(x,y)=
+\begin{cases}
+f(x,y),&(x,y)\in\Omega,\\
+0,&(x,y)\in R\setminus\Omega.
+\end{cases}
+$$
+
+If $f_\Omega$ is integrable on $R$ (for example, if it is bounded and
+piecewise continuous with discontinuities only along finitely many
+piecewise-smooth boundary curves), define the double integral over $\Omega$ by
+
+$$
+\iint_\Omega f(x,y)\,dA
+:=\iint_R f_\Omega(x,y)\,dA.
+$$
+
+</Statement>
+
+The zero extension contributes nothing outside $\Omega$, so the inner limits
+describe only the part of each slice that lies inside $\Omega$.
+
+</Definition>
+
+## Vertical and horizontal slices
+
+<Theorem slug="type-i-double-integral" of="double-integral-zero-extension">
+
+### Vertical-slice regions
+
+<Statement>
+
+If $c(x)\le d(x)$ on $[a,b]$ and the boundary functions are sufficiently
+regular for the integral to exist and if
+
+$$
+\Omega=\{(x,y):a\le x\le b,\ c(x)\le y\le d(x)\},
+$$
+
+then
+
+$$
+\iint_\Omega f(x,y)\,dA
+=\int_a^b\int_{c(x)}^{d(x)}
+f(x,y)\,dy\,dx.
+$$
+
+</Statement>
+
+For each fixed $x$, the inner variable $y$ runs from the lower boundary
+$c(x)$ to the upper boundary $d(x)$.
+
+</Theorem>
+
+<Theorem slug="type-ii-double-integral" of="double-integral-zero-extension">
+
+### Horizontal-slice regions
+
+<Statement>
+
+If $a(y)\le b(y)$ on $[c,d]$ and the boundary functions are sufficiently
+regular for the integral to exist and if
+
+$$
+\Omega=\{(x,y):c\le y\le d,\ a(y)\le x\le b(y)\},
+$$
+
+then
+
+$$
+\iint_\Omega f(x,y)\,dA
+=\int_c^d\int_{a(y)}^{b(y)}
+f(x,y)\,dx\,dy.
+$$
+
+</Statement>
+
+For each fixed $y$, the inner variable $x$ runs from the left boundary
+$a(y)$ to the right boundary $b(y)$.
+
+</Theorem>
+
+<Method slug="set-up-region-double-integral" of="type-i-double-integral,type-ii-double-integral">
+
+### Set up an integral over a planar region
+
+<Statement>
+
+To set up a double integral over $\Omega$:
+
+1. sketch the region and every boundary curve;
+2. decide whether vertical or horizontal slices give simpler bounds;
+3. find the range of the outside variable;
+4. fix that variable and find the two inner bounds;
+5. write the inner integral first, then integrate from the inside outward;
+6. split the region if one pair of inner bounds does not describe every slice.
+
+</Statement>
+
+Changing the order describes the same region by different slices, so the new
+limits must be read from the boundary, not by swapping the old ones.
+
+</Method>
+
+<Example slug="double-integral-triangle" of="set-up-region-double-integral" difficulty="routine">
+
+### A triangular region
+
+Let
+
+$$
+f(x,y)=xy^2
+$$
+
+and let $\Omega$ be the triangle with vertices
+
+$$
+(0,0),\qquad(1,1),\qquad(1,-1).
+$$
+
+Vertical slices give
+
+$$
+0\le x\le1,\qquad -x\le y\le x.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+\iint_\Omega xy^2\,dA
+&=\int_0^1\int_{-x}^{x}xy^2\,dy\,dx\\
+&=\int_0^1x\left[\frac{y^3}{3}\right]_{-x}^{x}dx\\
+&=\int_0^1\frac{2x^4}{3}\,dx
+=\frac{2}{15}.
+\end{aligned}
+$$
+
+The same triangle can be described horizontally by
+
+$$
+-1\le y\le1,\qquad |y|\le x\le1.
+$$
+
+The reversed-order calculation is
+
+$$
+\begin{aligned}
+\iint_\Omega xy^2\,dA
+&=\int_{-1}^1\int_{|y|}^{1}xy^2\,dx\,dy\\
+&=\int_{-1}^1\frac{y^2}{2}(1-y^2)\,dy
+=\frac{2}{15}.
+\end{aligned}
+$$
+
+</Example>
+
+<Example slug="reverse-non-elementary-double-integral" of="set-up-region-double-integral" difficulty="exam">
+
+### Reverse the order to find an antiderivative
+
+Consider
+
+$$
+\int_0^1\int_{2x}^{2}\sin(y^2)\,dy\,dx.
+$$
+
+The inner integral has no elementary antiderivative. The region is
+
+$$
+0\le x\le1,\qquad 2x\le y\le2.
+$$
+
+Its $y$-values range from $0$ to $2$. For fixed $y$, the inequality
+$2x\le y$ gives $0\le x\le y/2$. Hence
+
+$$
+\begin{aligned}
+\int_0^1\int_{2x}^{2}\sin(y^2)\,dy\,dx
+&=\int_0^2\int_0^{y/2}\sin(y^2)\,dx\,dy\\
+&=\int_0^2\frac y2\sin(y^2)\,dy\\
+&=\frac14\int_0^4\sin u\,du
+\qquad(u=y^2)\\
+&=\frac{1-\cos4}{4}.
+\end{aligned}
+$$
+
+Reversing the order turns the difficult inner integral into a direct substitution.
+
+</Example>
+
+<Example slug="split-double-integral-region" of="set-up-region-double-integral" difficulty="challenge">
+
+### A region that must be split
+
+Consider
+
+$$
+\int_{-1}^{1}\int_{x^2}^{2-x^2}f(x,y)\,dy\,dx.
+$$
+
+The region lies between
+
+$$
+y=x^2,\qquad y=2-x^2.
+$$
+
+Its $y$-range is $0\le y\le2$. For $0\le y\le1$, the binding condition is
+$x^2\le y$:
+
+$$
+-\sqrt y\le x\le\sqrt y.
+$$
+
+For $1\le y\le2$, the binding condition is $y\le2-x^2$:
+
+$$
+-\sqrt{2-y}\le x\le\sqrt{2-y}.
+$$
+
+The reversed order is therefore
+
+$$
+\begin{aligned}
+\int_{-1}^{1}\int_{x^2}^{2-x^2}f(x,y)\,dy\,dx
+&=\int_0^1\int_{-\sqrt y}^{\sqrt y}f(x,y)\,dx\,dy\\
+&\quad+\int_1^2\int_{-\sqrt{2-y}}^{\sqrt{2-y}}
+f(x,y)\,dx\,dy.
+\end{aligned}
+$$
+
+A single pair of horizontal bounds would either omit part of the region or
+include points outside it.
+
+</Example>
+
+## Linearity, additivity and area
+
+<Proposition slug="double-integral-properties" of="double-integral-zero-extension">
+
+### Properties of double integrals
+
+<Statement>
+
+For integrable $f$ and $g$ over $\Omega$ and a constant $k$,
+
+$$
+\iint_\Omega(f+g)\,dA
+=\iint_\Omega f\,dA+\iint_\Omega g\,dA,
+$$
+
+$$
+\iint_\Omega kf\,dA
+=k\iint_\Omega f\,dA.
+$$
+
+If $\Omega=\Omega_1\cup\Omega_2$ and the two regions are disjoint, then
+
+$$
+\iint_\Omega f\,dA
+=\iint_{\Omega_1}f\,dA+\iint_{\Omega_2}f\,dA.
+$$
+
+</Statement>
+
+Splitting the parabolic region above is an instance of additivity.
+
+</Proposition>
+
+<Corollary slug="double-integral-area" of="double-integral-properties">
+
+### Area as a double integral
+
+<Statement>
+
+The area of a planar region $\Omega$ is
+
+$$
+\operatorname{Area}(\Omega)=\iint_\Omega 1\,dA.
+$$
+
+</Statement>
+
+The integrand $1$ gives every point of the region unit weight. Replacing $1$
+by a density gives [mass](/calculus/double-integrals/mass-centroids-and-probability)
+instead of area.
+
+</Corollary>

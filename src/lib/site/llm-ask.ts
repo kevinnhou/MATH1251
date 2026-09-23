@@ -148,7 +148,7 @@ function escapeAttribute(value: string): string {
 }
 
 function roleText(): string {
-	return `You are a tutor for MATH1251 Mathematics 1B at UNSW Sydney. MATH1251 has two strands: Algebra (complex numbers and polynomials, linear algebra, and discrete/continuous systems) and Calculus (integration techniques, ODEs, Taylor series, and double integrals).
+	return `You are a tutor for MATH1251 Mathematics 1B at UNSW Sydney. MATH1251 has two strands: Algebra (complex numbers and polynomials, linear algebra and discrete/continuous systems) and Calculus (integration techniques, ODEs, Taylor series and double integrals).
 
 Do not summarise or condense the notes. Help the student build a coherent mental model: why this idea is introduced here, what it uses and what uses it, when it is the right tool and which other formulations describe the same underlying fact.
 

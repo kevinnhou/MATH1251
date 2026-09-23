@@ -1,0 +1,1289 @@
+---
+title: Seen Questions
+description: Worked solutions on spans, independence, bases, dimensions, polynomial subspaces and matrix subspaces.
+tags: [seen, algebra, vector-spaces]
+ideas: [revision, spans, linear-independence, bases, dimension, subspaces]
+---
+
+These past exam questions test spanning, independence, basis, dimension and subspace claims in coordinate, polynomial, function and matrix spaces.
+
+Some questions also use linear maps or eigenvalues. If you are following the
+course in order, skip the parts marked **Later-topic preview** and return
+after studying [kernel, image and
+rank](/algebra/linear-transformations/kernel-image-rank) or
+[eigenvalues and diagonalisation](/algebra/eigenvalues/diagonalisation).
+
+<Recall of="homogeneous-independence-test" />
+
+<Example
+  slug="seen-linear-algebra-true-statements"
+  of="homogeneous-independence-test,rank-nullity-theorem,eigenvalue"
+  difficulty="exam"
+>
+
+### selecting true statements
+
+> **Later-topic preview:** statements 2, 5, 6 and 7 use linear
+> transformations, rank-nullity or eigenvalues.
+
+Choose all of the true statements below:
+
+1. The columns of the matrix $A$ are linearly independent if and only if $Ax=\mathbf0$ has only the trivial solution.
+2. If $A$ is an $m\times n$ matrix, then $T(\mathbf{x})=A\mathbf{x}$ defines a linear transformation from $\mathbb R^n$ to $\mathbb R^m$.
+3. Let $A$ be an $n\times n$ matrix with $n\ge2$. If $\mathbf{x}$ is a nontrivial solution of $A\mathbf{x}=\mathbf0$, then every entry in $\mathbf{x}$ is non-zero.
+4. Let $\mathbf{u},\mathbf{v}$ be vectors in $\mathbb R^5$. The set $\operatorname{span}\{\mathbf{u},\mathbf{v}\}$ is always a plane through the origin.
+5. If two rows of an $n\times n$ matrix $A$, where $n\ge2$, are the same, then $\operatorname{rank}(A)>0$.
+6. If two rows of an $n\times n$ matrix $A$, where $n\ge2$, are the same, then $\operatorname{nullity}(A)>0$.
+7. If $A$ is an $n\times n$ matrix with the property that the sum of the entries in each row is $74$, then $A$ has a non-zero eigenvalue.
+
+#### Solution
+
+The true statements are **1, 2, 6 and 7**. Each statement is checked against its defining equation or refuted by a counterexample.
+
+Statement 1 is true. If the columns of $A$ are $\mathbf a_1,\ldots,\mathbf a_n$, then
+
+$$
+A\mathbf{x}
+=
+x_1\mathbf a_1+\cdots+x_n\mathbf a_n.
+$$
+
+Thus $A\mathbf{x}=\mathbf0$ has only the trivial solution exactly when the only linear combination of the columns that gives $\mathbf0$ is the trivial combination. This is precisely linear independence.
+
+Statement 2 is true. For $\mathbf u,\mathbf v\in\mathbb R^n$ and $c\in\mathbb R$, matrix multiplication satisfies
+
+$$
+\begin{aligned}
+T(\mathbf u+\mathbf v)
+&=A(\mathbf u+\mathbf v)\\
+&=A\mathbf u+A\mathbf v\\
+&=T(\mathbf u)+T(\mathbf v).
+\end{aligned}
+$$
+
+and
+
+$$
+T(c\mathbf u)=A(c\mathbf u)=cA\mathbf u=cT(\mathbf u).
+$$
+
+These are the two linearity conditions and the dimensions of the product show that the codomain is $\mathbb R^m$.
+
+Statement 3 is false. A nontrivial vector is only required to be non-zero; it may still have zero entries. For example, take $A$ to be the zero matrix and $\mathbf{x}=(1,0,\ldots,0)^{\mathsf T}$. Then $A\mathbf{x}=\mathbf0$, $\mathbf{x}\ne\mathbf0$ and most entries of $\mathbf{x}$ are zero.
+
+Statement 4 is false because two vectors need not be independent. If $\mathbf u=\mathbf v\ne\mathbf0$, then
+
+$$
+\operatorname{span}\{\mathbf u,\mathbf v\}
+=\operatorname{span}\{\mathbf u\},
+$$
+
+which is a line through the origin. If both vectors are zero, the span is just $\{\mathbf0\}$.
+
+Statement 5 is false. The zero square matrix has two equal rows, but
+
+$$
+\operatorname{rank}(0)=0,
+$$
+
+so its rank is not greater than zero.
+
+Statement 6 is true. Equal rows are linearly dependent, so an $n\times n$ matrix with two equal rows has rank at most $n-1$. Rank-nullity then gives
+
+$$
+\operatorname{nullity}(A)
+=n-\operatorname{rank}(A)
+\ge1.
+$$
+
+Finally, statement 7 is true. Let $\mathbf1=(1,\ldots,1)^{\mathsf T}\in\mathbb R^n$ be the all-ones vector. The row-sum condition says exactly that
+
+$$
+A\mathbf1=74\mathbf1.
+$$
+
+Since $\mathbf1\ne\mathbf0$, this shows that $74$ is an eigenvalue and it is non-zero.
+
+</Example>
+
+<Recall of="linear-independence" />
+
+<Example
+  slug="seen-function-linear-independence"
+  of="linear-independence"
+  difficulty="exam"
+>
+
+### linear independence of real-valued functions
+
+Kaiwen is given $f_1,f_2,f_3\in\mathcal R[\mathbb R]$, where $\mathcal R[\mathbb R]$ is the vector space of all real-valued functions on $\mathbb R$ and where $f_1,f_2,f_3$ are defined by the rules
+
+$$
+f_1(x)=5x-29,\qquad
+f_2(x)=\sin(7x),\qquad
+f_3(x)=\cos(16x),
+\qquad x\in\mathbb R.
+$$
+
+Are these functions linearly dependent?
+
+- No.
+- Yes.
+
+#### Solution
+
+The correct choice is **No**. Suppose that $a,b,c\in\mathbb R$ satisfy
+
+$$
+a f_1+b f_2+c f_3=0_{\mathcal R[\mathbb R]}.
+$$
+
+Equality of functions means equality at every $x\in\mathbb R$, so
+
+$$
+a(5x-29)+b\sin(7x)+c\cos(16x)=0
+\qquad\text{for every }x\in\mathbb R.
+$$
+
+The trigonometric part is bounded:
+
+$$
+\left|b\sin(7x)+c\cos(16x)\right|
+\le |b|+|c|.
+$$
+
+Therefore the assumed relation would give
+
+$$
+\left|a(5x-29)\right|\le |b|+|c|
+\qquad\text{for every }x\in\mathbb R.
+$$
+
+If $a\ne0$, the left-hand side becomes arbitrarily large as $x\to\infty$, which is impossible. Hence $a=0$. The relation reduces to
+
+$$
+b\sin(7x)+c\cos(16x)=0
+\qquad\text{for every }x\in\mathbb R.
+$$
+
+At $x=0$ this gives
+
+$$
+c\cos(0)=c=0.
+$$
+
+With $c=0$, substitute $x=\frac{\pi}{14}$:
+
+$$
+b\sin\left(7\cdot\frac{\pi}{14}\right)
+=b\sin\left(\frac{\pi}{2}\right)
+=b=0.
+$$
+
+Thus $a=b=c=0$, so the functions are linearly independent.
+
+This is the homogeneous independence test in a function space, where a relation must hold at every point of the domain. Boundedness separates the affine function from the trigonometric ones and two evaluations settle the remaining coefficients.
+
+</Example>
+
+<Recall of="spanning-set" />
+
+<Recall of="linear-independence" />
+
+<Recall of="dimension-counting" />
+
+<Example
+  slug="seen-span-independence-and-basis-criteria"
+  of="spanning-set,homogeneous-independence-test,dimension-counting"
+  difficulty="exam"
+>
+
+### span, independence and possible bases
+
+Lance and Tamzid were given four sets of vectors in $\mathbb R^3$ or $\mathbb R^5$:
+
+$$
+\{u_1,u_2,u_3,u_4\}\subset\mathbb R^3,\qquad
+\{v_1,v_2,v_3,v_4\}\subset\mathbb R^3,
+$$
+$$
+\{x_1,x_2,x_3\}\subset\mathbb R^5,\qquad
+\{y_1,y_2,y_3\}\subset\mathbb R^5.
+$$
+
+In each set, the vectors are distinct.
+
+For each of the first two sets, Lance and Tamzid are asked to determine whether it forms a spanning set for $\mathbb R^3$ and to prove the result. For each of the third and fourth sets, they are asked to determine whether it is linearly dependent or linearly independent.
+
+(a) They think that $\{u_1,u_2,u_3,u_4\}$ forms a spanning set for $\mathbb R^3$.
+
+(b) They think that $\{v_1,v_2,v_3,v_4\}$ is not a spanning set for $\mathbb R^3$.
+
+(c) They think that $x_1,x_2,x_3$ are linearly independent.
+
+(d) They think that $y_1,y_2,y_3$ are linearly dependent.
+
+(e) Is it possible for $\{u_1,u_2,u_3,u_4\}$ to be a basis for $\mathbb R^3$ and for $\{x_1,x_2,x_3\}$ to be a basis for $\mathbb R^5$?
+
+#### Solution
+
+The vectors have no coordinates, so there is nothing to row-reduce. The task is to state what would have to be proved for each claim. With the named vectors placed as columns, the vector equations are the matrix equations $Uc=\mathbf x$, $Vc=\mathbf y$, $X\alpha=\mathbf v$ and $Y\beta=\mathbf w$.
+
+#### (a) Proving that the $u$-set spans $\mathbb R^3$
+
+By definition, a set spans $\mathbb R^3$ when every vector in $\mathbb R^3$ is a linear combination of the set. Therefore the required statement is
+
+$$
+{
+\text{for every }\mathbf x\in\mathbb R^3,\ 
+\text{there exist }\lambda_1,\lambda_2,\lambda_3,\lambda_4\in\mathbb R
+\text{ such that }
+\lambda_1u_1+\lambda_2u_2+\lambda_3u_3+\lambda_4u_4=\mathbf x
+}.
+$$
+
+The coefficients may depend on $\mathbf x$ and one choice for each target vector is enough; uniqueness is not part of spanning.
+
+#### (b) Proving that the $v$-set does not span $\mathbb R^3$
+
+To disprove spanning, one target vector that cannot be produced is enough. The required statement is
+
+$$
+{
+\text{there exists }\mathbf y\in\mathbb R^3
+\text{ such that }
+\mu_1v_1+\mu_2v_2+\mu_3v_3+\mu_4v_4=\mathbf y
+\text{ has no solution in }\mathbb R^4
+}.
+$$
+
+Equivalently, the column space of the matrix
+$V=[\,v_1\ v_2\ v_3\ v_4\,]$ is a proper subset of $\mathbb R^3$. A contradictory row in the augmented matrix $[V\mid\mathbf y]$ would exhibit such a vector $\mathbf y$.
+
+#### (c) Proving that the $x$-set is linearly independent
+
+Independence is tested with the homogeneous equation, so the right-hand side is $\mathbf 0$. The required statement is
+
+$$
+{
+\alpha_1x_1+\alpha_2x_2+\alpha_3x_3=\mathbf0
+\Longrightarrow
+\alpha_1=\alpha_2=\alpha_3=0
+}.
+$$
+
+In matrix language, if $X=[\,x_1\ x_2\ x_3\,]$, then $X\alpha=\mathbf0$ must have only the zero solution. With actual coordinates, row reduction would show a pivot in every column of $X$.
+
+#### (d) Proving that the $y$-set is linearly dependent
+
+Dependence is the failure of the homogeneous test: some non-zero coefficient vector must produce the zero vector. The required statement is
+
+$$
+{
+\beta_1y_1+\beta_2y_2+\beta_3y_3=\mathbf0
+\text{ has a solution }
+(\beta_1,\beta_2,\beta_3)\ne(0,0,0)
+}.
+$$
+
+The right-hand side is again $\mathbf0$, but now a non-trivial solution is required.
+
+#### (e) Testing the two possible bases
+
+The answer choices are:
+
+1. It is possible for both $\{u_1,u_2,u_3,u_4\}$ and $\{x_1,x_2,x_3\}$ to be bases for their respective vector spaces.
+2. $\{u_1,u_2,u_3,u_4\}$ cannot form a basis for $\mathbb R^3$, but $\{x_1,x_2,x_3\}$ could possibly form a basis for $\mathbb R^5$.
+3. $\{x_1,x_2,x_3\}$ cannot form a basis for $\mathbb R^5$, but $\{u_1,u_2,u_3,u_4\}$ could possibly form a basis for $\mathbb R^3$.
+4. Neither $\{u_1,u_2,u_3,u_4\}$ nor $\{x_1,x_2,x_3\}$ can possibly be bases for their respective vector spaces.
+
+The correct choice is **4**. A basis for $\mathbb R^3$ must contain exactly
+$\dim(\mathbb R^3)=3$ vectors. Although the $u$-set is assumed to span
+$\mathbb R^3$, it has four vectors, so it must be linearly dependent and cannot be a basis. A basis for $\mathbb R^5$ must contain five vectors, while the $x$-set contains only three. It may be independent, but it cannot span $\mathbb R^5$.
+
+</Example>
+
+<Recall of="homogeneous-independence-test" />
+
+<Recall of="basis" />
+
+<Recall of="dimension-counting" />
+
+<Example
+  slug="seen-polynomial-space-row-reduction"
+  of="homogeneous-independence-test,basis,dimension-counting"
+  difficulty="exam"
+>
+
+### polynomials, dependence and dimension
+
+Recall that $P_2(\mathbb R)$, the set of real polynomials whose degree is at most two, is a vector space over $\mathbb R$.
+
+#### (a)
+
+Consider
+
+$$
+A(t)=t^2-t-1,\qquad
+B(t)=3t^2+3t-9,\qquad
+C(t)=10t^2+8t-28.
+$$
+
+You are given the following matrices and their corresponding row-echelon forms:
+
+$$
+\left[
+\begin{array}{rrrrrr}
+1&-1&-1&1&0&0\\
+3&3&-9&0&1&0\\
+10&8&-28&0&0&1
+\end{array}
+\right]
+\longrightarrow
+\left[
+\begin{array}{rrrrrr}
+1&-1&-1&1&0&0\\
+0&6&-6&-3&1&0\\
+0&0&0&-1&-3&1
+\end{array}
+\right],
+$$
+
+and
+
+$$
+\left[
+\begin{array}{rrrrrr}
+1&3&10&1&0&0\\
+-1&3&8&0&1&0\\
+-1&-9&-28&0&0&1
+\end{array}
+\right]
+\longrightarrow
+\left[
+\begin{array}{rrrrrr}
+1&3&10&1&0&0\\
+0&6&18&1&1&0\\
+0&0&0&2&1&1
+\end{array}
+\right].
+$$
+
+##### (i)
+
+Find scalars $\alpha,\beta,\gamma$, not all zero, such that
+
+$$
+\alpha A(t)+\beta B(t)+\gamma C(t)=0
+\qquad\text{for all }t\in\mathbb R.
+$$
+
+##### (ii)
+
+Find a basis of $P_2(\mathbb R)$ that contains as many elements of
+$\{A,B,C\}$ as possible.
+
+#### (b)
+
+Let $p,q\in P_2(\mathbb R)$, where
+
+$$
+p(t)=a_1t^2+b_1t+c_1,\qquad
+q(t)=a_2t^2+b_2t+c_2,
+$$
+
+for some $a_1,b_1,c_1,a_2,b_2,c_2\in\mathbb R$ with
+
+$$
+a_2b_1\ne b_2a_1.
+$$
+
+Define
+
+$$
+P=p+q,\qquad Q=3p-3q,\qquad R=9p-3q.
+$$
+
+##### (i)
+
+Choose all correct statements:
+
+- The set $\{p,q\}$ is linearly dependent.
+- The set $\{p,q,R\}$ is linearly independent.
+- There is not enough information to determine whether the set $\{p,q\}$ is linearly independent.
+- The set $\{p,q,R\}$ is linearly dependent.
+- The set $\{p,q\}$ is linearly independent.
+- There is not enough information to determine whether the set $\{p,q,R\}$ is linearly independent.
+
+##### (ii)
+
+Let
+
+$$
+\mathcal A=\operatorname{span}\{P,Q,R\}.
+$$
+
+Find $\dim(\mathcal A)$.
+
+#### Solution
+
+The first matrix has the coefficient vectors of $A,B,C$ as its rows and the appended identity records which row combinations row reduction produces. The second matrix has those coefficient vectors as columns, so its pivot columns identify a largest linearly independent subset of $\{A,B,C\}$.
+
+##### (a)(i)
+
+Starting with the first augmented matrix, the displayed row-echelon form is obtained by
+
+$$
+R_2\longleftarrow R_2-3R_1,\qquad
+R_3\longleftarrow R_3-10R_1,\qquad
+R_3\longleftarrow R_3-3R_2,
+$$
+
+where the last operation uses the updated second row. The last row of the resulting augmented matrix is
+
+$$
+\begin{bmatrix}0&0&0&-1&-3&1\end{bmatrix}.
+$$
+
+Its first three entries say that a row combination of the coefficient vectors is zero and its last three entries give the coefficients of that combination. Therefore
+
+$$
+-A-3B+C=0.
+$$
+
+Checking directly,
+
+$$
+\begin{aligned}
+-A(t)-3B(t)+C(t)
+&=-(t^2-t-1)-3(3t^2+3t-9)
+ +(10t^2+8t-28)\\
+&=(-1-9+10)t^2+(1-9+8)t+(1+27-28)\\
+&=0.
+\end{aligned}
+$$
+
+Thus one valid answer is
+
+$$
+{(\alpha,\beta,\gamma)=(-1,-3,1)}.
+$$
+
+##### (a)(ii)
+
+For the transpose coefficient matrix, the row operations
+
+$$
+R_2\longleftarrow R_2+R_1,\qquad
+R_3\longleftarrow R_3+R_1,\qquad
+R_3\longleftarrow R_3+R_2
+$$
+
+give, in the first three columns,
+
+$$
+\begin{bmatrix}
+1&3&10\\
+0&6&18\\
+0&0&0
+\end{bmatrix}.
+$$
+
+There are pivots in columns one and two, so $A$ and $B$ are linearly independent. The relation from part (i) shows that no independent set contains all three of $A,B,C$.
+
+Since $\dim P_2(\mathbb R)=3$, one more polynomial is needed; try $1$. To check independence, suppose
+
+$$
+\lambda A+\mu B+\nu=0.
+$$
+
+The coefficients of $t^2$ and $t$ give
+
+$$
+\lambda+3\mu=0,\qquad -\lambda+3\mu=0.
+$$
+
+Adding these equations gives $\mu=0$ and then $\lambda=0$. The constant coefficient then gives $\nu=0$. Hence
+
+$$
+{\{A,B,1\}}
+$$
+
+is a basis of $P_2(\mathbb R)$ containing two of $A,B,C$, the most possible.
+
+##### (b)(i)
+
+Suppose that
+
+$$
+\lambda p+\mu q=0.
+$$
+
+Comparing the coefficients of $t^2$ and $t$ gives
+
+$$
+\begin{bmatrix}
+a_1&a_2\\
+b_1&b_2
+\end{bmatrix}
+\begin{pmatrix}\lambda\\\mu\end{pmatrix}
+=
+\begin{pmatrix}0\\0\end{pmatrix}.
+$$
+
+The determinant of this coefficient matrix is
+
+$$
+a_1b_2-a_2b_1=-(a_2b_1-b_2a_1)\ne0.
+$$
+
+Therefore the homogeneous system has only the zero solution, so $\{p,q\}$ is linearly independent.
+
+On the other hand,
+
+$$
+R=9p-3q,
+$$
+
+so
+
+$$
+9p-3q-R=0
+$$
+
+is a non-trivial dependence relation. The correct statements are therefore
+
+$$
+{\{p,q\}\text{ is linearly independent}}
+$$
+
+and
+
+$$
+{\{p,q,R\}\text{ is linearly dependent}}.
+$$
+
+##### (b)(ii)
+
+The relations defining $P$ and $Q$ can be inverted:
+
+$$
+\begin{aligned}
+3P+Q
+&=3(p+q)+(3p-3q)=6p,\\
+3P-Q
+&=3(p+q)-(3p-3q)=6q.
+\end{aligned}
+$$
+
+Thus
+
+$$
+p=\frac{3P+Q}{6},\qquad q=\frac{3P-Q}{6}.
+$$
+
+Hence $\operatorname{span}\{P,Q\}=\operatorname{span}\{p,q\}$. Since $p,q$ are independent, $P,Q$ are also independent: if $\lambda P+\mu Q=0$, then
+
+$$
+(\lambda+3\mu)p+(\lambda-3\mu)q=0,
+$$
+
+so independence of $p,q$ gives $\lambda+3\mu=0$ and $\lambda-3\mu=0$, hence $\lambda=\mu=0$.
+
+Finally, $R=9p-3q$ is already in $\operatorname{span}\{P,Q\}$. Therefore
+
+$$
+{\dim(\mathcal A)=2}.
+$$
+
+In part (a), row reduction finds the dependence and the dimension count says one extra polynomial completes the basis. In part (b), the determinant condition gives two independent directions, the invertible change from $(p,q)$ to $(P,Q)$ keeps them and $R$ adds no new one.
+
+</Example>
+
+<Recall of="subspace-test" />
+
+<Example
+  slug="seen-divisors-subspace"
+  of="subspace-test"
+  difficulty="routine"
+>
+
+### a set of polynomial divisors
+
+Let
+
+$$
+S=\left\{
+p\in P_3(\mathbb R):
+x^3+4x^2-2x+5\text{ is divisible by }p(x)
+\right\}.
+$$
+
+Is $S$ a subspace of $P_3(\mathbb R)$? Justify the answer.
+
+#### Solution
+
+Let
+
+$$
+q(x)=x^3+4x^2-2x+5.
+$$
+
+Every subspace must contain the zero polynomial. Here $0\notin S$: if $0$
+divided the non-zero polynomial $q$, then $q=0r=0$ for some polynomial $r$,
+a contradiction. Therefore
+
+$$
+{S\text{ is not a subspace of }P_3(\mathbb R).}
+$$
+
+Closure under addition also fails. Both
+
+$$
+p_1(x)=1
+\qquad\text{and}\qquad
+p_2(x)=q(x)
+$$
+
+belong to $S$, because
+
+$$
+q(x)=q(x)\cdot1
+\qquad\text{and}\qquad
+q(x)=1\cdot q(x).
+$$
+
+However,
+
+$$
+p_1(x)+p_2(x)=q(x)+1
+$$
+
+does not belong to $S$. If $q(x)+1$ divided $q(x)$, there would be a
+polynomial $r(x)$ such that
+
+$$
+q(x)=(q(x)+1)r(x).
+$$
+
+Both $q(x)$ and $q(x)+1$ have degree $3$, so $r(x)$ would have to be a
+constant. Comparing leading coefficients would force $r(x)=1$, which would
+give $q(x)=q(x)+1$, a contradiction. Thus $S$ is not closed under addition.
+
+Divisibility is a multiplicative condition, so it has no reason to survive
+the addition inherited from $P_3(\mathbb R)$.
+
+</Example>
+
+<Recall of="subspace-test" />
+
+<Recall of="eigenvalue" />
+
+<Recall of="eigenvector" />
+
+<Recall of="diagonalisation" />
+
+<Example
+  slug="seen-matrix-subspaces-and-annihilator"
+  of="subspace-test,eigenvalue,eigenvector,diagonalisation"
+  difficulty="exam"
+>
+
+### subspaces of $M_{2\times2}(\mathbb R)$
+
+> **Later-topic preview:** parts of this question use eigenvalues,
+> diagonalisation, kernels and rank-nullity.
+
+Let
+
+$$
+V=M_{2\times2}(\mathbb R)
+$$
+
+be the vector space of $2\times2$ matrices with real entries over the scalar
+field $\mathbb R$.
+
+#### (a)
+
+Choose from the following list the subsets of $V$ that are subspaces of $V$:
+
+1. $\{A\in V:A^{\mathsf T}=4A\}$;
+2. $\{A\in V:0\text{ is an eigenvalue of }A\}$;
+3. $\left\{A\in V:
+   v=\begin{pmatrix}-4\\4\end{pmatrix}
+   \text{ is an eigenvector of }A\text{ for the eigenvalue }\lambda=3
+   \right\}$;
+4. $\left\{A\in V:
+   v=\begin{pmatrix}-4\\4\end{pmatrix}
+   \text{ is an eigenvector of }A
+   \right\}$;
+5. $\{A\in V:A\text{ is diagonalisable}\}$;
+6. $\{A\in V:A^2=I\}$, where $I$ is the identity matrix in $V$;
+7. $\{A\in V:A\text{ is a diagonal matrix}\}$.
+
+#### (b)
+
+For a fixed matrix $B\in V$, define
+
+$$
+S_B=\{A\in V:AB=O\},
+$$
+
+where $O$ is the zero matrix in $V$. It is given that $S_B$ is a subspace of
+$V$.
+
+##### (i)
+
+Under simple conditions imposed on $B$, achieve
+$\dim(S_B)=0$ and $\dim(S_B)=4$. If $C$ is a basis of $S_B$, what can be
+said about the number of elements in $C$?
+
+##### (ii)
+
+Find a matrix $C$ such that, for
+
+$$
+B=\begin{pmatrix}a&b\\c&d\end{pmatrix},
+\qquad
+A=\begin{pmatrix}x_1&x_2\\x_3&x_4\end{pmatrix}\in S_B,
+$$
+
+the equation $AB=O$ can be written as
+
+$$
+C
+\begin{pmatrix}
+x_1\\x_2\\x_3\\x_4
+\end{pmatrix}
+=
+\begin{pmatrix}
+0\\0\\0\\0
+\end{pmatrix}.
+$$
+
+Use this result to prove that if
+
+$$
+B=\begin{pmatrix}1&3\\4&12\end{pmatrix},
+$$
+
+then $\dim(S_B)=2$.
+
+#### Solution
+
+Each set is checked for the zero matrix and for closure under addition and
+scalar multiplication. Homogeneous linear conditions on the entries of $A$
+usually pass. Conditions involving a fixed non-zero eigenvalue,
+invertibility or the nonlinear equation $A^2=I$ need separate checking.
+
+#### (a) Testing the listed sets
+
+For the first set, if $A^{\mathsf T}=4A$, transpose both sides:
+
+$$
+A=4A^{\mathsf T}=4(4A)=16A.
+$$
+
+Hence $15A=0$, so $A=O$. The set is therefore $\{O\}$, which is a
+subspace.
+
+The second set is the set of singular matrices, since $0$ is an eigenvalue
+exactly when the matrix has a non-zero vector in its kernel. It is not closed
+under addition. For example,
+
+$$
+A_1=\begin{pmatrix}1&0\\0&0\end{pmatrix},
+\qquad
+A_2=\begin{pmatrix}0&0\\0&1\end{pmatrix}
+$$
+
+both have $0$ as an eigenvalue, but
+
+$$
+A_1+A_2=I
+$$
+
+does not.
+
+For the third set, the condition is
+
+$$
+Av=3v,
+\qquad
+v=\begin{pmatrix}-4\\4\end{pmatrix}\ne0.
+$$
+
+The zero matrix does not satisfy this condition, because $Ov=0\ne3v$, so
+this set is not a subspace. It is an affine set of matrices rather than a
+homogeneous solution set.
+
+For the fourth set, saying that $v$ is an eigenvector for some eigenvalue
+means that
+
+$$
+Av\in\operatorname{span}\{v\}.
+$$
+
+If $A_1v=\alpha v$ and $A_2v=\beta v$, then
+
+$$
+(A_1+A_2)v=(\alpha+\beta)v,
+\qquad
+(\lambda A_1)v=(\lambda\alpha)v.
+$$
+
+The zero matrix also satisfies the condition, with eigenvalue $0$. Thus this
+set is a subspace.
+
+The fifth set is not a subspace because diagonalisability is not preserved
+under addition. For example,
+
+$$
+A_1=\begin{pmatrix}1&1\\0&0\end{pmatrix},
+\qquad
+A_2=\begin{pmatrix}0&0\\0&1\end{pmatrix}
+$$
+
+are both diagonalisable: each has two distinct eigenvalues. Their sum is
+
+$$
+A_1+A_2=\begin{pmatrix}1&1\\0&1\end{pmatrix},
+$$
+
+which has only one independent eigenvector and is not diagonalisable.
+
+The sixth set does not contain the zero matrix, since $O^2=O\ne I$.
+Therefore it is not a subspace.
+
+Finally, the diagonal matrices form a subspace: the zero matrix is diagonal,
+and sums and scalar multiples of diagonal matrices are diagonal.
+
+The correct selections are therefore
+
+$$
+{1,\ 4,\ \text{and }7}.
+$$
+
+#### (b)(i) Extreme choices of $B$
+
+If $B$ is invertible and $AB=O$, multiply on the right by $B^{-1}$:
+
+$$
+AB=O
+\quad\Longrightarrow\quad
+A=ABB^{-1}=OB^{-1}=O.
+$$
+
+Thus $S_B=\{O\}$ and
+
+$$
+{\dim(S_B)=0\quad\text{when }B\text{ is invertible}.}
+$$
+
+In particular, this happens for $B=I$.
+
+At the other extreme, if $B=O$, then $AB=O$ for every $A\in V$. Hence
+$S_B=V$. Since a $2\times2$ matrix has four independent entries,
+
+$$
+{\dim(S_B)=4\quad\text{when }B=O}.
+$$
+
+If $C$ is a basis of $S_B$, the defining property of dimension gives
+
+$$
+{|C|=\dim(S_B)}.
+$$
+
+#### (b)(ii) Converting $AB=O$ into a homogeneous system
+
+In this part, $C$ denotes the coefficient matrix requested in the question,
+not the basis called $C$ in part (i).
+
+Multiplying the two matrices gives
+
+$$
+AB=
+\begin{pmatrix}
+ax_1+cx_2&bx_1+dx_2\\
+ax_3+cx_4&bx_3+dx_4
+\end{pmatrix}.
+$$
+
+Therefore $AB=O$ is equivalent to the four scalar equations
+
+$$
+ax_1+cx_2=0,\qquad bx_1+dx_2=0,
+$$
+
+and
+
+$$
+ax_3+cx_4=0,\qquad bx_3+dx_4=0.
+$$
+
+With the variable order $(x_1,x_2,x_3,x_4)^{\mathsf T}$, this is
+
+$$
+{
+C=
+\begin{pmatrix}
+a&c&0&0\\
+b&d&0&0\\
+0&0&a&c\\
+0&0&b&d
+\end{pmatrix}
+}.
+$$
+
+For the specified matrix
+
+$$
+B=\begin{pmatrix}1&3\\4&12\end{pmatrix},
+$$
+
+the coefficient matrix becomes
+
+$$
+C=
+\begin{pmatrix}
+1&4&0&0\\
+3&12&0&0\\
+0&0&1&4\\
+0&0&3&12
+\end{pmatrix}.
+$$
+
+Row reduction gives
+
+$$
+\begin{aligned}
+C
+&\xrightarrow{R_2\leftarrow R_2-3R_1}
+\begin{pmatrix}
+1&4&0&0\\
+0&0&0&0\\
+0&0&1&4\\
+0&0&3&12
+\end{pmatrix}\\
+&\xrightarrow{R_4\leftarrow R_4-3R_3}
+\begin{pmatrix}
+1&4&0&0\\
+0&0&0&0\\
+0&0&1&4\\
+0&0&0&0
+\end{pmatrix}.
+\end{aligned}
+$$
+
+Thus $\operatorname{rank}(C)=2$. The system has four variables, so
+rank-nullity gives
+
+$$
+\dim\ker(C)=4-\operatorname{rank}(C)=4-2=2.
+$$
+
+The entries of $A$ identify $V$ with $\mathbb R^4$ and the solutions of
+$C\mathbf x=0$ are precisely the matrices in $S_B$. Hence
+
+$$
+{\dim(S_B)=2}.
+$$
+
+More explicitly, $x_2$ and $x_4$ are free. Writing $x_2=s$ and $x_4=t$
+gives
+
+$$
+x_1=-4s,\qquad x_3=-4t,
+$$
+
+so
+
+$$
+A
+=s\begin{pmatrix}-4&1\\0&0\end{pmatrix}
++t\begin{pmatrix}0&0\\-4&1\end{pmatrix}.
+$$
+
+These two matrices form a basis of $S_B$, which confirms the dimension
+directly. The homogeneous condition $AB=O$ defines a kernel, the coordinate
+matrix $C$ describes it and rank-nullity gives its dimension.
+
+</Example>
+
+<Recall of="span" />
+
+<Recall of="homogeneous-independence-test" />
+
+<Recall of="dimension-counting" />
+
+<Example
+  slug="seen-parameter-dependent-span-and-bases"
+  of="span,homogeneous-independence-test,dimension-counting"
+  difficulty="exam"
+>
+
+### parameter-dependent vectors and possible bases
+
+Hilda and Jonathan have picked three vectors $\vec v_1,\vec v_2$ and
+$\vec v_3$ in $\mathbb R^3$. These vectors depend on a parameter $q$. Hilda
+and Jonathan use these vectors to define a matrix $A$: the first column is
+$\vec v_1$, the second column is $\vec v_2$ and the third column is
+$\vec v_3$. They then add
+
+$$
+\vec b=
+\begin{pmatrix}b_1\\b_2\\b_3\end{pmatrix}
+$$
+
+as the fourth column. The full matrix is not needed; the elimination
+output below is sufficient. The only additional assumption is that
+$q$ is a real number.
+
+The supplied elimination output is
+
+$$
+\begin{bmatrix}
+1&6&-2&b_1\\
+0&q&2q&(-q-15)b_1+b_2\\
+0&0&0&q(q+15)b_1-qb_2+b_3
+\end{bmatrix}.
+$$
+
+Let $d$ be the dimension of the span of
+
+$$
+S=\{\vec v_1,\vec v_2,\vec v_3\}.
+$$
+
+#### (a)
+
+Select all statements about $S$ and $d$ that are true:
+
+- There is no value of $q$ for which $S$ is linearly independent.
+- There is exactly one $q$ for which $S$ is linearly independent.
+- There are infinitely many values of $q$ for which $S$ is linearly independent.
+- There is no value of $q$ for which $d=2$.
+- There is exactly one $q$ for which $d=2$.
+- There are infinitely many values of $q$ for which $d=2$.
+- There is no value of $q$ for which $d=1$.
+- There is exactly one $q$ for which $d=1$.
+- There are infinitely many values of $q$ for which $d=1$.
+- There is no value of $q$ for which $S$ spans $\mathbb R^3$.
+- There is exactly one $q$ for which $S$ spans $\mathbb R^3$.
+- There are infinitely many values of $q$ for which $S$ spans $\mathbb R^3$.
+
+**Multiple selection advice:** In a multiple selection question, one point is
+awarded for each correct selection and one point is deducted for each
+incorrect selection, but you cannot get a negative mark for the question in
+the end.
+
+#### Case 1: $q\ne0$
+
+##### (b)
+
+If possible, find an expression of $\vec v_3$ as a linear combination of
+$\vec v_1$ and $\vec v_2$.
+
+##### (c)
+
+Determine the span of $S$ when $q\ne0$. The answer may depend on $q$.
+
+##### (d)
+
+Recall that $\vec e_1,\vec e_2,\vec e_3$ denote the standard basis vectors
+of $\mathbb R^3$. The supplied computations show that
+
+$$
+\{\vec v_1,\vec e_2,\vec e_3\}
+$$
+
+is a basis of $\mathbb R^3$ for every value of $q$. Consider all bases of
+$\mathbb R^3$ obtained by selecting vectors from
+
+$$
+\{\vec v_1,\vec v_2,\vec v_3,\vec e_1,\vec e_2,\vec e_3\}.
+$$
+
+When $q\ne0$ and $q\ne-15$, how many different bases can be formed that
+contain as many elements of $S$ as possible? When $q=-15$, how many can be
+formed?
+
+#### Case 2: $q=0$
+
+##### (e)
+
+Determine the span of $S$ when $q=0$.
+
+##### (f)
+
+When $q=0$, how many different bases of $\mathbb R^3$ can be formed from
+
+$$
+\{\vec v_1,\vec v_2,\vec v_3,\vec e_1,\vec e_2,\vec e_3\}
+$$
+
+that contain as many elements of $S$ as possible?
+
+#### Solution
+
+The first three columns of the row-reduced matrix are
+
+$$
+\begin{bmatrix}
+1&6&-2\\
+0&q&2q\\
+0&0&0
+\end{bmatrix}.
+$$
+
+If $q\ne0$, there are pivots in columns $1$ and $2$, so
+
+$$
+d=2.
+$$
+
+The third column relation in the row-reduced matrix is
+
+$$
+\begin{pmatrix}-2\\2q\\0\end{pmatrix}
+=-14\begin{pmatrix}1\\0\\0\end{pmatrix}
++2\begin{pmatrix}6\\q\\0\end{pmatrix}.
+$$
+
+The displayed matrix comes from row operations, which preserve linear
+relations among columns, although it need not be in echelon form at special
+values such as $q=0$. Therefore, when $q\ne0$,
+
+$$
+{\vec v_3=-14\vec v_1+2\vec v_2.}
+$$
+
+The first two columns have pivots, so $\vec v_1,\vec v_2$ are independent.
+Consequently,
+
+$$
+{\operatorname{span}(S)
+=\operatorname{span}\{\vec v_1,\vec v_2\}}
+$$
+
+is a two-dimensional plane in $\mathbb R^3$.
+
+If $q=0$, the first three columns reduce to
+
+$$
+\begin{bmatrix}
+1&6&-2\\
+0&0&0\\
+0&0&0
+\end{bmatrix},
+$$
+
+so
+
+$$
+\vec v_2=6\vec v_1,\qquad
+\vec v_3=-2\vec v_1,
+$$
+
+and $d=1$. The last column of the displayed row reduction shows that a
+vector $\vec b$ lies in this line exactly when
+
+$$
+b_2-15b_1=0,\qquad b_3=0.
+$$
+
+Thus
+
+$$
+{
+\operatorname{span}(S)
+=\operatorname{span}
+\left\{
+\begin{pmatrix}1\\15\\0\end{pmatrix}
+\right\}
+}
+$$
+
+when $q=0$.
+
+These dimensions settle part (a). The set $S$ is never
+linearly independent and never spans $\mathbb R^3$. It has dimension $2$ for
+every non-zero real $q$ and dimension $1$ for the single value $q=0$.
+Therefore the true selections are
+
+$$
+{
+\begin{gathered}
+\text{There is no value of }q\text{ for which }S\text{ is linearly independent};\\
+\text{there are infinitely many values of }q\text{ for which }d=2;\\
+\text{there is exactly one }q\text{ for which }d=1;\\
+\text{there is no value of }q\text{ for which }S\text{ spans }\mathbb R^3.
+\end{gathered}
+}
+$$
+
+For part (d), when $q\ne0$, the maximum number of elements of $S$ in a basis
+is $2$. Since
+
+$$
+\vec v_3=2\vec v_2-14\vec v_1,
+$$
+
+each of the pairs
+
+$$
+\{\vec v_1,\vec v_2\},\qquad
+\{\vec v_1,\vec v_3\},\qquad
+\{\vec v_2,\vec v_3\}
+$$
+
+is independent and spans the same plane.
+
+To test which standard basis vector completes this plane, use the fourth
+column in the row reduction. For $\vec b=\vec e_1,\vec e_2,\vec e_3$, the
+last pivot expression is respectively
+
+$$
+q(q+15),\qquad -q,\qquad 1.
+$$
+
+Therefore, if $q\ne0,-15$, all three standard basis vectors complete the
+plane. There are $3$ choices of a pair from $S$ and $3$ choices of a
+completing standard vector:
+
+$$
+{3\cdot3=9}.
+$$
+
+When $q=-15$, $\vec e_1$ does not complete the plane, while $\vec e_2$ and
+$\vec e_3$ do. Hence the count is
+
+$$
+{3\cdot2=6}.
+$$
+
+For part (f), when $q=0$, the maximum number of elements of $S$ in a basis is
+one. The three vectors in $S$ are the non-zero multiples
+$\vec v_1,6\vec v_1,-2\vec v_1$. The line
+
+$$
+\operatorname{span}\{(1,15,0)^{\mathsf T}\}
+$$
+
+lies in the coordinate plane $\operatorname{span}\{\vec e_1,\vec e_2\}$,
+but it is not contained in either
+$\operatorname{span}\{\vec e_1,\vec e_3\}$ or
+$\operatorname{span}\{\vec e_2,\vec e_3\}$. Thus there are $2$ valid pairs
+of standard basis vectors and $3$ choices of the vector from $S$:
+
+$$
+{2\cdot3=6}.
+$$
+
+The row-reduced matrix gives all of this without reconstructing the vectors.
+Pivots identify independent directions, the fourth-column condition tests
+whether a standard basis vector lies outside the span and the basis counts
+follow from the dimension of $\operatorname{span}(S)$.
+
+</Example>

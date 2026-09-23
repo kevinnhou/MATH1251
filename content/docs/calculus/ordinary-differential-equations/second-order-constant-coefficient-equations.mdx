@@ -1,0 +1,617 @@
+---
+title: Second-order constant-coefficient equations
+description: Characteristic modes, forcing, resonance and mechanical applications.
+tags: [calculus]
+ideas: [second-order-equations, characteristic-equations, resonance]
+---
+
+This page solves second-order linear equations with constant coefficients,
+
+$$
+ay''+by'+cy=0
+\qquad\text{or}\qquad
+ay''+by'+cy=f(x),
+$$
+
+where $a,b,c$ are constants and $a\neq0$. Constant coefficients turn differentiation into algebra: an exponential trial reduces the homogeneous equation to a characteristic polynomial, whose roots are the system's modes. A forcing term then adds one particular response to those modes.
+
+In the [method-selection workflow](/calculus/ordinary-differential-equations/pipeline), this test comes after the first-order structures. The linear-operator facts behind it are set out in [existence, uniqueness and linear operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators).
+
+## Homogeneous equations and modes
+
+<Definition slug="constant-coefficient-ode">
+
+### Constant-coefficient equation
+
+<Statement>
+
+A second-order constant-coefficient linear ODE has the form
+
+$$
+ay''+by'+cy=f(x),
+\qquad a\neq0,
+$$
+
+where $a$, $b$ and $c$ are constants. It is homogeneous when $f(x)\equiv0$.
+
+</Statement>
+
+The same idea extends to an $n$th-order equation: each derivative has a constant coefficient and the corresponding characteristic polynomial has degree $n$.
+
+</Definition>
+
+<Theorem slug="homogeneous-solution-space" of="constant-coefficient-ode">
+
+### Superposition of homogeneous solutions
+
+<Statement>
+
+For a homogeneous linear equation, $0$ is a solution, scalar multiples of solutions are solutions and sums of solutions are solutions. For a second-order equation, two linearly independent solutions generate every homogeneous solution:
+
+$$
+y_h=Ay_1+By_2.
+$$
+
+</Statement>
+
+The two arbitrary constants are what allow two initial conditions to be imposed. If the proposed solutions are scalar multiples, they provide only one mode and cannot represent all possible initial data.
+
+</Theorem>
+
+<Definition slug="characteristic-equation">
+
+### Characteristic equation
+
+<Statement>
+
+For the homogeneous equation
+
+$$
+ay''+by'+cy=0,
+$$
+
+the exponential trial function $y=e^{rx}$ gives the characteristic equation
+
+$$
+ar^2+br+c=0.
+$$
+
+</Statement>
+
+The trial is useful because
+
+$$
+y'=re^{rx},\qquad y''=r^2e^{rx},
+$$
+
+so substitution gives
+
+$$
+(ar^2+br+c)e^{rx}=0.
+$$
+
+Since $e^{rx}\neq0$, the differential equation reduces to an algebraic equation. For an $n$th-order constant-coefficient equation, replace $y^{(j)}$ by $r^j$ to obtain the corresponding degree-$n$ polynomial.
+
+</Definition>
+
+<Method slug="characteristic-root-method" of="characteristic-equation">
+
+### Read the characteristic roots
+
+<Statement>
+
+Solve the characteristic equation and choose the real homogeneous modes according to the roots:
+
+- If $r_1\neq r_2$ are distinct real roots, use
+  $$
+  y_h=Ae^{r_1x}+Be^{r_2x}.
+  $$
+- If $r$ is a repeated real root, use
+  $$
+  y_h=(A+Bx)e^{rx}.
+  $$
+- If the roots are $r=\alpha\pm i\beta$ with $\beta\neq0$, use
+  $$
+  y_h=e^{\alpha x}
+  \bigl(A\cos(\beta x)+B\sin(\beta x)\bigr).
+  $$
+
+</Statement>
+
+For a repeated root, $e^{rx}$ and $xe^{rx}$ are independent; the factor $x$ is required. The extra mode comes from writing $y=e^{rx}v(x)$, where $r$
+is the repeated root. Since $b=-2ar$ and $c=ar^2$, substitution reduces the ODE to
+$ae^{rx}v''=0$, so $v=A+Bx$.
+
+For a complex pair, $\alpha$ controls exponential growth or decay and $\beta$ controls oscillation, as with the modulus and argument in [polar form](/algebra/complex-numbers/polar-form).
+For real coefficients, a non-real root always occurs with its complex
+conjugate. Since
+$e^{(\alpha+i\beta)x}=e^{\alpha x}(\cos\beta x+i\sin\beta x)$, its real and
+imaginary parts give the two real modes in the last row and the final
+solution needs no complex constants.
+
+</Method>
+
+<Example slug="distinct-real-roots" of="characteristic-root-method" difficulty="routine">
+
+### Two distinct real roots
+
+For
+
+$$
+y''-2y'-15y=0,
+$$
+
+the characteristic polynomial factors as
+
+$$
+r^2-2r-15=(r-5)(r+3).
+$$
+
+The roots are $5$ and $-3$, so
+
+$$
+y=Ae^{5x}+Be^{-3x}.
+$$
+
+</Example>
+
+<Example slug="repeated-real-root" of="characteristic-root-method" difficulty="routine">
+
+### A repeated real root
+
+For
+
+$$
+y''-6y'+9y=0,
+$$
+
+the characteristic polynomial is $(r-3)^2$. The homogeneous solution is
+
+$$
+y=(A+Bx)e^{3x}.
+$$
+
+Using only $Ae^{3x}$ would lose one arbitrary constant because the two proposed modes would be scalar multiples.
+
+</Example>
+
+<Example slug="distinct-roots-ivp" of="characteristic-root-method" difficulty="exam">
+
+### Initial data for distinct modes
+
+For
+
+$$
+y''-4y'-5y=0,\qquad y(0)=2,\qquad y'(0)=10,
+$$
+
+the roots are $5$ and $-1$, so
+
+$$
+y=Ae^{5x}+Be^{-x}.
+$$
+
+The initial conditions give
+
+$$
+A+B=2,\qquad 5A-B=10.
+$$
+
+Thus $A=2$, $B=0$ and
+
+$$
+y=2e^{5x}.
+$$
+
+</Example>
+
+The root classification also predicts qualitative behaviour: a negative real
+part gives exponential decay, a positive real part gives exponential growth and
+a nonzero imaginary part produces oscillation. Repeated roots also contribute
+polynomial factors, so a zero real part can produce a constant or polynomially
+growing mode rather than decay. The broader discrete and continuous stability
+criteria are collected in [stability of systems](/algebra/complex-numbers/stability-of-systems).
+
+These modes match the exponential modes used for
+[linear ODE systems](/algebra/eigenvalues/linear-ode-systems). The polynomial $ar^2+br+c$ plays the same role as the [characteristic polynomial](/algebra/eigenvalues/eigenvalues-and-eigenvectors) of a matrix and the distinct, repeated and complex cases behave alike in both settings.
+
+## Non-homogeneous equations
+
+Once the homogeneous modes are known, a forcing term adds one particular response to them. Undetermined coefficients finds that response for the polynomial, exponential and trigonometric forcing below. When no method covered here applies, use [numerical solutions](/calculus/ordinary-differential-equations/numerical-solutions).
+
+<Theorem slug="homogeneous-plus-particular" of="constant-coefficient-ode">
+
+### Homogeneous part plus particular part
+
+<Statement>
+
+Write a linear equation as
+
+$$
+L[y]=f(x),
+\qquad
+L[y]=ay''+by'+cy.
+$$
+
+If $y_p$ is one particular solution and $y_h$ is any homogeneous solution, then the complete solution is
+
+$$
+y=y_h+y_p.
+$$
+
+</Statement>
+
+The homogeneous part contains the arbitrary constants. The particular part accounts for the forcing and contains no new arbitrary constants.
+
+</Theorem>
+
+<Proof of="homogeneous-plus-particular">
+
+Linearity gives
+
+$$
+L[y_h+y_p]=L[y_h]+L[y_p]=0+f=f,
+$$
+
+so $y_h+y_p$ is a solution. Conversely, if $y$ is another solution, then
+
+$$
+L[y-y_p]=L[y]-L[y_p]=f-f=0.
+$$
+
+Thus $y-y_p$ is homogeneous, which means every solution has the stated form.
+
+</Proof>
+
+<Method slug="undetermined-coefficients" of="homogeneous-plus-particular">
+
+### Undetermined coefficients
+
+<Statement>
+
+For suitable forcing functions:
+
+- a polynomial of degree $n$ suggests a general polynomial of degree $n$;
+- $e^{\beta x}$ suggests $Ce^{\beta x}$;
+- $p_n(x)e^{\beta x}$ suggests $q_n(x)e^{\beta x}$, where $q_n$ has degree $n$;
+- $\sin(\beta x)$ or $\cos(\beta x)$ suggests
+  $$
+  C_1\cos(\beta x)+C_2\sin(\beta x);
+  $$
+- $e^{\alpha x}\sin(\beta x)$ or $e^{\alpha x}\cos(\beta x)$ suggests
+  $$
+  e^{\alpha x}
+  \bigl(C_1\cos(\beta x)+C_2\sin(\beta x)\bigr).
+  $$
+
+Substitute the trial into the equation and match coefficients. If the trial
+overlaps with a homogeneous mode whose characteristic root has multiplicity
+$s$, multiply the whole trial by $x^s$ (so a simple overlap requires one
+factor of $x$, while a repeated root requires $x^2$).
+
+</Statement>
+
+The trial families work because differentiating a polynomial, exponential or
+sinusoidal expression keeps it within the same finite-dimensional family, so
+substitution reduces the problem to algebraic coefficient matching. The
+correction accounts for resonance: a trial that already lies in the
+homogeneous solution space cannot produce the forcing after applying $L$.
+Oscillation by itself is not resonance; resonance requires a forcing term whose
+trial shape overlaps a natural homogeneous mode.
+
+</Method>
+
+<Example slug="constant-forcing" of="undetermined-coefficients" difficulty="routine">
+
+### Constant forcing
+
+For
+
+$$
+y''-3y'+2y=4,
+$$
+
+the homogeneous solution is $Ae^x+Be^{2x}$. A constant trial $y_p=C$ gives $2C=4$, so $C=2$. Hence
+
+$$
+y=Ae^x+Be^{2x}+2.
+$$
+
+</Example>
+
+<Example slug="polynomial-forcing" of="undetermined-coefficients" difficulty="exam">
+
+### Linear forcing
+
+For
+
+$$
+y''-5y'+6y=6x,
+$$
+
+the homogeneous roots are $2$ and $3$. Use $y_p=ax+b$. Substitution gives
+
+$$
+6a\,x+(-5a+6b)=6x.
+$$
+
+Thus $a=1$ and $b=5/6$, so
+
+$$
+y=Ae^{2x}+Be^{3x}+x+\frac56.
+$$
+
+</Example>
+
+<Example slug="repeated-root-forcing" of="undetermined-coefficients" difficulty="exam">
+
+### Forcing at a repeated root
+
+For
+
+$$
+y''+4y'+4y=e^{-2x},
+$$
+
+the homogeneous equation has the repeated root $-2$ and homogeneous solution $(A+Bx)e^{-2x}$. The trial $Ce^{-2x}$ and the corrected trial $Cxe^{-2x}$ both overlap with this solution space, so use
+
+$$
+y_p=Cx^2e^{-2x}.
+$$
+
+Here the operator factors as $(D+2)^2$, where $D=d/dx$. For
+$y_p=e^{-2x}v(x)$, applying this operator gives $e^{-2x}v''(x)$.
+With $v=Cx^2$, the left side is $2Ce^{-2x}$; matching the forcing gives
+$C=1/2$. Therefore
+
+$$
+y=(A+Bx)e^{-2x}+\frac12x^2e^{-2x}.
+$$
+
+</Example>
+
+<Example slug="trigonometric-resonance" of="undetermined-coefficients" difficulty="exam">
+
+### Trigonometric resonance
+
+For
+
+$$
+y''+y=\cos x,
+$$
+
+the homogeneous modes are $\cos x$ and $\sin x$, so the forcing overlaps with the homogeneous solution. Use
+
+$$
+y_p=Cx\sin x.
+$$
+
+Since
+
+$$
+(x\sin x)''+x\sin x=2\cos x,
+$$
+
+we have $C=1/2$. With $y(0)=3$ and $y'(0)=0$,
+
+$$
+y=3\cos x+\frac{x}{2}\sin x.
+$$
+
+</Example>
+
+<Example slug="polynomial-trigonometric-forcing" of="undetermined-coefficients" difficulty="routine">
+
+### Polynomial forcing
+
+For
+
+$$
+y''+y=x^2+x,
+$$
+
+take $y_p=ax^2+bx+c$. Matching coefficients gives $a=1$, $b=1$ and $c=-2$. Thus
+
+$$
+y=A\cos x+B\sin x+x^2+x-2.
+$$
+
+</Example>
+
+<Example slug="exponential-polynomial-forcing" of="undetermined-coefficients" difficulty="challenge">
+
+### Exponential-polynomial forcing
+
+For
+
+$$
+y''-3y'+2y=x^2e^{3x},
+$$
+
+the homogeneous roots are $1$ and $2$, so there is no overlap with $e^{3x}$. Set
+
+$$
+y_p=e^{3x}(Ax^2+Bx+C).
+$$
+
+Writing $v=Ax^2+Bx+C$, direct differentiation gives
+$$
+(D^2-3D+2)(e^{3x}v)=e^{3x}(v''+3v'+2v).
+$$
+Matching this with $x^2e^{3x}$ gives
+$2A=1$, $6A+2B=0$ and $2A+3B+2C=0$. Hence
+
+$$
+y_p=e^{3x}\left(\frac12x^2-\frac32x+\frac74\right).
+$$
+
+The general solution is
+
+$$
+y=C_1e^x+C_2e^{2x}
++e^{3x}\left(\frac12x^2-\frac32x+\frac74\right).
+$$
+
+</Example>
+
+The [linear operators](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators) page states the same homogeneous-plus-particular structure for any linear ODE.
+
+## An integral equation as an IVP
+
+<Method slug="differentiate-integral-equation">
+
+### Recover an IVP from an integral equation
+
+<Statement>
+
+Differentiate an integral equation with a variable limit, record the initial values obtained at the endpoint and solve the resulting differential equation subject to those values. Finally, check the original integral equation because differentiation can enlarge the solution set.
+
+</Statement>
+
+</Method>
+
+<Example slug="integral-equation-ivp" of="differentiate-integral-equation" difficulty="challenge">
+
+### A Volterra integral equation
+
+For
+
+$$
+x(t)=-\int_0^t(t-s)x(s)\,ds,
+$$
+
+setting $t=0$ gives $x(0)=0$. Differentiate using the Leibniz rule:
+
+$$
+x'(t)=-\int_0^t x(s)\,ds,
+$$
+
+so $x'(0)=0$. Differentiating again gives
+
+$$
+x''(t)=-x(t).
+$$
+
+The integral equation therefore implies the IVP
+
+$$
+x''+x=0,\qquad x(0)=0,\qquad x'(0)=0.
+$$
+
+The unique solution is
+
+$$
+x(t)=0.
+$$
+
+The initial conditions are essential. Solving only the differentiated equation would introduce nonzero sine and cosine solutions that need not satisfy the original integral equation.
+
+</Example>
+
+## Mechanical applications
+
+<Definition slug="spring-mass-model">
+
+### Spring-mass-damper model
+
+<Statement>
+
+For a mass attached to a spring with spring constant $k$ and viscous friction coefficient $c$, Newton's law gives
+
+$$
+m\ddot{x}+c\dot{x}+kx=0.
+$$
+
+The characteristic roots determine whether the motion is non-oscillatory or oscillatory and whether its amplitude grows or decays.
+
+</Statement>
+
+With an external force, the right side becomes a forcing term. The solution then has a transient homogeneous response and a particular forced response. In the usual mechanical units, $m$ is mass, $c$ has mass/time units and $k$ has mass/time$^2$ units.
+
+</Definition>
+
+<Example slug="damped-spring" of="spring-mass-model" difficulty="exam">
+
+### Damped oscillation
+
+For $m=1$, $c=0.2$ and $k=1.01$,
+
+$$
+\ddot{x}+0.2\dot{x}+1.01x=0
+$$
+
+has characteristic roots
+
+$$
+r=-0.1\pm i.
+$$
+
+Therefore
+
+$$
+x(t)=e^{-0.1t}(A\cos t+B\sin t).
+$$
+
+With $x(0)=2$ and $\dot{x}(0)=-0.2$, we obtain $A=2$ and $B=0$, so
+
+$$
+x(t)=2e^{-0.1t}\cos t.
+$$
+
+The cosine describes the oscillation, while $e^{-0.1t}$ is the decaying amplitude. Hence $x(t)\to0$.
+
+</Example>
+
+<Example slug="forced-spring-response" of="spring-mass-model,homogeneous-plus-particular" difficulty="challenge">
+
+### Periodic forcing
+
+If an external periodic force is applied,
+
+$$
+\ddot{x}+0.2\dot{x}+1.01x
+=1.5\sin(\omega t)+1.8\cos(\omega t),
+$$
+
+the solution has a transient part, which decays and a steady periodic part at
+frequency $\omega$. Take $\omega=2$ and the same initial conditions. For the
+particular response, set
+
+$$
+x_p=a\sin(2t)+b\cos(2t).
+$$
+
+Substitution gives
+
+$$
+-2.99a-0.4b=1.5,
+\qquad
+0.4a-2.99b=1.8,
+$$
+
+so $a\approx-0.4137$ and $b\approx-0.6574$. Adding the homogeneous part
+$e^{-0.1t}(C\cos t+D\sin t)$ and imposing $x(0)=2$, $x'(0)=-0.2$ gives
+$C\approx2.657$ and $D\approx0.893$.
+
+Therefore the response is approximately
+
+$$
+x(t)\approx
+0.8932e^{-0.1t}\sin t
++2.657e^{-0.1t}\cos t
+-0.4137\sin(2t)-0.6574\cos(2t).
+$$
+
+As $t$ increases, only the forced periodic terms remain. The choice $\omega=2$
+shows a forced response away from the peak. The response is largest when the
+forcing frequency is near the undamped natural frequency,
+
+$$
+\sqrt{\frac{k}{m}}\approx1.
+$$
+
+This is the near-resonant peak of the damped frequency response. Damping
+prevents the ideal undamped amplitude from growing without bound, but still
+produces a pronounced finite peak near that frequency.
+
+</Example>

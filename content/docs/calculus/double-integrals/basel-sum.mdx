@@ -1,0 +1,212 @@
+---
+title: Euler's Basel sum
+description: Combine a geometric-series integral, a Jacobian and symmetry to prove the Basel sum.
+tags: [calculus]
+ideas: [double-integrals, infinite-series, change-of-variables]
+---
+
+This page uses the chapter's tools to prove Euler's result
+$\sum_{n\ge1}1/n^2=\pi^2/6$. The [p-series
+test](/calculus/taylor-series/convergence-tests#p-series-test) with $p=2$
+shows that the series converges; a double integral finds its value.
+
+The [geometric-series
+formula](/calculus/taylor-series/infinite-series#geometric-series-method) and
+[Fubini's theorem](/calculus/double-integrals/fubini-and-iterated-integrals)
+write the series as an integral over the unit square. A linear [change of
+variables](/calculus/double-integrals/change-of-variables-and-polar-coordinates)
+turns the square into a diamond, sliced as in [regions and order of
+integration](/calculus/double-integrals/regions-and-order-of-integration).
+Symmetry and one-variable substitutions then finish the evaluation.
+
+<Recall of="double-integral-change-of-variables" />
+
+<Recall of="double-integral-jacobian-determinant" />
+
+## Turn the series into an integral
+
+For $n\ge0$,
+
+$$
+\int_0^1x^n\,dx=\frac1{n+1}.
+$$
+
+Multiplying two copies of this identity and using Fubini on the unit square
+gives
+
+$$
+\frac1{(n+1)^2}
+=\int_0^1\int_0^1(xy)^n\,dx\,dy.
+$$
+
+To sum over $n$, use the geometric series: for $0\le x,y<1$,
+
+$$
+\sum_{n=0}^\infty(xy)^n=\frac1{1-xy}.
+$$
+
+The finite geometric sums are nonnegative and increase pointwise, so monotone
+convergence justifies taking their limit under the integral.
+
+The integrand $1/(1-xy)$ is singular only at the corner $(1,1)$, but it is
+unbounded in every neighbourhood of that corner. The integral is therefore
+improper, defined as the monotone limit over bounded truncations. The corner
+has zero area, but the blow-up near it cannot be ignored.
+
+Summing the identities over $n\ge0$ therefore gives
+
+$$
+S:=\sum_{n=1}^\infty\frac1{n^2}
+=\iint_{[0,1]^2}\frac1{1-xy}\,dx\,dy.
+$$
+
+For the same reason, the proof applies the change-of-variables theorem on
+compact subregions that stay away from $(1,1)$ and then removes the
+truncation by monotone convergence. The transformed integrals are understood
+as the corresponding improper limits.
+
+<Theorem slug="basel-sum">
+
+### Euler's evaluation of the Basel sum
+
+<Statement>
+
+The reciprocal-square series satisfies
+
+$$
+\sum_{n=1}^{\infty}\frac1{n^2}=\frac{\pi^2}{6}.
+$$
+
+</Statement>
+
+</Theorem>
+
+<Proof of="basel-sum">
+
+Use the linear substitution
+
+$$
+x=u-v,\qquad y=u+v.
+$$
+
+The inverse transformation is
+
+$$
+u=\frac{x+y}{2},
+\qquad
+v=\frac{y-x}{2},
+$$
+
+and
+
+$$
+\left|\frac{\partial(x,y)}{\partial(u,v)}\right|
+=
+\left|
+\det
+\begin{pmatrix}
+1&-1\\
+1&1
+\end{pmatrix}
+\right|
+=2.
+$$
+
+The square $0\le x,y\le1$ becomes a diamond with vertices $(0,0)$,
+$(\tfrac12,\pm\tfrac12)$ and $(1,0)$ in the $uv$-plane. Vertical slices
+describe it as
+
+$$
+\begin{cases}
+0\le u\le\frac12,\quad -u\le v\le u,\\[4pt]
+\frac12\le u\le1,\quad u-1\le v\le1-u.
+\end{cases}
+$$
+
+In the new coordinates,
+
+$$
+xy=(u-v)(u+v)=u^2-v^2,
+\qquad
+1-xy=1-u^2+v^2.
+$$
+
+The integrand is even in $v$, so we integrate over the upper half and
+multiply by two. The Jacobian supplies another factor of two, giving
+
+$$
+\begin{aligned}
+S
+&=
+4\int_0^{1/2}\int_0^u
+\frac{1}{1-u^2+v^2}\,dv\,du\\
+&\quad+
+4\int_{1/2}^{1}\int_0^{1-u}
+\frac{1}{1-u^2+v^2}\,dv\,du.
+\end{aligned}
+$$
+
+For fixed $u$,
+
+$$
+\int_0^a\frac{dv}{1-u^2+v^2}
+=
+\frac1{\sqrt{1-u^2}}
+\arctan\left(\frac{a}{\sqrt{1-u^2}}\right).
+$$
+
+Each piece now needs one trigonometric substitution. The first uses
+$u=\sin\theta$; the second uses $u=\cos\theta$, so that the inverse tangent
+simplifies by the half-angle identity.
+
+For the first piece, let $u=\sin\theta$, so
+$0\le\theta\le\pi/6$. Then
+
+$$
+\frac{u}{\sqrt{1-u^2}}=\tan\theta,
+$$
+
+and hence
+
+$$
+\begin{aligned}
+S_1
+&=
+4\int_0^{1/2}
+\frac1{\sqrt{1-u^2}}
+\arctan\left(\frac u{\sqrt{1-u^2}}\right)\,du\\
+&=4\int_0^{\pi/6}\theta\,d\theta
+=\frac{\pi^2}{18}.
+\end{aligned}
+$$
+
+For the second piece, let $u=\cos\theta$, so
+$0\le\theta\le\pi/3$. As $u$ runs from $1/2$ to $1$, $\theta$ runs from
+$\pi/3$ to $0$; flipping the limits removes the minus sign from
+$du=-\sin\theta\,d\theta$. The ratio in the inverse tangent is
+
+$$
+\frac{1-u}{\sqrt{1-u^2}}
+=\frac{1-\cos\theta}{\sin\theta}
+=\tan\frac\theta2.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+S_2
+&=4\int_0^{\pi/3}\frac\theta2\,d\theta\\
+&=\frac{\pi^2}{9}.
+\end{aligned}
+$$
+
+Adding the two pieces,
+
+$$
+S=S_1+S_2
+=\frac{\pi^2}{18}+\frac{\pi^2}{9}
+=\frac{\pi^2}{6}.
+$$
+
+</Proof>

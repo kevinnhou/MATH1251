@@ -1,5 +1,16 @@
 {
   "title": "Algebra",
   "root": true,
-  "icon": "Music4"
+  "icon": "Music4",
+  "pages": [
+    "index",
+    "---[Chapter 1]---",
+    "complex-numbers",
+    "---[Chapter 2]---",
+    "vector-spaces",
+    "---[Chapter 3]---",
+    "linear-transformations",
+    "---[Chapter 4]---",
+    "eigenvalues"
+  ]
 }

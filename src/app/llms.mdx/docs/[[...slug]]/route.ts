@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
-import { urlFromSlugs } from "@/lib/site/build-corpus";
-import { compileCorpus } from "@/lib/site/corpus";
+import { buildCorpusFromPageIndex, compilePageIndex } from "@/lib/site/corpus";
+import { resolveDocsPage } from "@/lib/site/docs-page";
+import {
+	appendDocsRouteSuffix,
+	getDocsRouteSlugs,
+} from "@/lib/site/docs-routes";
 import { markdownForResolved } from "@/lib/site/export-page";
-import { getKindViewMarkdownUrl, getPageMarkdownUrl } from "@/lib/site/source";
 
 export const revalidate = false;
+export const dynamicParams = true;
 
 export async function GET(
 	_req: Request,
@@ -15,12 +19,13 @@ export async function GET(
 		notFound();
 	}
 
-	const corpus = compileCorpus();
-	const resolved = corpus.byUrl.get(urlFromSlugs(slug.slice(0, -1)));
+	const pageIndex = compilePageIndex();
+	const resolved = resolveDocsPage(slug.slice(0, -1), pageIndex);
 	if (!resolved) {
 		notFound();
 	}
 
+	const corpus = buildCorpusFromPageIndex(pageIndex);
 	return new Response(
 		markdownForResolved(resolved, corpus.graph, corpus.tenets),
 		{
@@ -32,16 +37,7 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-	const corpus = compileCorpus();
-
-	return [
-		...corpus.pages.map(({ page }) => ({
-			lang: page.locale,
-			slug: getPageMarkdownUrl(page).segments,
-		})),
-		...corpus.kindViews.map((view) => ({
-			lang: view.locale,
-			slug: getKindViewMarkdownUrl(view).segments,
-		})),
-	];
+	return appendDocsRouteSuffix(getDocsRouteSlugs(compilePageIndex()), [
+		"content.md",
+	]).map((slug) => ({ slug }));
 }

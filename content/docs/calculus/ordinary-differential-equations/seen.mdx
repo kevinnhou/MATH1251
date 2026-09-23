@@ -1,0 +1,534 @@
+---
+title: Seen Questions
+description: Worked solutions on exact equations, integrating factors, characteristic roots and first- and second-order models.
+tags: [seen, calculus, ordinary-differential-equations]
+ideas: [revision, exact-equations, integrating-factors, characteristic-roots, modelling]
+---
+
+These past exam questions test exact equations, integrating factors,
+characteristic equations and forcing terms.
+
+The first question also touches the [level-set and gradient
+geometry](/calculus/functions-of-several-variables/geometry-and-approximation)
+and [multivariable linear approximation](/calculus/functions-of-several-variables/multivariable-approximation)
+of a later chapter. Its solution derives the tangent-plane and normal-vector
+facts it needs, so it can be read with the ODE material alone.
+
+<Recall of="exact-differential-equation" />
+
+<Recall of="multivariable-linear-approximation" />
+
+<Recall of="gradient-normal-level-set" />
+
+<Example
+  slug="seen-exact-equations-linear-approximation-level-curves"
+  of="exact-potential,multivariable-linear-approximation,gradient-normal-level-set"
+  difficulty="exam"
+>
+
+### Exact equations and level-set geometry
+
+Answer the following questions about exact differential equations.
+
+#### (a)
+
+First classify the differential equation
+
+$$
+\left(3x^2y^2+7\cos(6x)\right)\,dx
++\left(\frac32x^4y+7e^y\right)\,dy=0.
+$$
+
+Select all options which correctly describe this equation:
+
+- non-linear;
+- first order;
+- second order;
+- initial value problem;
+- boundary value problem;
+- linear;
+- constant coefficient;
+- fifth order.
+
+Now consider a differential equation of the form
+
+$$
+M(x,y)\,dx+N(x,y)\,dy=0. \tag{1}
+$$
+
+Here $M,N:\mathbb R^2\to\mathbb R$ are functions which are continuous
+everywhere, differentiable everywhere and whose first-order partial
+derivatives are also continuous everywhere.
+
+#### (b)
+
+Suppose equation (1) is not exact. To use the integrating-factor method,
+determine when multiplying by a differentiable, nonvanishing function
+$u(x,y)$ produces an equivalent exact equation. State a necessary condition.
+
+#### (c)
+
+Now suppose equation (1) is exact. For a constant $c$, its solution may be
+written in the form
+
+$$
+F(x,y)=c,
+$$
+
+where $F(x,y)$ is to be constructed from $M$ and $N$.
+
+#### (d)
+
+Suppose (1) is an exact differential equation with solution $F(x,y)=c$, where
+$c$ is a constant. This solution can be interpreted as a level curve of the
+surface
+
+$$
+z=F(x,y).
+$$
+
+To understand the behaviour of the solution near a given point $(x_0,y_0)$,
+Liu wishes to use Taylor polynomials to find an approximation.
+Give the linear approximation to the surface near $(x_0,y_0)$.
+
+#### (e)
+
+For the geometry of solutions, consider the following example.
+
+Let $F:\mathbb R^2\to\mathbb R$ be a potential for the exact differential
+form below, with continuous second-order derivatives. Consider its level curve
+
+$$
+F(x,y)=20
+$$
+
+which passes through the point $(5,4)$ and for which locally the function
+$y(x)$ is implicitly defined by the exact differential equation
+
+$$
+6x^2y^6\,dx+12x^3y^5\,dy=0.
+$$
+
+Compute a normal vector to the surface $z=F(x,y)$ at the point $(5,4,20)$.
+
+#### Solution
+
+The first equation is in differential form, so it contains $dx$ and $dy$ but
+no derivative of order greater than one. It is first order. It is non-linear
+because, after writing it as an equation for $dy/dx$, the terms $y^2$ and
+$e^y$ occur non-linearly. It is neither an initial-value nor a boundary-value
+problem because no data select a particular solution and it is not a
+constant-coefficient linear equation. The correct selections in part (a) are
+
+$$
+{\text{non-linear and first order}.}
+$$
+
+For equation (1), multiplying by $u$ gives
+
+$$
+uM\,dx+uN\,dy=0.
+$$
+
+Exactness requires the mixed partials of the new coefficients to agree.
+Therefore, a necessary condition is
+
+$$
+{
+\frac{\partial}{\partial y}\bigl(uM\bigr)
+=\frac{\partial}{\partial x}\bigl(uN\bigr)
+}.
+$$
+
+Expanding both sides gives the equivalent first-order equation for the
+integrating factor:
+
+$$
+M\,u_y+u\,M_y=N\,u_x+u\,N_x.
+$$
+
+The unknown function $u$ must satisfy this equation: multiplying by an
+arbitrary non-zero function is not enough, because the new coefficients must
+pass the exactness test. On a simply connected domain, with the required
+continuous first partial derivatives, this equality is also sufficient for a
+potential; nonvanishing $u$ is what preserves the original solution curves.
+
+If the original equation is exact, there is a potential function $F$ such
+that
+
+$$
+F_x=M,\qquad F_y=N.
+$$
+
+Integrating $F_x=M$ with respect to $x$, while treating $y$ as constant,
+gives
+
+$$
+F(x,y)=\int M(x,y)\,dx+h(y),
+$$
+
+where $h$ is an arbitrary function of $y$. Differentiating this expression
+with respect to $y$ gives
+
+$$
+F_y(x,y)
+=\frac{\partial}{\partial y}\left(\int M(x,y)\,dx\right)+h'(y).
+$$
+
+Matching this with $N(x,y)$ determines $h'(y)$ and hence $h(y)$. Therefore
+the requested construction is
+
+$$
+{
+F(x,y)=\int M(x,y)\,dx+h(y),
+\qquad F_y=N.
+}
+$$
+
+The function $F$ is determined only up to an additive constant, which is
+absorbed into the constant $c$ in $F(x,y)=c$.
+
+For small changes $\Delta x$ and $\Delta y$, the partial derivatives give the
+first-order change in height:
+
+$$
+F(x_0+\Delta x,y_0+\Delta y)
+\approx F(x_0,y_0)+F_x(x_0,y_0)\Delta x+F_y(x_0,y_0)\Delta y.
+$$
+
+Replacing $\Delta x$ and $\Delta y$ by $x-x_0$ and $y-y_0$ gives the tangent
+plane to $z=F(x,y)$ at $(x_0,y_0,F(x_0,y_0))$:
+
+$$
+{
+z=F(x_0,y_0)
++F_x(x_0,y_0)(x-x_0)
++F_y(x_0,y_0)(y-y_0)
+}.
+$$
+
+Since $F_x=M$ and $F_y=N$, the same plane can be written as
+
+$$
+z=F(x_0,y_0)
++M(x_0,y_0)(x-x_0)
++N(x_0,y_0)(y-y_0).
+$$
+
+For part (e), the differential equation identifies the first partial
+derivatives of a potential:
+
+$$
+F_x=6x^2y^6,
+\qquad
+F_y=12x^3y^5.
+$$
+
+Integrating the first expression with respect to $x$ gives
+
+$$
+F(x,y)=2x^3y^6+h(y).
+$$
+
+Differentiating with respect to $y$ gives
+
+$$
+F_y=12x^3y^5+h'(y).
+$$
+
+Comparison with the coefficient of $dy$ gives $h'(y)=0$, so $h$ is a
+constant. That constant can be chosen so that $F(5,4)=20$.
+
+For the graph $z=F(x,y)$, at $(x,y,F(x,y))$ changing $x$ while holding $y$
+fixed gives the tangent direction $(1,0,F_x(x,y))$; changing $y$ while
+holding $x$ fixed gives $(0,1,F_y(x,y))$. A normal vector must be
+perpendicular to both. The vector $(-F_x(x,y),-F_y(x,y),1)$ has zero dot
+product with each direction, since
+$-F_x+F_x=0$ and $-F_y+F_y=0$. Thus one normal vector is
+
+$$
+\begin{pmatrix}
+-F_x(x,y)\\
+-F_y(x,y)\\
+1
+\end{pmatrix}.
+$$
+
+At $(5,4)$,
+
+$$
+\begin{aligned}
+F_x(5,4)
+&=6(5)^2(4)^6
+=150\cdot4096
+=614400,\\
+F_y(5,4)
+&=12(5)^3(4)^5
+=1500\cdot1024
+=1536000.
+\end{aligned}
+$$
+
+Consequently, one normal vector at $(5,4,20)$ is
+
+$$
+{
+\mathbf n=
+\begin{pmatrix}
+-614400\\
+-1536000\\
+1
+\end{pmatrix}.
+}
+$$
+
+An exact differential form gives a level curve of a potential. The graph of
+the same potential is a surface in three dimensions and its partial
+derivatives supply the tangent-plane and normal information. The linear
+approximation is the tangent plane, while the original solution curve is obtained by intersecting that
+surface with the horizontal plane $z=c$.
+
+</Example>
+
+<Recall of="integrating-factor" />
+
+<Recall of="characteristic-equation" />
+
+<Recall of="undetermined-coefficients" />
+
+<Example
+  slug="seen-bitcoin-linear-odes-and-forcing"
+  of="integrating-factor,characteristic-root-method,undetermined-coefficients"
+  difficulty="exam"
+>
+
+### First- and second-order price models
+
+Suppose a price $B(t)$ is modelled by
+
+$$
+\frac{dB}{dt}=-a(t)\bigl(B(t)-G(t)\bigr)+P(t). \tag{1}
+$$
+
+where $G(t)$ is a target price, $a(t)$ is a relaxation rate and $P(t)$ is an
+additional price-change rate. These are prescribed functions of $t$, not of
+$B$. Their particular values are not specified in part (a).
+
+#### (a)
+
+Which classes must Equation (1) belong to? Select all that apply:
+
+- linear;
+- non-linear;
+- homogeneous;
+- inhomogeneous;
+- an exact differential equation;
+- a separable differential equation.
+
+#### (b)
+
+At the launch of the coin, measurements gave
+
+$$
+a(t)=t^9,
+\qquad
+G(t)=2\sqrt[5]{2t^4+4t+5},
+\qquad
+P(t)=3\cos(t).
+$$
+
+Rewrite the equation as
+
+$$
+\frac{d}{dt}\bigl(\phi(t)B(t)\bigr)
+=\phi(t)\bigl(a(t)G(t)+P(t)\bigr),
+$$
+
+so that
+
+$$
+B(t)=\frac1{\phi(t)}
+\left(\int\phi(t)\bigl(a(t)G(t)+P(t)\bigr)\,dt+C\right).
+$$
+
+Find $\phi(t)$.
+
+#### (c)
+
+A second illustrative price $N(t)$ satisfies
+
+$$
+7N''(t)=-70N'(t)-175N(t)+8e^{-5t}.
+$$
+
+##### (i)
+
+To find the homogeneous equation, solve the associated characteristic equation,
+written in terms of a variable $\nu$:
+
+$$
+0=\ ?
+$$
+
+##### (ii)
+
+Find a particular solution $N_p$ that contains no undetermined coefficients.
+
+#### Solution
+
+Expand the right-hand side of (1) and collect the terms involving $B$:
+
+$$
+\frac{dB}{dt}+a(t)B(t)=a(t)G(t)+P(t).
+$$
+
+This is linear in the unknown function $B$. It is not necessarily
+inhomogeneous: $aG+P$ could vanish identically (for example, $a=G=1$ and
+$P=-1$). Nor must it be separable, although some choices of the prescribed
+functions make it so. In differential form,
+
+$$
+\bigl(a(t)B-a(t)G(t)-P(t)\bigr)\,dt+dB=0,
+$$
+
+the partial derivative of the $dt$ coefficient with respect to $B$ is
+$a(t)$, whereas the partial derivative of the $dB$ coefficient with respect
+to $t$ is zero. Exactness is therefore not guaranteed either. The only
+classification that must hold in part (a) is
+
+$$
+{\text{linear}.}
+$$
+
+For part (b), the coefficient of $B$ in standard linear form is
+$p(t)=a(t)=t^9$. The integrating factor is
+
+$$
+\phi(t)=e^{\int t^9\,dt}
+=e^{t^{10}/10}.
+$$
+
+Since $\phi'(t)=t^9\phi(t)$, multiplying the standard equation by $\phi$ gives
+
+$$
+\begin{aligned}
+\phi B'+t^9\phi B
+&=\phi B'+\phi'B\\
+&=\frac{d}{dt}(\phi B)\\
+&=\phi\bigl(t^9G(t)+3\cos t\bigr).
+\end{aligned}
+$$
+
+Thus,
+
+$$
+{\phi(t)=\exp(t^{10}/10).}
+$$
+
+
+The general solution includes an integration constant:
+
+$$
+B(t)
+=e^{-t^{10}/10}
+\left(
+\int e^{t^{10}/10}
+\bigl(t^9G(t)+3\cos t\bigr)\,dt+C
+\right).
+$$
+
+For part (c), first move all terms involving $N$ to the left:
+
+$$
+7N''+70N'+175N=8e^{-5t}.
+$$
+
+The associated homogeneous equation is
+
+$$
+7N''+70N'+175N=0.
+$$
+
+Using the trial solution $N=e^{\nu t}$ gives
+
+$$
+7\nu^2e^{\nu t}+70\nu e^{\nu t}+175e^{\nu t}=0.
+$$
+
+Since $e^{\nu t}\ne0$, the characteristic equation is
+
+$$
+{0=7\nu^2+70\nu+175
+=7(\nu+5)^2.}
+$$
+
+The repeated root is $\nu=-5$, so the homogeneous solution is
+
+$$
+N_h=(C_1+C_2t)e^{-5t}.
+$$
+
+The forcing term $8e^{-5t}$ has the same exponential as the repeated
+characteristic root. Both the usual trial $Ce^{-5t}$ and the once-corrected
+trial $Cte^{-5t}$ belong to the homogeneous solution space, so use
+
+$$
+N_p=At^2e^{-5t}.
+$$
+
+Write the differential operator as
+
+$$
+7D^2+70D+175=7(D+5)^2,
+\qquad D=\frac{d}{dt}.
+$$
+
+For $N_p=At^2e^{-5t}$,
+
+$$
+(D+5)\bigl(At^2e^{-5t}\bigr)=2At\,e^{-5t},
+$$
+
+and hence
+
+$$
+(D+5)^2\bigl(At^2e^{-5t}\bigr)
+=2A e^{-5t}.
+$$
+
+Substitution into the left-hand side gives
+
+$$
+7(D+5)^2N_p=14A e^{-5t}.
+$$
+
+Matching this with $8e^{-5t}$ gives
+
+$$
+14A=8
+\quad\Longrightarrow\quad
+A=\frac47.
+$$
+
+Therefore
+
+$$
+{N_p(t)=\frac47t^2e^{-5t}.}
+$$
+
+
+The complete general solution is
+
+$$
+{
+N(t)=\left(C_1+C_2t+\frac47t^2\right)e^{-5t}.
+}
+$$
+
+The first model is a first-order linear equation: the integrating factor
+creates the product rule. The second uses the constant-coefficient method for
+a second-order equation. Its repeated characteristic root explains the factors
+$1,t$ in the homogeneous solution and the extra factor $t^2$ in the
+particular trial.
+
+</Example>

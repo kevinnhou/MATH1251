@@ -1,0 +1,72 @@
+---
+title: Functions of several variables
+description: Partial derivatives, gradients and tangent planes, then local, global and constrained optimisation with an economic application.
+tags: [calculus]
+ideas: [multivariable-calculus, gradient, approximation, optimisation]
+---
+
+This chapter extends differentiation to functions $f:D\to\mathbb{R}$ with
+$D\subseteq\mathbb{R}^n$, whose inputs can move in many directions. Gradients,
+tangent planes and local polynomial models describe such functions and turn
+optimisation, with or without constraints, into systems of equations. The
+chapter assumes one-variable differentiation and [Taylor
+polynomials](/calculus/taylor-series/taylor-polynomials).
+
+## Lessons
+
+1. [Derivatives and level-set
+   geometry](/calculus/functions-of-several-variables/geometry-and-approximation):
+   partial derivatives, the gradient as a vector of rates and a normal to level
+   sets and tangent planes.
+2. [Multivariable
+   approximation](/calculus/functions-of-several-variables/multivariable-approximation):
+   the tangent plane as a first-order Taylor model, the Hessian and Taylor
+   polynomials through total degree three.
+3. [Local extrema](/calculus/functions-of-several-variables/local-extrema):
+   critical and stationary points and the Hessian test for minima, maxima and
+   saddles.
+4. [Global extrema](/calculus/functions-of-several-variables/global-extrema):
+   the extreme-value theorem and the interior-and-boundary search on a closed
+   and bounded region.
+5. [Constrained
+   extrema](/calculus/functions-of-several-variables/constrained-extrema):
+   Lagrange multipliers for an equality constraint, applied to distance
+   problems.
+6. [Economic
+   applications](/calculus/functions-of-several-variables/economic-applications):
+   maximising production under a budget, including Cobb-Douglas allocation.
+7. [Seen questions](/calculus/functions-of-several-variables/seen): past exam
+   questions on partial derivatives of composite functions and the
+   classification of critical points.
+
+## Where it leads
+
+The next chapter, [double integrals](/calculus/double-integrals), keeps the
+same domains, level curves and coordinate geometry but changes the question
+from local change and optimisation to accumulation over a planar region. The
+Hessian test links to Algebra through the
+[eigenvalues](/algebra/eigenvalues/eigenvalues-and-eigenvectors) of a
+symmetric matrix.
+
+## Vocabulary checkpoints
+
+- **Gradient and total derivative:** the gradient is the vector of partial
+  derivatives; the total derivative is the linear map
+  $\mathbf{h}\mapsto\nabla f\cdot\mathbf{h}$ that it represents at a
+  differentiable point ([derivatives and level-set
+  geometry](/calculus/functions-of-several-variables/geometry-and-approximation)).
+- **Partial derivatives and differentiability:** partial derivatives can exist
+  at a point where $f$ is not differentiable, or not even continuous ([local
+  extrema](/calculus/functions-of-several-variables/local-extrema)).
+- **Stationary and critical points:** a stationary point has zero gradient; a
+  critical point is an interior point that is either stationary or a point
+  where $f$ is not differentiable ([local
+  extrema](/calculus/functions-of-several-variables/local-extrema)).
+- **Local and global extrema:** a local extremum compares nearby values; a
+  global extremum on a closed and bounded region also needs every boundary
+  candidate ([global
+  extrema](/calculus/functions-of-several-variables/global-extrema)).
+- **Parallel and equal gradients:** the Lagrange condition
+  $\nabla f=\lambda\nabla g$ says that the gradients are parallel, not equal,
+  and it is guaranteed only where $\nabla g\ne\mathbf{0}$ ([constrained
+  extrema](/calculus/functions-of-several-variables/constrained-extrema)).

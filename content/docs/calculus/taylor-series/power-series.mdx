@@ -1,0 +1,411 @@
+---
+title: Power series
+description: Determine where an infinite polynomial converges and use calculus inside its radius.
+tags: [calculus]
+ideas: [power-series, radius-of-convergence, termwise-calculus]
+---
+
+A power series starts with coefficients and asks where their infinite polynomial
+converges. This reverses the [Taylor-series](/calculus/taylor-series/taylor-series)
+viewpoint: a Taylor series starts with a function, derives coefficients and asks
+where the series equals that function.
+
+## From coefficients to a function
+
+A power series defines a function only where it converges, so find that set before
+studying its algebra or calculus. Convergence has its [partial-sum meaning](/calculus/taylor-series/infinite-series) and the [convergence tests](/calculus/taylor-series/convergence-tests) find where it holds.
+
+<Recall of="infinite-series" />
+
+<Definition slug="power-series">
+
+### Power series
+
+<Statement>
+
+A power series centred at $a$ is a series of the form
+
+$$
+\sum_{k=0}^{\infty}c_k(x-a)^k.
+$$
+
+</Statement>
+
+The series itself may define a new function at every value of $x$ where it converges.
+
+</Definition>
+
+<Definition slug="radius-of-convergence" of="power-series">
+
+### Radius and interval of convergence
+
+<Statement>
+
+The radius of convergence $R$ of
+
+$$
+\sum_{k=0}^{\infty}c_k(x-a)^k
+$$
+
+is the number such that the series converges absolutely when $|x-a|<R$ and diverges when
+$|x-a|>R$.
+
+The interval of convergence is the open interval $(a-R,a+R)$ together with whichever
+endpoints converge.
+
+</Statement>
+
+With $R=0$ the series converges only at its centre, while $R=\infty$ gives
+convergence for every real $x$. Here $R$ denotes a radius; the [Taylor remainder](/calculus/taylor-series/taylors-theorem)
+is written separately as $R_{n+1}(x)$.
+
+</Definition>
+
+## Find the radius and test the endpoints
+
+The radius gives the open interval where the power series converges, but it does not settle
+the boundary. At each endpoint the power series becomes an ordinary series, to be tested
+with the [convergence tests](/calculus/taylor-series/convergence-tests).
+
+<Theorem slug="power-series-convergence-region" of="radius-of-convergence">
+
+### Convergence has a central interval
+
+<Statement>
+
+Every real power series has a radius $R\in[0,\infty]$ with the following behaviour:
+
+- absolute convergence for $|x-a|<R$;
+- divergence for $|x-a|>R$;
+- separate endpoint behaviour when $0<R<\infty$.
+
+</Statement>
+
+To see why the region has this shape, suppose the series converges at some $x_0\ne a$.
+Then its terms satisfy $|c_k(x_0-a)^k|\le M$ for some $M>0$. At any point with
+$|x-a|<|x_0-a|$,
+
+$$
+|c_k(x-a)^k|
+\le M\left|\frac{x-a}{x_0-a}\right|^k.
+$$
+
+The right-hand side is geometric with ratio below $1$, so convergence at one point
+forces absolute convergence at every point closer to the centre.
+
+</Theorem>
+
+<Method slug="find-power-series-interval" of="power-series-convergence-region">
+
+### Find the interval of convergence
+
+<Statement>
+
+For a power series centred at $a$:
+
+1. apply the ratio or root test when its limit exists and is decisive; otherwise estimate
+   the coefficients by another convergence test;
+2. rewrite that condition as $|x-a|<R$;
+3. record the open interval $(a-R,a+R)$;
+4. if $0<R<\infty$, substitute $x=a-R$ and $x=a+R$ into the original series;
+5. apply the appropriate ordinary series test at each finite endpoint.
+
+</Statement>
+
+The endpoint series may be geometric, harmonic, alternating or something else and the two
+endpoints need not behave alike. If $R=0$ there are no endpoints to test;
+if $R=\infty$ every real $x$ is already inside the radius.
+
+</Method>
+
+<Example slug="power-series-open-interval" of="find-power-series-interval" difficulty="exam">
+
+### A power series with two divergent endpoints
+
+Consider
+
+$$
+\sum_{k=0}^{\infty}\frac{(x-3)^k}{3^k+2}.
+$$
+
+Writing its term as $a_k$, the ratio test gives
+
+$$
+\left|\frac{a_{k+1}}{a_k}\right|
+=|x-3|\frac{3^k+2}{3^{k+1}+2}
+\longrightarrow\frac{|x-3|}{3}.
+$$
+
+Therefore the series converges when $|x-3|<3$, giving the possible interval $(0,6)$.
+
+At $x=0$,
+
+$$
+a_k=\frac{(-3)^k}{3^k+2},
+\qquad |a_k|\longrightarrow1,
+$$
+
+so the terms do not tend to zero. At $x=6$,
+
+$$
+a_k=\frac{3^k}{3^k+2}\longrightarrow1,
+$$
+
+so the terms again fail the $n$-th term test. The interval of convergence is
+
+$$
+{(0,6)}.
+$$
+
+</Example>
+
+<Example slug="power-series-half-open-interval" of="find-power-series-interval" difficulty="exam">
+
+### A power series with one convergent endpoint
+
+Consider
+
+$$
+\sum_{k=1}^{\infty}\frac{4^k}{k}(x-2)^k.
+$$
+
+The ratio test gives
+
+$$
+\left|\frac{a_{k+1}}{a_k}\right|
+=4|x-2|\frac{k}{k+1}
+\longrightarrow4|x-2|.
+$$
+
+Thus $R=1/4$, with possible interval $(7/4,9/4)$.
+
+At $x=7/4$,
+
+$$
+\frac{4^k}{k}\left(-\frac14\right)^k
+=\frac{(-1)^k}{k},
+$$
+
+which converges by the alternating-series test. At $x=9/4$,
+
+$$
+\frac{4^k}{k}\left(\frac14\right)^k
+=\frac1k,
+$$
+
+which diverges. Hence
+
+$$
+{\left[\frac74,\frac94\right)}.
+$$
+
+</Example>
+
+## Algebra inside a common radius
+
+Inside a common interval of absolute convergence, power series can be added and multiplied
+like polynomials.
+
+<Theorem slug="power-series-algebra" of="power-series">
+
+### Algebra of power series
+
+<Statement>
+
+Inside a common interval where the power series converge absolutely, if
+
+$$
+f(x)=\sum_{k=0}^{\infty}a_k(x-a)^k,
+\qquad
+g(x)=\sum_{k=0}^{\infty}b_k(x-a)^k,
+$$
+
+then
+
+$$
+f(x)\pm g(x)
+=\sum_{k=0}^{\infty}(a_k\pm b_k)(x-a)^k,
+$$
+
+and
+
+$$
+f(x)g(x)
+=\sum_{k=0}^{\infty}
+\left(\sum_{j=0}^{k}a_jb_{k-j}\right)(x-a)^k.
+$$
+
+</Statement>
+
+The second formula is the Cauchy product. The coefficient of $(x-a)^k$ collects every
+pair of terms whose powers add to $k$. Products at endpoints require separate justification
+when endpoint convergence is only conditional.
+
+</Theorem>
+
+## Calculus inside the radius
+
+Inside the open interval of convergence, a power series can be differentiated and integrated
+term by term.
+
+<Theorem slug="termwise-power-series-calculus" of="power-series">
+
+### Differentiate and integrate term by term
+
+<Statement>
+
+Inside the radius of convergence,
+
+$$
+\frac{d}{dx}\sum_{k=0}^{\infty}a_k(x-a)^k
+=\sum_{k=1}^{\infty}ka_k(x-a)^{k-1},
+$$
+
+and
+
+$$
+\int\sum_{k=0}^{\infty}a_k(x-a)^k\,dx
+=C+\sum_{k=0}^{\infty}\frac{a_k}{k+1}(x-a)^{k+1}.
+$$
+
+Both resulting power series have the same open radius of convergence as the original one.
+
+</Statement>
+
+On every closed interval $[a-r,a+r]$ with $0<r<R$, the original series and its
+differentiated series converge uniformly. This local uniform control justifies the
+termwise operations; pointwise convergence alone would not.
+
+Uniform convergence on a set means that for every tolerance $\varepsilon>0$, there
+is one index $N$ such that $|S_n(x)-f(x)|<\varepsilon$ for every $n>N$ and every
+input $x$ in the set. Pointwise convergence may require a different $N$ at each
+input.
+
+The theorem concerns only the open interval. Uniform convergence at either endpoint is
+a separate question and endpoint behaviour may change after differentiating or
+integrating.
+
+If
+
+$$
+f(x)=\sum_{k=0}^{\infty}a_k(x-a)^k,
+$$
+
+then evaluating derivatives at the centre gives
+
+$$
+f^{(j)}(a)=j!a_j.
+$$
+
+Consequently, the power series is the Taylor series of the function it defines.
+
+</Theorem>
+
+<Example slug="recover-cosine-from-sine-series" of="termwise-power-series-calculus" difficulty="routine">
+
+### Recovering $\cos x$ from $\sin x$
+
+Termwise differentiation of
+
+$$
+\sin x=\sum_{k=0}^{\infty}(-1)^k\frac{x^{2k+1}}{(2k+1)!}
+$$
+
+gives
+
+$$
+\cos x
+=\sum_{k=0}^{\infty}(-1)^k\frac{x^{2k}}{(2k)!}.
+$$
+
+</Example>
+
+<Example slug="sum-k-squared-x-k" of="termwise-power-series-calculus" difficulty="exam">
+
+### Find $\sum_{k=0}^{\infty}k^2x^k$
+
+Start with the geometric series:
+
+$$
+\frac1{1-x}=\sum_{k=0}^{\infty}x^k,
+\qquad |x|<1.
+$$
+
+Differentiate and multiply by $x$:
+
+$$
+\frac{x}{(1-x)^2}=\sum_{k=0}^{\infty}kx^k.
+$$
+
+Differentiate once more and multiply by $x$:
+
+$$
+\frac{x(1+x)}{(1-x)^3}
+=\sum_{k=0}^{\infty}k^2x^k,
+\qquad |x|<1.
+$$
+
+Therefore
+
+$$
+{
+\sum_{k=0}^{\infty}k^2x^k
+=\frac{x(1+x)}{(1-x)^3},
+\qquad |x|<1.
+}
+$$
+
+</Example>
+
+## Why pointwise convergence is not enough
+
+The termwise calculus theorem is special to power series. For a general sequence of
+functions, a limit at each fixed input does not control the derivatives.
+
+<Proposition slug="pointwise-convergence-not-termwise-calculus" of="termwise-power-series-calculus">
+
+### Pointwise convergence is not enough
+
+<Statement>
+
+Convergence at each fixed $x$ (called pointwise convergence) does not, by itself,
+justify differentiating the limit term by term.
+
+</Statement>
+
+Consider
+
+$$
+f_n(x)=\frac{\sin(n^2x)}n.
+$$
+
+For every fixed $x$,
+
+$$
+|f_n(x)|\le\frac1n\longrightarrow0,
+$$
+
+so $f_n(x)\to f(x)=0$. However,
+
+$$
+f_n'(x)=n\cos(n^2x),
+\qquad
+f_n'(0)=n,
+$$
+
+which does not converge to $f'(0)=0$. In general,
+
+$$
+\lim_{n\to\infty}\lim_{h\to0}
+\frac{f_n(x+h)-f_n(x)}h
+\quad\text{and}\quad
+\lim_{h\to0}\lim_{n\to\infty}
+\frac{f_n(x+h)-f_n(x)}h
+$$
+
+need not agree. Power-series theorems supply the extra control inside the radius of
+convergence.
+
+</Proposition>
+
+Because a power series is the Taylor series of its sum, its partial sums are the [Taylor polynomials](/calculus/taylor-series/taylor-polynomials) of that sum. The [remainder in Taylor's theorem](/calculus/taylor-series/taylors-theorem) controls their error and the [Taylor series](/calculus/taylor-series/taylor-series) page decides when a Taylor series built from a given function equals it. The [next chapter](/calculus/functions-of-several-variables) carries Taylor approximation into several variables.

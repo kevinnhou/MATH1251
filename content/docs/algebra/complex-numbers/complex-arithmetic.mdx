@@ -1,0 +1,258 @@
+---
+title: Complex arithmetic
+description: Cartesian form, conjugation, arithmetic and the Argand plane.
+tags: [algebra]
+ideas: [complex-arithmetic, conjugation, argand-plane]
+---
+
+This page introduces the complex numbers and their arithmetic. The real
+numbers contain no solution of $x^2+1=0$. Adjoining a number $i$ with
+$i^2=-1$ supplies one while keeping the usual rules of addition and
+multiplication. A complex number then has a real component and a component
+along the new $i$ direction.
+
+## Cartesian form
+
+<Definition slug="complex-number">
+
+### Complex number
+
+<Statement>
+
+A *complex number* is a number of the form
+$$
+z=a+bi,\qquad a,b\in\mathbb R,\qquad i^2=-1.
+$$
+The expression $a+bi$ is the Cartesian form of $z$. Its real part is $\operatorname{Re}(z)=a$ and its imaginary part is $\operatorname{Im}(z)=b$.
+
+</Statement>
+
+Every real number is a complex number with imaginary part zero. Equality is componentwise:
+$$
+a+bi=c+di\quad\Longleftrightarrow\quad a=c\text{ and }b=d.
+$$
+
+When simplifying powers of $i$, use the four-term cycle
+$$
+i^0=1,\qquad i^1=i,\qquad i^2=-1,\qquad i^3=-i,
+$$
+which then repeats because $i^4=1$.
+
+</Definition>
+
+## The Argand plane
+
+<Definition slug="argand-plane" of="complex-number">
+
+### Argand plane
+
+<Statement>
+
+The *Argand plane* represents $z=a+bi$ by the point $(a,b)$, with the real axis horizontal and the imaginary axis vertical.
+
+</Statement>
+
+Under this identification, addition of complex numbers is vector addition,
+and $z-w$ is the displacement from $w$ to $z$. So $|z-w|$ will measure the
+distance between the two points. The picture also makes modulus and argument
+geometric quantities in [polar form](/algebra/complex-numbers/polar-form).
+
+The point represents the number but does not replace its algebra: complex
+multiplication still combines both components according to $i^2=-1$.
+
+</Definition>
+
+## Conjugation and modulus
+
+<Definition slug="complex-conjugate" of="complex-number">
+
+### Complex conjugate
+
+<Statement>
+
+If $z=a+bi$, its *complex conjugate* is
+$$
+\overline z=a-bi.
+$$
+
+</Statement>
+
+Conjugation changes the sign of the imaginary part and leaves the real part unchanged, so it reflects $z$ in the real axis. The product of $z$ and its conjugate is real:
+$$
+z\overline z=(a+bi)(a-bi)=a^2+b^2.
+$$
+
+</Definition>
+
+<Definition slug="complex-modulus" of="complex-number">
+
+### Complex modulus
+
+<Statement>
+
+The *modulus* of $z=a+bi$ is
+$$
+|z|=\sqrt{a^2+b^2}.
+$$
+
+</Statement>
+
+In the Argand plane, $|z|$ is the distance from $z$ to the origin. Division
+and [polar form](/algebra/complex-numbers/polar-form) both use the identity
+$z\overline z=|z|^2$.
+
+</Definition>
+
+## Arithmetic and conjugation laws
+
+<Method slug="complex-arithmetic" of="complex-number">
+
+### Add, multiply and divide complex numbers
+
+<Statement>
+
+For $z_1=x_1+iy_1$ and $z_2=x_2+iy_2$,
+$$
+z_1+z_2=(x_1+x_2)+i(y_1+y_2),
+$$
+$$
+z_1z_2=(x_1x_2-y_1y_2)+i(x_1y_2+y_1x_2).
+$$
+The additive inverse is $-z_1$. For a non-zero $z=x+iy$,
+$$
+z^{-1}=\frac{x}{x^2+y^2}-i\frac{y}{x^2+y^2},
+\qquad zz^{-1}=1.
+$$
+Division is defined using this inverse. In practice, when $z_2\ne0$,
+$$
+\frac{z_1}{z_2}
+=\frac{z_1\overline{z_2}}{z_2\overline{z_2}}.
+$$
+
+</Statement>
+
+The multiplication formula follows by expanding and replacing $i^2$ by $-1$. The conjugate in the division formula makes the denominator real:
+$$
+z_2\overline{z_2}=|z_2|^2.
+$$
+
+</Method>
+
+<Example slug="complex-arithmetic-calculation" of="complex-arithmetic" difficulty="routine">
+
+### Calculate with Cartesian forms
+
+Let $z_1=1+i$ and $z_2=\sqrt2-\pi i$. Then
+$$
+z_1+z_2=(1+\sqrt2)+(1-\pi)i,
+$$
+and
+$$
+\begin{aligned}
+z_1z_2
+&=(1+i)(\sqrt2-\pi i)\\
+&=(\sqrt2+\pi)+(\sqrt2-\pi)i.
+\end{aligned}
+$$
+
+For subtraction,
+$$
+z_1-z_2=(1-\sqrt2)+(1+\pi)i.
+$$
+For division, multiply numerator and denominator by
+$$
+\overline{z_2}=\sqrt2+\pi i:
+$$
+$$
+\frac{z_1}{z_2}
+=\frac{(1+i)(\sqrt2+\pi i)}{(\sqrt2-\pi i)(\sqrt2+\pi i)}
+=\frac{(\sqrt2-\pi)+(\sqrt2+\pi)i}{2+\pi^2}.
+$$
+
+</Example>
+
+<Theorem slug="conjugation-rules" of="complex-conjugate">
+
+### Rules for conjugation
+
+<Statement>
+
+For $z,z_1,z_2\in\mathbb C$ with $z_2\ne0$,
+$$
+\overline{\overline z}=z,\qquad
+\overline{z_1+z_2}=\overline{z_1}+\overline{z_2},\qquad
+\overline{z_1-z_2}=\overline{z_1}-\overline{z_2},\qquad
+\overline{z_1z_2}=\overline{z_1}\,\overline{z_2},
+$$
+$$
+\overline{\frac{z_1}{z_2}}
+=\frac{\overline{z_1}}{\overline{z_2}},
+\qquad
+\operatorname{Re}(z)=\frac{z+\overline z}{2},
+\qquad
+\operatorname{Im}(z)=\frac{z-\overline z}{2i}.
+$$
+
+</Statement>
+
+Each identity can be checked by writing the numbers in Cartesian form. The last two recover the real and imaginary parts of $z$ from $z$ and $\overline z$.
+
+</Theorem>
+
+## Fields and number systems
+
+<Definition slug="field">
+
+### Field
+
+<Statement>
+
+A *field* is a non-empty set equipped with addition and multiplication satisfying closure, associativity and commutativity for both operations, distinct additive and multiplicative identities $0\ne1$, additive inverses, multiplicative inverses for non-zero elements and the two distributive laws.
+
+</Statement>
+
+In a field we can add, subtract, multiply and divide by any non-zero element
+without leaving the set. The real and complex numbers are fields. The natural
+numbers fail the additive inverse axiom: $1\in\mathbb N$ but
+$-1\notin\mathbb N$. The integers fail the multiplicative inverse axiom:
+$2\in\mathbb Z$, but $2^{-1}=1/2\notin\mathbb Z$.
+
+</Definition>
+
+The number systems used in the course form the chain
+
+$$
+\mathbb N\subseteq\mathbb Z\subseteq\mathbb Q\subseteq\mathbb R\subseteq\mathbb C.
+$$
+
+Here $\mathbb N=\{0,1,2,\ldots\}$; the convention matters when deciding which
+systems contain a solution. Each enlargement supplies solutions that the
+previous system lacks. For a quadratic with real coefficients, the last step
+is decided by the discriminant: a negative discriminant gives no real roots
+but does give complex roots.
+
+<Example slug="equations-over-number-systems" of="complex-number" difficulty="routine">
+
+### Compare solutions across number systems
+
+The equation $2x+4=8$ has the solution $x=2$ in every number system listed
+above. The equation $2x+4=-8$ first becomes solvable in $\mathbb Z$, where
+$x=-6$, while $2x+4=7$ first becomes solvable in $\mathbb Q$, where
+$x=3/2$. The equation $2x^2+4=7$ has real solutions
+$x=\pm\sqrt{3/2}$, which are irrational, whereas
+
+$$
+2x^2+4=3
+\quad\Longrightarrow\quad
+x=\pm\frac{i}{\sqrt2}
+$$
+
+requires $\mathbb C$.
+
+A solution in one system also belongs to every larger system in the chain,
+so each comparison identifies the smallest system that contains the
+solution.
+
+</Example>
+
+[Polar form](/algebra/complex-numbers/polar-form) describes the same numbers by distance from the origin and direction, which simplifies multiplication and roots.

@@ -1,0 +1,431 @@
+---
+title: Coordinates and bases
+description: Constructing bases and reading coefficients as coordinate vectors.
+tags: [algebra]
+ideas: [bases, coordinates, dimension]
+---
+
+This page builds bases from given vectors and then uses a basis to turn each vector into a column of coordinates. Coordinates let calculations in any finite-dimensional space be done with columns in $F^n$.
+
+## Constructing a basis from data
+
+<Recall of="basis" />
+
+<Recall of="dimension" />
+
+A basis can be built from given vectors in two directions, both using pivot
+columns. A spanning set is cut down to a maximal independent subset and an
+independent set is extended by standard basis vectors until it spans.
+
+If $S$ is a finite non-empty subset of a vector space, then $S$ contains a subset which is a basis for $\operatorname{span}(S)$. In particular, a non-zero vector space spanned by a finite set has a basis.
+
+<Method slug="spanning-set-to-basis" of="basis,span,homogeneous-independence-test">
+
+### Reduce a spanning set to a basis
+
+<Statement>
+
+For a finite set $S=\{u_1,\ldots,u_n\}\subseteq\mathbb R^m$:
+
+1. Form the matrix $A=[\,u_1\ \cdots\ u_n\,]$.
+2. Row reduce $A$ to echelon form.
+3. Keep the original vectors whose columns correspond to pivot columns of
+   the echelon form.
+
+The remaining original vectors form a basis for $\operatorname{span}(S)$.
+
+</Statement>
+
+Row operations identify which columns are redundant, but the basis must use the corresponding columns of the original matrix. Removing the redundant vectors preserves the [span](/algebra/vector-spaces/spans).
+
+</Method>
+
+<Example slug="reduce-eight-vectors" of="spanning-set-to-basis" difficulty="routine">
+
+### Eight vectors in $\mathbb R^5$
+
+Suppose the row-reduced matrix has columns corresponding to eight original vectors:
+$$
+\begin{pmatrix}
+1&2&3&4&5&7&1&5\\
+0&0&0&1&6&8&2&6\\
+0&0&0&0&1&9&3&7\\
+0&0&0&0&0&0&1&8\\
+0&0&0&0&0&0&0&0
+\end{pmatrix}.
+$$
+The leading columns are $1,4,5,7$. Retaining the four original vectors in those positions gives a basis for the span of the eight vectors, so that span has dimension $4$.
+
+</Example>
+
+If $V$ is spanned by a finite set and $S$ is an independent subset of $V$, then there exists a basis for $V$ containing $S$. In other words, every independent subset can be extended to a basis.
+To build it, keep adjoining a vector outside the current span until the set
+spans $V$. Each addition preserves independence and the dimension of $V$
+bounds the size of any independent set, so the process stops after finitely
+many steps.
+
+<Method slug="extend-independent-set-to-basis" of="basis,dimension,independent-adjoining">
+
+### Extend an independent set to a basis
+
+<Statement>
+
+For an independent set $S=\{u_1,\ldots,u_n\}\subseteq\mathbb R^m$:
+
+1. Form the matrix with columns
+$$
+[\,u_1\ \cdots\ u_n\ e_1\ \cdots\ e_m\,],
+$$
+where $e_1,\ldots,e_m$ are the standard basis vectors.
+2. Row reduce this matrix to echelon form.
+3. Keep the original columns corresponding to all pivot columns.
+
+The resulting vectors form a basis for $\mathbb R^m$ containing $S$.
+
+</Statement>
+
+The standard basis supplies candidate vectors outside the current span. The
+pivot columns keep the given independent vectors and add only the candidates
+needed to reach dimension $m$. As before, take the columns from the original
+matrix: row reduction changes the vectors but not the pivot positions.
+
+</Method>
+
+<Example slug="extend-two-vectors-in-r3" of="extend-independent-set-to-basis" difficulty="routine">
+
+### Extending a set in $\mathbb R^3$
+
+Let
+$$
+S=\left\{
+\begin{pmatrix}1\\2\\3\end{pmatrix},
+\begin{pmatrix}1\\2\\4\end{pmatrix},
+\begin{pmatrix}1\\2\\5\end{pmatrix}
+\right\}.
+$$
+Writing $u_1,u_2,u_3$ for these vectors, the first two are independent and
+$$
+u_3=2u_2-u_1,
+$$
+so $\{u_1,u_2\}$ is a basis for $\operatorname{span}(S)$. Following the
+construction, adjoin the standard basis columns:
+$$
+\left[
+u_1\ u_2\ e_1\ e_2\ e_3
+\right]
+=
+\begin{pmatrix}
+1&1&1&0&0\\
+2&2&0&1&0\\
+3&4&0&0&1
+\end{pmatrix}
+\longrightarrow
+\begin{pmatrix}
+1&0&0&2&-1\\
+0&1&0&-\frac32&1\\
+0&0&1&-\frac12&0
+\end{pmatrix}.
+$$
+The leading columns are $1,2,3$. Keeping the corresponding original columns
+gives the basis
+$$
+\left\{
+\begin{pmatrix}1\\2\\3\end{pmatrix},
+\begin{pmatrix}1\\2\\4\end{pmatrix},
+\begin{pmatrix}1\\0\\0\end{pmatrix}
+\right\}
+$$
+for $\mathbb R^3$.
+
+</Example>
+
+## Coordinates record the unique coefficients
+
+Once an ordered basis is fixed, the unique coefficients of a vector form a
+column of scalars.
+
+<Definition slug="coordinate-vector" of="basis,independence-unique-representation">
+
+### Coordinate vector
+
+<Statement>
+
+Let $B=(u_1,\ldots,u_n)$ be an ordered basis for a vector space $V$. If
+$$
+u=x_1u_1+\cdots+x_nu_n,
+$$
+then the *coordinate vector* of $u$ with respect to $B$ is the column
+$$
+[u]_B=
+\begin{pmatrix}
+x_1\\
+\vdots\\
+x_n
+\end{pmatrix}.
+$$
+
+</Statement>
+
+The order of $B$ fixes the order of the entries. Changing the order of the basis changes the coordinate vector even though it does not change $u$.
+
+</Definition>
+
+<Method slug="compute-coordinate-vector" of="coordinate-vector">
+
+### Compute a coordinate vector
+
+<Statement>
+
+To find $[u]_B$ for an ordered basis $B=(u_1,\ldots,u_n)$:
+
+1. Solve
+$$
+u=x_1u_1+\cdots+x_nu_n
+$$
+for the coefficients.
+2. Place the coefficients in the order determined by $B$:
+$$
+[u]_B=
+\begin{pmatrix}
+x_1\\
+\vdots\\
+x_n
+\end{pmatrix}.
+$$
+
+</Statement>
+
+Step 1 is a [span](/algebra/vector-spaces/spans) membership problem and its solution is unique because $B$ is independent.
+
+</Method>
+
+<Example slug="standard-polynomial-coordinates" of="coordinate-vector,compute-coordinate-vector" difficulty="routine">
+
+### Coordinates in the standard polynomial basis
+
+For the ordered basis
+$$
+B=(1,x,x^2,\ldots,x^n)
+$$
+of $P_n(F)$ over the chosen scalar field $F$, the polynomial
+$$
+p=a_0+a_1x+\cdots+a_nx^n,
+\qquad a_0,\ldots,a_n\in F,
+$$
+has coordinate vector
+$$
+[p]_B=
+\begin{pmatrix}
+a_0\\
+a_1\\
+\vdots\\
+a_n
+\end{pmatrix}.
+$$
+
+</Example>
+
+<Example slug="polynomial-coordinate-calculation" of="compute-coordinate-vector" difficulty="routine">
+
+### Coordinates in a non-standard polynomial basis
+
+Let
+$$
+B=(1+x,\ x+x^2,\ 1+x^2).
+$$
+First check that these polynomials form a basis. If
+$\lambda_1(1+x)+\lambda_2(x+x^2)+\lambda_3(1+x^2)=0$,
+equating the constant, linear and quadratic coefficients gives
+$$
+\lambda_1+\lambda_3=0,\qquad
+\lambda_1+\lambda_2=0,\qquad
+\lambda_2+\lambda_3=0.
+$$
+These equations force all three coefficients to be zero. Thus $B$ is an
+independent set of three vectors in the three-dimensional space
+$P_2(\mathbb R)$,
+so it is a basis. To find the coordinates of $x^2+x+1$, solve
+$$
+x^2+x+1
+=\lambda_1(1+x)+\lambda_2(x+x^2)+\lambda_3(1+x^2).
+$$
+Equating coefficients gives
+$$
+\lambda_1+\lambda_3=1,\qquad
+\lambda_1+\lambda_2=1,\qquad
+\lambda_2+\lambda_3=1.
+$$
+Thus
+$$
+\lambda_1=\lambda_2=\lambda_3=\frac12,
+$$
+and
+$$
+[x^2+x+1]_B=
+\begin{pmatrix}
+\frac12\\[2pt]
+\frac12\\[2pt]
+\frac12
+\end{pmatrix}.
+$$
+
+</Example>
+
+## Orthonormal coordinates
+
+When the basis vectors in $\mathbb R^m$ are orthonormal, dot products give
+the coordinates directly, with no system to solve.
+
+<Definition slug="orthonormal-set">
+
+### Orthonormal set
+
+<Statement>
+
+A set $S=\{u_1,\ldots,u_n\}$ in $\mathbb R^m$ is *orthonormal* if
+$$
+u_i\cdot u_j=
+\begin{cases}
+1,&i=j,\\
+0,&i\ne j.
+\end{cases}
+$$
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="orthonormal-set-independent" of="orthonormal-set,linear-independence">
+
+### Orthonormal sets are independent
+
+<Statement>
+
+Every orthonormal set is linearly independent.
+
+</Statement>
+
+If $\lambda_1u_1+\cdots+\lambda_nu_n=0$, take the dot product with $u_k$. Orthonormality leaves $\lambda_k=0$. This holds for every $k$.
+
+</Theorem>
+
+<Definition slug="orthonormal-basis" of="basis,orthonormal-set">
+
+### Orthonormal basis
+
+<Statement>
+
+An *orthonormal basis* of a subspace of $\mathbb R^m$ is a basis that is also
+an orthonormal set.
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="orthonormal-coordinate-formula" of="orthonormal-basis,coordinate-vector">
+
+### Coordinates in an orthonormal basis
+
+<Statement>
+
+If $B=(u_1,\ldots,u_n)$ is an ordered orthonormal basis of a subspace
+$V\subseteq\mathbb R^m$ and $v\in V$, then
+$$
+[v]_B=
+\begin{pmatrix}
+u_1\cdot v\\
+\vdots\\
+u_n\cdot v
+\end{pmatrix}.
+$$
+
+</Statement>
+
+Each dot product extracts one coefficient because the other basis vectors are perpendicular to it.
+
+</Theorem>
+
+<Proof of="orthonormal-coordinate-formula">
+
+Write $v=x_1u_1+\cdots+x_nu_n$. Taking the dot product with $u_k$ gives
+$$
+u_k\cdot v
+=\sum_{j=1}^n x_j(u_k\cdot u_j)
+=x_k.
+$$
+These are exactly the entries of $[v]_B$.
+
+</Proof>
+
+<Example slug="orthonormal-coordinates-in-r3" of="orthonormal-coordinate-formula,dimension-counting" difficulty="routine">
+
+### An orthonormal basis of $\mathbb R^3$
+
+The set
+$$
+B=\left(
+\frac1{\sqrt3}\begin{pmatrix}1\\1\\1\end{pmatrix},
+\frac1{\sqrt2}\begin{pmatrix}1\\-1\\0\end{pmatrix},
+\frac1{\sqrt6}\begin{pmatrix}1\\1\\-2\end{pmatrix}
+\right)
+$$
+is orthonormal, hence independent. It has three vectors in $\mathbb R^3$, so it is a basis. For
+$$
+v=\begin{pmatrix}a_1\\a_2\\a_3\end{pmatrix},
+$$
+the orthonormal formula gives
+$$
+[v]_B=
+\begin{pmatrix}
+(a_1+a_2+a_3)/\sqrt3\\
+(a_1-a_2)/\sqrt2\\
+(a_1+a_2-2a_3)/\sqrt6
+\end{pmatrix}.
+$$
+
+</Example>
+
+## Coordinate arithmetic and matrix tests
+
+<Theorem slug="coordinate-vector-operations" of="coordinate-vector,basis">
+
+### Coordinates preserve vector-space operations
+
+<Statement>
+
+If $B$ is an ordered basis for $V$, $u,v\in V$ and $\lambda\in F$, then
+$$
+u=v\iff [u]_B=[v]_B,
+\qquad
+[u+v]_B=[u]_B+[v]_B,
+\qquad
+[\lambda u]_B=\lambda[u]_B.
+$$
+
+</Statement>
+
+These identities follow by adding or scaling the coefficients in the unique representations.
+
+</Theorem>
+
+<Corollary slug="square-matrix-basis-criteria" of="basis,dimension-counting,homogeneous-independence-test">
+
+### Square-matrix basis criteria
+
+<Statement>
+
+For a square matrix $A$ with columns $u_1,\ldots,u_n$, the following are equivalent:
+
+- the columns are linearly independent;
+- the columns span $\mathbb R^n$;
+- the columns form a basis for $\mathbb R^n$.
+
+</Statement>
+
+For a square matrix, these basis criteria are equivalent to the familiar tests for invertibility.
+
+</Corollary>
+
+[Data fitting](/algebra/vector-spaces/data-fitting) uses coordinates in $P_n(\mathbb R)$ to express interpolation conditions.
+Later, coordinates in the domain and codomain turn a
+[linear transformation into a matrix](/algebra/linear-transformations/matrix-representations).

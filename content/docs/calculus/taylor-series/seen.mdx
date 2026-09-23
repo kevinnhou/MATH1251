@@ -1,0 +1,625 @@
+---
+title: Seen Questions
+description: Worked solutions on Taylor polynomials, remainder bounds, sequences, convergence tests and power-series endpoints.
+tags: [seen, calculus, taylor-series]
+ideas: [revision, taylor-polynomials, sequences, convergence, power-series]
+---
+
+These past exam questions cover sequence limits and convergence tests, Taylor coefficients
+with a Lagrange remainder bound and the interval of convergence of a power series.
+
+<Recall of="sequence-convergence" />
+
+<Recall of="monotone-convergence-theorem" />
+
+<Example
+  slug="seen-sequences-limits-and-series-tests"
+  of="monotone-convergence-theorem,root-test,limit-comparison-test"
+  difficulty="exam"
+>
+
+### Sequences and series
+
+#### (a)
+
+Let $\{a_n\}_{n=0}^{\infty}$ be a sequence of non-negative real numbers. Which of the following ensures that $\{a_n\}_{n=0}^{\infty}$ converges? Select all that apply.
+
+- $\{a_n\}_{n=0}^{\infty}$ is bounded below and non-decreasing.
+- There exists $L\in\mathbb R$ such that for each $\varepsilon>0$ there corresponds $K\in\mathbb N$ such that $|a_n-L|<\varepsilon$ whenever $n>K$.
+- $\sup\{a_n:n\in\mathbb N\}$ exists.
+- $\{a_n\}_{n=0}^{\infty}$ is bounded above and non-increasing.
+- $\inf\{a_n:n\in\mathbb N\}$ exists.
+
+#### (b)
+
+Consider the sequence $\{a_n\}_{n=0}^{\infty}$ given by
+
+$$
+a_0=7,\qquad
+a_{n+1}=8-\sqrt{38-a_n}
+\qquad(n\ge0).
+$$
+
+Given that this sequence is decreasing and converges, find
+
+$$
+L=\lim_{n\to\infty}a_n.
+$$
+
+#### (c)
+
+Let $\{c_n\}_{n=0}^{\infty}$ and $\{d_n\}_{n=0}^{\infty}$ be sequences of strictly positive real numbers satisfying
+
+$$
+\lim_{n\to\infty}c_n=L_1<1,
+\qquad
+\lim_{n\to\infty}d_n=L_2>1.
+$$
+
+For $n\ge1$, define
+
+$$
+b_n=\left(\frac{c_n}{d_n}\right)^n.
+$$
+
+Determine which statements are true:
+
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is convergent by the integral test.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is divergent by the ratio test.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is divergent by the root test.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is convergent by the ratio test.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is convergent by the root test.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ is divergent by the integral test.
+
+#### (d)
+
+Let $\{a_n\}_{n=0}^{\infty}$ and $\{b_n\}_{n=0}^{\infty}$ be sequences such that
+
+$$
+a_n=\frac{2}{n^\alpha}+O(n^{-\alpha-1})
+\qquad\text{as }n\to\infty,
+$$
+
+and
+
+$$
+b_n=\frac{9}{n^\alpha}+O(n^{-\alpha-1})
+\qquad\text{as }n\to\infty,
+$$
+
+where $\alpha$ is a positive integer. Since these formulas describe only
+the tail, the associated series may be started at $n=1$; finitely many initial
+terms do not affect convergence.
+
+Determine which of the following statements hold:
+
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ converges if and only if, $\displaystyle\sum_{n=1}^{\infty}a_n$ diverges.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ converges or diverges independently of whether $\displaystyle\sum_{n=1}^{\infty}a_n$ converges or not.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ converges if and only if, $\displaystyle\sum_{n=1}^{\infty}a_n$ converges.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ diverges if and only if, $\displaystyle\sum_{n=1}^{\infty}a_n$ converges.
+- $\displaystyle\sum_{n=1}^{\infty}b_n$ diverges if and only if, $\displaystyle\sum_{n=1}^{\infty}a_n$ diverges.
+
+#### Solution
+
+##### (a)
+
+The second statement is exactly the $\varepsilon$-$N$ definition of convergence, so it is sufficient.
+
+The fourth statement is also sufficient. Being bounded above gives no lower bound, but the terms are non-negative, so $a_n\ge0$ supplies one and the Monotone Convergence Theorem gives convergence.
+
+The other three statements are not sufficient:
+
+- a non-decreasing sequence that is only bounded below can be $a_n=n$;
+- a finite supremum does not prevent oscillation, as in $a_n=0,1,0,1,\ldots$;
+- a finite infimum also does not prevent the same oscillation.
+
+Therefore the correct selections are
+
+$$
+{\text{the $\varepsilon$-$N$ statement and the bounded-above, non-increasing statement}.}
+$$
+
+##### (b)
+
+Because the sequence converges and the square-root function is continuous on its domain, taking limits in the recurrence gives
+
+$$
+L=8-\sqrt{38-L}.
+$$
+
+Before squaring, observe that
+
+$$
+\sqrt{38-L}=8-L\ge0,
+$$
+
+so any admissible limit must satisfy $L\le8$. Squaring now gives
+
+$$
+\begin{aligned}
+38-L&=(8-L)^2\\
+&=64-16L+L^2,
+\end{aligned}
+$$
+
+and hence
+
+$$
+L^2-15L+26=0
+\quad\Longleftrightarrow\quad
+(L-2)(L-13)=0.
+$$
+
+The algebraic candidates are $L=2$ and $L=13$, but $L=13$ violates the restriction $L\le8$ introduced before squaring. The remaining value checks in the original recurrence:
+
+$$
+8-\sqrt{38-2}=8-6=2.
+$$
+
+Therefore
+
+$$
+{L=2}.
+$$
+
+##### (c)
+
+For $n\ge1$, the $n$th root of $b_n$ is
+
+$$
+\sqrt[n]{b_n}=\frac{c_n}{d_n},
+$$
+
+because $c_n,d_n>0$. Therefore
+
+$$
+\lim_{n\to\infty}\sqrt[n]{b_n}
+=\frac{L_1}{L_2}<1.
+$$
+
+The root test proves convergence. The $n=0$ term, if included, is just one
+finite initial term and has no effect on convergence. The given information
+does not determine the ratio-test limit or provide the smoothness and
+monotonicity needed for the integral test. Thus the only correct statement is
+
+$$
+{\displaystyle\sum_{n=1}^{\infty}b_n
+\text{ is convergent by the root test}.}
+$$
+
+##### (d)
+
+The error terms are smaller than the displayed leading terms:
+
+$$
+O(n^{-\alpha-1})=o(n^{-\alpha}).
+$$
+
+Consequently,
+
+$$
+a_n\sim\frac{2}{n^\alpha},
+\qquad
+b_n\sim\frac{9}{n^\alpha},
+$$
+
+so the terms are eventually positive. Their ratio satisfies
+
+$$
+\lim_{n\to\infty}\frac{b_n}{a_n}
+=\lim_{n\to\infty}
+\frac{9n^{-\alpha}+O(n^{-\alpha-1})}
+{2n^{-\alpha}+O(n^{-\alpha-1})}
+=\frac92.
+$$
+
+Since this limit is finite and strictly positive, the Limit Comparison Test gives
+
+$$
+\sum b_n\text{ converges}
+\quad\Longleftrightarrow\quad
+\sum a_n\text{ converges}.
+$$
+
+If $\alpha=1$, both tails behave like the harmonic series and diverge; if $\alpha>1$, both behave like a convergent $p$-series. The correct selections are the third and fifth listed statements. The third is
+
+$$
+{\displaystyle
+\sum_{n=1}^{\infty}b_n\text{ converges if and only if }
+\sum_{n=1}^{\infty}a_n\text{ converges}.}
+$$
+
+Taking logical complements gives the fifth:
+
+$$
+{\displaystyle
+\sum_{n=1}^{\infty}b_n\text{ diverges if and only if }
+\sum_{n=1}^{\infty}a_n\text{ diverges}.}
+$$
+
+The sequence parts separate the definition of convergence from the sufficient conditions of monotonicity and boundedness. The series parts use the root test for exponential-type terms and limit comparison for matching power laws. In both, only the tail matters.
+
+</Example>
+
+<Recall of="taylor-polynomial" />
+
+<Recall of="taylor-error-bound" />
+
+<Example
+  slug="seen-taylor-polynomial-derivative-signs-remainder"
+  of="taylor-polynomial,taylor-error-bound"
+  difficulty="exam"
+>
+
+### Taylor polynomials and a Lagrange remainder
+
+Aaron and Cindy are investigating a function $f:\mathbb R\to\mathbb R$ and its first eight Taylor polynomials about $x_0=0.3$:
+
+$$
+p_0(x),p_1(x),\ldots,p_7(x).
+$$
+
+Aaron compares the first six polynomials and records these features near $x_0$:
+$p_1$ is decreasing at $x_0$; $p_2=p_1$; and, just to the right of $x_0$,
+$p_3-p_2$ and $p_4-p_3$ are positive, while $p_5-p_4$ is negative.
+These observations replace the plots, which are not included here.
+
+#### (a)
+
+##### (i)
+
+Select all derivatives of $f$ at $0.3$ that are zero:
+
+$$
+f'(0.3),\quad f''(0.3),\quad f^{(3)}(0.3),\quad
+f^{(4)}(0.3),\quad f^{(5)}(0.3).
+$$
+
+##### (ii)
+
+Select all derivatives of $f$ at $0.3$ that are positive.
+
+##### (iii)
+
+Select all derivatives of $f$ at $0.3$ that are negative.
+
+#### (b)
+
+Aaron tells Cindy that the coefficient of $(x-0.3)^6$ in $p_6(x)$ is
+
+$$
+a_6=-6.8,
+$$
+
+and the coefficient of $(x-0.3)^7$ in $p_7(x)$ is
+
+$$
+a_7=5.
+$$
+
+They both agree that the graph of $f^{(6)}$ looks like a straight line and decide to assume this is true.
+
+They consider $x_1=0.5$ and want to use Lagrange's form of the remainder to find a bound on
+
+$$
+\left|f(0.5)-p_5(0.5)\right|.
+$$
+
+##### (i)
+
+Is knowing the value of $a_7$ necessary to calculate the error bound found using Lagrange's form of the remainder? Select all true statements:
+
+- The value of $a_7$ is necessary for these particular values of $a_6$ and $x_1$.
+- The value of $a_7$ is not necessary for these particular values of $a_6$ and $x_1$.
+- The value of $a_7$ would be necessary, regardless of the values of $a_6$ and $x_1$.
+- The value of $a_7$ would be necessary for some values of $a_6$ and $x_1$ and unnecessary for others.
+
+##### (ii)
+
+Find the smallest error bound guaranteed by Lagrange's form of the remainder:
+
+$$
+\left|f(0.5)-p_5(0.5)\right|\le \ ? 
+$$
+
+#### (c)
+
+The fact that the graph in part (b) looks like a straight line with non-zero slope suggests that $f$ is a polynomial of degree $7$. Discuss this conclusion, making clear what follows from an exact global assumption and what a graph alone can establish.
+
+#### Solution
+
+For a Taylor polynomial about $x_0=0.3$,
+
+$$
+p_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(0.3)}{k!}(x-0.3)^k.
+$$
+
+The coefficient of $(x-0.3)^k$ is therefore $f^{(k)}(0.3)/k!$. Since $k!>0$, the sign of that coefficient is the sign of the corresponding derivative.
+
+##### (a)
+
+Consecutive Taylor polynomials differ by a single term:
+
+$$
+p_k(x)-p_{k-1}(x)
+=\frac{f^{(k)}(x_0)}{k!}(x-x_0)^k.
+$$
+
+The polynomial $p_1$ is decreasing at $x_0$, so
+
+$$
+f'(0.3)<0.
+$$
+
+Because $p_2=p_1$, its quadratic coefficient vanishes, so
+
+$$
+f''(0.3)=0.
+$$
+
+For $x>x_0$, the factor $(x-x_0)^k$ is positive. The recorded signs of
+$p_3-p_2$, $p_4-p_3$ and $p_5-p_4$ therefore give
+
+$$
+f^{(3)}(0.3)>0,\qquad
+f^{(4)}(0.3)>0,\qquad
+f^{(5)}(0.3)<0.
+$$
+
+Thus the selections are:
+
+- zero: ${f''(0.3)}$;
+- positive: ${f^{(3)}(0.3),f^{(4)}(0.3)}$;
+- negative: ${f'(0.3),f^{(5)}(0.3)}$.
+
+##### (b)(i)
+
+The Lagrange remainder for $p_5$ involves $f^{(6)}(c)$ for some $c$ between $0.3$ and $0.5$. The value $a_6$ gives $f^{(6)}(0.3)$, but the assumed straight-line graph of $f^{(6)}$ also needs its slope to determine the largest absolute value on the interval. That slope is determined by $a_7$.
+
+For these particular values, the first statement is true:
+
+$$
+{\text{$a_7$ is necessary for these particular values of $a_6$ and $x_1$.}}
+$$
+
+The fourth statement is also true in general: if $x_1=x_0$, the error is zero
+without knowing $a_7$, whereas over a nontrivial interval the slope can change the
+maximum of $|f^{(6)}|$. The second and third statements are false.
+
+##### (b)(ii)
+
+The Taylor coefficients give
+
+$$
+f^{(6)}(0.3)=6!a_6=720(-6.8)=-4896
+$$
+
+and
+
+$$
+f^{(7)}(0.3)=7!a_7=5040(5)=25200.
+$$
+
+Because $f^{(6)}$ is assumed to be a straight line,
+
+$$
+f^{(6)}(x)
+=-4896+25200(x-0.3).
+$$
+
+On the interval $[0.3,0.5]$,
+
+$$
+f^{(6)}(0.3)=-4896,\qquad
+f^{(6)}(0.5)=-4896+25200(0.2)=144.
+$$
+
+A linear function takes its extreme values on a closed interval at the endpoints. Therefore
+
+$$
+\max_{0.3\le c\le0.5}|f^{(6)}(c)|
+=\max\{|-4896|,|144|\}
+=4896.
+$$
+
+Lagrange's form of the remainder for the degree-five polynomial is
+
+$$
+f(0.5)-p_5(0.5)
+=\frac{f^{(6)}(c)}{6!}(0.5-0.3)^6
+$$
+
+for some $c\in(0.3,0.5)$. Consequently,
+
+$$
+\begin{aligned}
+\left|f(0.5)-p_5(0.5)\right|
+&\le \frac{4896}{6!}(0.2)^6\\
+&=6.8(0.2)^6\\
+&={0.0004352}.
+\end{aligned}
+$$
+
+##### (c)
+
+If $f^{(6)}$ is assumed to be exactly a straight line with non-zero slope on all of $\mathbb R$, then $f^{(7)}$ is a non-zero constant and $f^{(8)}=0$. Integrating this identity repeatedly shows that $f$ is a polynomial of degree exactly seven:
+
+$$
+{f\text{ is a polynomial of degree }7}.
+$$
+
+A graph that merely looks linear, or is known to be linear only on the interval used for the
+error bound, does not establish this global conclusion; it supports the assumption locally
+but cannot determine $f$ outside that interval.
+
+The plots encode derivative signs through Taylor coefficients. The sixth and seventh coefficients turn the straight-line assumption for $f^{(6)}$ into a bound on its maximum, which is the quantity Lagrange's remainder needs.
+
+</Example>
+
+<Recall of="power-series-convergence-region" />
+
+<Recall of="root-test" />
+
+<Recall of="alternating-series-test" />
+
+<Example
+  slug="seen-power-series-endpoint-convergence"
+  of="find-power-series-interval,root-test,alternating-series-test"
+  difficulty="exam"
+>
+
+### A power series and its endpoints
+
+It is “play with series” night and Chelsea and Finn ask you to consider the
+power series
+
+$$
+\sum_{n=1}^{\infty}
+\left(\frac{1}{\sqrt n}+\frac{(-1)^n}{n}\right)
+\frac{(x-7)^n}{6^n}. \tag{1}
+$$
+
+#### (a)
+
+Let
+
+$$
+a_n=\frac{1}{\sqrt n}+\frac{(-1)^n}{n}.
+$$
+
+Which of the following statements is true?
+
+- $a_n>0$ for all $n\ge1$;
+- $a_n$ takes both positive and negative values at an infinite number of positive integers $n$;
+- $a_n>0$ for all $n>1$;
+- $a_n>0$ if $n$ is odd and $a_n<0$ if $n$ is even.
+
+#### (b)
+
+Chelsea asks you to use an appropriate criterion to find the open interval of
+convergence $I=(a,b)$ for the power series (1) and to enter the values of $a$
+and $b$.
+
+#### (c)
+
+Determine what happens at the endpoints $x=a$ and $x=b$. Select the true
+statements:
+
+- The power series (1) at $x=b$ is convergent.
+- The power series (1) at $x=a$ is not convergent.
+- The power series (1) at $x=b$ is not convergent.
+- The power series (1) at $x=a$ is convergent.
+
+In a few sentences, justify your answers, explaining your reasoning.
+
+#### Solution
+
+For $n=1$,
+
+$$
+a_1=1-1=0.
+$$
+
+If $n$ is even, then
+
+$$
+a_n=\frac1{\sqrt n}+\frac1n>0.
+$$
+
+If $n$ is odd and $n>1$, then
+
+$$
+a_n=\frac1{\sqrt n}-\frac1n
+=\frac{\sqrt n-1}{n}>0.
+$$
+
+Hence the correct statement in part (a) is
+
+$$
+{a_n>0\text{ for all }n>1.}
+$$
+
+For $n>1$,
+
+$$
+\frac1{\sqrt n}-\frac1n
+\le a_n
+\le\frac1{\sqrt n}+\frac1n.
+$$
+
+Both bounds have $n$th root tending to $1$, so
+
+$$
+\lim_{n\to\infty}\sqrt[n]{|a_n|}=1.
+$$
+
+Apply the root test to the general term of (1):
+
+$$
+\sqrt[n]{
+\left|a_n\frac{(x-7)^n}{6^n}\right|}
+=\sqrt[n]{|a_n|}\frac{|x-7|}{6}
+\longrightarrow\frac{|x-7|}{6}.
+$$
+
+The series converges absolutely when
+
+$$
+\frac{|x-7|}{6}<1
+\quad\Longleftrightarrow\quad
+|x-7|<6.
+$$
+
+Thus the open interval is
+
+$$
+{I=(1,13),\qquad a=1,\quad b=13.}
+$$
+
+The root test does not decide the endpoints, so they must be substituted into
+the original series.
+
+At $x=b=13$, the factor $(x-7)/6$ is $1$ and the series becomes
+
+$$
+\sum_{n=1}^{\infty}a_n.
+$$
+
+For $n\ge4$,
+
+$$
+a_n\ge\frac1{\sqrt n}-\frac1n
+\ge\frac1{2\sqrt n}.
+$$
+
+The comparison series $\sum 1/\sqrt n$ diverges, so the series at $x=b$ is
+not convergent.
+
+At $x=a=1$, the factor $(x-7)/6$ is $-1$ and the series becomes
+
+$$
+\sum_{n=1}^{\infty}(-1)^na_n
+=\sum_{n=1}^{\infty}\frac{(-1)^n}{\sqrt n}
++\sum_{n=1}^{\infty}\frac1n.
+$$
+
+The first series converges by the alternating-series test, while the second
+is the divergent harmonic series. Therefore the series at $x=a$ is also not
+convergent.
+
+Thus the endpoint statements are
+
+$$
+{
+\text{the series at }x=a\text{ is not convergent and the series at }x=b
+\text{ is not convergent}.
+}
+$$
+
+The radius depends only on the $n$th-root limit of the slowly varying
+coefficients, which is $1$. The endpoints need separate arguments: at the left
+endpoint the alternating $1/\sqrt n$ part converges but the harmonic part does
+not and at the right endpoint the positive $1/\sqrt n$ behaviour forces
+divergence.
+
+</Example>

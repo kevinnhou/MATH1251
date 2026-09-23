@@ -1,0 +1,285 @@
+---
+title: Kernel, image and rank
+description: The subspaces of inputs sent to zero and outputs that can occur, together with their dimensions.
+tags: [algebra]
+ideas: [linear-maps, kernel, image, nullity, rank]
+---
+
+Every [linear map](/algebra/linear-transformations/linear-transformations) has two associated subspaces: the kernel, which holds the inputs sent to $0$ and the image, which holds the outputs that occur. This page defines both, shows they are subspaces and introduces their dimensions, nullity and rank.
+
+## Inputs that disappear
+
+<Recall of="linear-map" />
+
+<Recall of="subspace" />
+
+<Definition slug="kernel-of-linear-map" of="linear-map">
+
+### Kernel
+
+<Statement>
+
+If $T:V\to W$ is a linear map, its *kernel* is
+
+$$
+\ker(T)=\{u\in V:T(u)=0\}.
+$$
+
+The same set is also called the *null space*. If $A\in\mathbb F^{m\times n}$
+is regarded as the map $\mathbb F^n\to\mathbb F^m$, then
+
+$$
+\ker(A)=\{x\in\mathbb F^n:Ax=0\}.
+$$
+
+</Statement>
+
+The kernel lies in the domain because it records which inputs are sent to the zero vector. For the [dot-product map](/algebra/linear-transformations/geometric-examples) $T_u(x)=u\cdot x$ with $u\ne0$, the kernel is the subspace of vectors orthogonal to $u$.
+
+</Definition>
+
+<Example of="kernel-of-linear-map" difficulty="routine">
+
+### Kernel of a matrix
+
+For
+
+$$
+A=
+\begin{pmatrix}
+2&2&2\\
+0&3&-3
+\end{pmatrix},
+$$
+
+let $x=(x_1,x_2,x_3)^T$. Solving $Ax=0$ gives
+
+$$
+2x_1+2x_2+2x_3=0,
+\qquad
+3x_2-3x_3=0.
+$$
+
+Thus $x_2=x_3$ and $x_1=-2x_3$. Writing $x_3=\lambda$ gives
+
+$$
+\ker(A)
+=
+\left\{
+\lambda
+\begin{pmatrix}
+-2\\1\\1
+\end{pmatrix}
+:\lambda\in\mathbb R
+\right\}
+=
+\operatorname{span}
+\left\{
+\begin{pmatrix}
+-2\\1\\1
+\end{pmatrix}
+\right\}.
+$$
+
+</Example>
+
+<Theorem slug="kernel-is-subspace" of="kernel-of-linear-map,subspace-test">
+
+### The kernel is a subspace
+
+<Statement>
+
+If $T:V\to W$ is a linear map, then $\ker(T)$ is a subspace of $V$.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="kernel-is-subspace">
+
+Linearity gives $T(0)=0$, so $0\in\ker(T)$. If $u_1,u_2\in\ker(T)$, then
+
+$$
+T(u_1+u_2)=T(u_1)+T(u_2)=0+0=0,
+$$
+
+so $u_1+u_2\in\ker(T)$. If $u\in\ker(T)$ and $\lambda$ is a scalar, then
+
+$$
+T(\lambda u)=\lambda T(u)=\lambda 0=0,
+$$
+
+so $\lambda u\in\ker(T)$. The subspace test now applies.
+
+</Proof>
+
+<Definition slug="nullity" of="kernel-of-linear-map,dimension">
+
+### Nullity
+
+<Statement>
+
+The *nullity* of a linear map $T$ is
+
+$$
+\operatorname{nullity}(T)=\dim\ker(T).
+$$
+
+For a matrix $A$, the nullity is
+
+$$
+\operatorname{nullity}(A)=\dim\ker(A).
+$$
+
+</Statement>
+
+Nullity counts the independent input directions that are lost completely.
+For a matrix, it is the dimension of the solution subspace of $Ax=0$: the
+number of free parameters after Gaussian elimination and back substitution,
+or the number of non-pivot columns in a row-echelon form. In the
+kernel-of-a-matrix example above, the single spanning vector is a basis for
+the kernel, so $\operatorname{nullity}(A)=1$.
+
+</Definition>
+
+<Proposition slug="columns-independent-zero-nullity" of="nullity,linear-independence">
+
+### Column independence and nullity
+
+<Statement>
+
+The columns of a matrix $A$ are linearly independent if and only if $\operatorname{nullity}(A)=0$.
+
+</Statement>
+
+A linear dependence among the columns is exactly a non-trivial solution of $Ax=0$. Thus the columns are independent precisely when the kernel contains only the zero vector.
+
+</Proposition>
+
+## Outputs that can occur
+
+<Definition slug="image-of-linear-map" of="linear-map" see="column-space">
+
+### Image
+
+<Statement>
+
+If $T:V\to W$ is a linear map, its *image* is
+
+$$
+\operatorname{im}(T)=\{u\in W:u=T(v)\text{ for some }v\in V\}.
+$$
+
+The same set is also called the *range*. If $A\in\mathbb F^{m\times n}$ is
+regarded as the map $\mathbb F^n\to\mathbb F^m$, then
+
+$$
+\operatorname{im}(A)=\{u\in\mathbb F^m:u=Ax\text{ for some }x\in\mathbb F^n\},
+$$
+
+which is the [column space](/algebra/vector-spaces/spans) of $A$.
+
+</Statement>
+
+The image lies in the codomain because it collects the outputs that can occur. For the [dot-product map](/algebra/linear-transformations/geometric-examples) $T_u(x)=u\cdot x$ with $u\ne0$, every real number occurs: for $\alpha\in\mathbb R$,
+
+$$
+T_u\left(\frac{\alpha}{u\cdot u}u\right)=\alpha.
+$$
+
+</Definition>
+
+<Example of="image-of-linear-map" difficulty="routine">
+
+### Image of a matrix
+
+For the matrix
+
+$$
+A=
+\begin{pmatrix}
+2&2&2\\
+0&3&-3
+\end{pmatrix},
+$$
+
+the image is the span of its columns. The first two columns,
+
+$$
+\begin{pmatrix}2\\0\end{pmatrix},
+\qquad
+\begin{pmatrix}2\\3\end{pmatrix},
+$$
+
+are linearly independent: if $c_1(2,0)^T+c_2(2,3)^T=0$, the second
+coordinate gives $c_2=0$ and then the first gives $c_1=0$. They therefore
+form a basis for $\mathbb R^2$. Hence
+
+$$
+\operatorname{im}(A)=\mathbb R^2.
+$$
+
+</Example>
+
+<Theorem slug="image-is-subspace" of="image-of-linear-map,subspace-test">
+
+### The image is a subspace
+
+<Statement>
+
+If $T:V\to W$ is a linear map, then $\operatorname{im}(T)$ is a subspace of $W$.
+
+</Statement>
+
+</Theorem>
+
+<Proof of="image-is-subspace">
+
+The image contains $0$ because $T(0)=0$. If $w_1,w_2\in\operatorname{im}(T)$, write $w_1=T(v_1)$ and $w_2=T(v_2)$. Then
+
+$$
+w_1+w_2=T(v_1)+T(v_2)=T(v_1+v_2),
+$$
+
+so $w_1+w_2\in\operatorname{im}(T)$. If $w=T(v)$, then
+
+$$
+\lambda w=\lambda T(v)=T(\lambda v),
+$$
+
+so $\lambda w\in\operatorname{im}(T)$. The subspace test now applies.
+
+</Proof>
+
+<Definition slug="rank-of-linear-map" of="image-of-linear-map,dimension">
+
+### Rank
+
+<Statement>
+
+The *rank* of a linear map $T$ is
+
+$$
+\operatorname{rank}(T)=\dim\operatorname{im}(T).
+$$
+
+For a matrix $A$, the rank is
+
+$$
+\operatorname{rank}(A)=\dim\operatorname{im}(A).
+$$
+
+</Statement>
+
+For a matrix, rank is also the maximum number of linearly independent
+columns, or the number of pivot columns in a row-echelon form. In the
+image-of-a-matrix example above, the two displayed columns form a basis of
+the image, so $\operatorname{rank}(A)=2$.
+
+“Pivot columns” refers to positions in the echelon form. When row operations
+have been used, take the columns in those positions from the original matrix
+to obtain a basis for the image.
+
+</Definition>
+
+The kernel and image can lie in different spaces: for $T:V\to W$, the kernel is a subspace of the domain $V$ and the image is a subspace of the codomain $W$. Nullity measures the first and rank the second. [Rank-nullity](/algebra/linear-transformations/rank-nullity) relates both to the dimension of the domain.

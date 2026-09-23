@@ -1,0 +1,255 @@
+---
+title: Numerical solutions
+description: Direction fields, Euler's method and Heun's improved Euler method.
+tags: [calculus]
+ideas: [numerical-methods, approximation, differential-equations]
+---
+
+This page approximates solutions when no closed-form method applies, the last step of the [method-selection workflow](/calculus/ordinary-differential-equations/pipeline). The methods in [first-order methods](/calculus/ordinary-differential-equations/first-order-equations) and [second-order constant-coefficient equations](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations) can fail even for an equation that is easy to state and sometimes the derivative is known only from a calculation or a measurement.
+
+A direction field gives a qualitative picture. Euler's and Heun's methods turn local slope information into a sequence of approximations.
+
+## Direction fields
+
+<Definition slug="direction-field">
+
+### Direction field
+
+<Statement>
+
+For
+
+$$
+y'=f(x,y),
+$$
+
+the direction field assigns a short line segment of slope $f(x,y)$ to each point $(x,y)$ on a grid. A solution curve follows these local directions and an initial condition selects the curve passing through the prescribed point.
+
+</Statement>
+
+The field gives qualitative information before any numerical calculation. It can show increasing and decreasing regions, equilibrium levels and the way nearby solution curves behave.
+
+</Definition>
+
+<Example slug="direction-field-example" of="direction-field" difficulty="routine">
+
+### A family of translated curves
+
+For
+
+$$
+y'=x^2,
+$$
+every point with the same $x$-coordinate has the same slope. Integrating gives
+
+$$
+y=\frac{x^3}{3}+C.
+$$
+
+The curves through $y(0)=1$ and $y(0)=3$ are vertical translates of one another. The direction field displays this common slope pattern even though the initial condition chooses only one curve.
+
+</Example>
+
+A direction field is most useful when no formula is available. No general elementary procedure in [first-order methods](/calculus/ordinary-differential-equations/first-order-equations) applies to $y'=\sin(xy)$, for instance, although $y\equiv0$ is a particular solution.
+
+## Euler's method
+
+<Method slug="euler-method">
+
+### Euler's method
+
+<Statement>
+
+For the IVP
+
+$$
+y'=f(x,y),\qquad y(x_0)=y_0,
+$$
+
+choose a step size $h$ and define
+
+$$
+x_{k+1}=x_k+h,
+\qquad
+y_{k+1}=y_k+h f(x_k,y_k).
+$$
+
+The update uses the tangent line at the left endpoint of each step.
+
+</Statement>
+
+The formula uses the current slope over one short step: the tangent line
+through $(x_k,y_k)$ has value $y_k+h f(x_k,y_k)$ at $x_k+h$. This is the
+degree-one [Taylor model](/calculus/taylor-series/taylor-polynomials) at the
+current point and [Taylor's theorem](/calculus/taylor-series/taylors-theorem)
+describes the remainder omitted by one such step.
+
+For an exact starting value $y_k=y(x_k)$, the fundamental theorem of calculus
+gives
+
+$$
+y(x_k+h)=y_k+\int_{x_k}^{x_k+h}y'(s)\,ds.
+$$
+
+Euler replaces the changing slope inside this integral by $y'(x_k)$. If
+$|y''|\le M$ on the step, then
+$|y'(s)-y'(x_k)|\le M|s-x_k|$, so this *local* error is at most
+$Mh^2/2$.
+
+In an actual computation $y_k$ is already approximate, so errors also
+propagate from previous steps. If the slope field changes at most
+proportionally with $y$ (the [Lipschitz condition](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators))
+and the solution is smooth on a fixed interval, standard stability estimates
+bound the largest accumulated error by a constant times $h$ as $h$ tends to
+zero. Thus, for a sufficiently small step size and a fixed interval, halving
+$h$ roughly halves Euler's global error. This numerical stability concerns
+error propagation in the method, not whether solutions of the ODE grow or
+decay.
+
+</Method>
+
+<Example slug="euler-large-step" of="euler-method" difficulty="routine">
+
+### A visibly large step
+
+For
+
+$$
+y'=x^2,\qquad y(0)=1,\qquad h=1,
+$$
+
+the first point is $(x_0,y_0)=(0,1)$. Since $f(0,1)=0$, the next point is $(1,1)$. The following slopes are $f(1,1)=1$ and $f(2,2)=4$, giving
+
+$$
+(0,1)\longrightarrow(1,1)\longrightarrow(2,2)\longrightarrow(3,6).
+$$
+
+The exact solution is $y=1+x^3/3$, whose value at $x=3$ is $10$. The step size is too large to track the curvature accurately.
+
+</Example>
+
+<Example slug="euler-small-step" of="euler-method" difficulty="routine">
+
+### A smaller step
+
+For
+
+$$
+y'=x+y,\qquad y(0)=1,\qquad h=0.1,
+$$
+
+Euler's update gives
+
+$$
+\begin{aligned}
+y_1&=1+0.1(0+1)=1.1,\\
+y_2&=1.1+0.1(0.1+1.1)=1.22,\\
+y_3&=1.22+0.1(0.2+1.22)=1.362.
+\end{aligned}
+$$
+
+The exact solution is
+
+$$
+y=2e^x-1-x,
+$$
+
+whose value at $x=0.3$ is approximately $1.3997$. The Euler value $1.362$ is below it by about $0.0377$.
+
+</Example>
+
+## Improved Euler method
+
+Euler drifts when the slope changes across a step. Heun's method corrects this by averaging the slopes at both ends of the step. It costs two evaluations of $f$ per step but attains higher order, so prefer it when $f$ is smooth and evaluations are cheap; keep Euler when a coarse qualitative trace of the direction field suffices.
+
+<Method slug="heun-method" of="euler-method">
+
+### Heun's method
+
+<Statement>
+
+Starting from $(x_k,y_k)$, first predict the next value with Euler:
+
+$$
+u_{k+1}=y_k+h f(x_k,y_k).
+$$
+
+Then correct using the average of the slope at the current point and the predicted endpoint:
+
+$$
+y_{k+1}
+=y_k+\frac h2
+\left[
+f(x_k,y_k)+f(x_{k+1},u_{k+1})
+\right].
+$$
+
+</Statement>
+
+Where Euler uses only the left-endpoint slope, Heun's method applies the trapezoidal rule to
+
+$$
+y(x_{k+1})=y(x_k)+\int_{x_k}^{x_{k+1}}f(x,y(x))\,dx,
+$$
+
+but the endpoint value is unknown, so the Euler prediction supplies it. Using both slopes makes Heun more accurate at the same step size.
+
+When $f$ and the exact solution are sufficiently smooth and the usual
+Lipschitz and error-stability conditions hold on a fixed interval, Euler has
+local error $O(h^2)$ and global error $O(h)$, whereas Heun has local error
+$O(h^3)$ and global error $O(h^2)$. Thus halving $h$ roughly quarters Heun's
+global error (until round-off or other errors dominate).
+
+</Method>
+
+<Example slug="heun-comparison" of="heun-method" difficulty="exam">
+
+### Comparing Euler and Heun
+
+Consider
+
+$$
+y'=\frac{1}{1+x^2}-2y^2,\qquad y(0)=0,
+$$
+
+whose exact solution is
+
+$$
+y(x)=\frac{x}{1+x^2}.
+$$
+
+With $h=0.2$, $f(0,0)=1$. Euler predicts $u_1=0.2$;
+the predicted endpoint slope is
+$f(0.2,0.2)=1/1.04-2(0.2)^2\approx0.88154$. Heun therefore gives
+$y_1\approx0.2(1+0.88154)/2=0.18815$, closer to the exact value
+$y(0.2)=0.2/1.04\approx0.19231$ than Euler's $0.2$.
+Repeating the updates on $[0,1]$ gives these maximum grid-point errors:
+
+$$
+\begin{array}{c|cc}
+h & \text{Euler} & \text{Heun}\\
+\hline
+0.2 & 0.0545 & 0.0105\\
+0.1 & 0.0259 & 0.0023
+\end{array}
+$$
+
+Reducing $h$ lowers the error for both methods and Heun keeps the smaller error.
+
+</Example>
+
+To implement either method on $[a,b]$ with $N$ equal intervals, use
+
+$$
+h=\frac{b-a}{N},
+\qquad
+x_k=a+kh,
+$$
+
+and store the successive approximations $y_k$.
+
+The methods also cover second-order problems, even though the formulas above
+begin with $y'=f(x,y)$. For $y''=F(x,y,y')$, set $v=y'$: the pair $(y,v)$
+satisfies $(y,v)'=(v,F(x,y,v))$ and each numerical update is applied to both
+components. The same componentwise formulas apply to any first-order vector
+system.

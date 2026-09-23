@@ -1,0 +1,358 @@
+---
+title: Polar form
+description: The same complex number written with its modulus and argument.
+tags: [algebra]
+ideas: [polar-form, complex-modulus, complex-argument]
+---
+
+This page describes a complex number by its distance from the origin and its direction, instead of by its [Cartesian](/algebra/complex-numbers/complex-arithmetic) components. In these polar coordinates on the [Argand plane](/algebra/complex-numbers/complex-arithmetic), multiplication multiplies moduli and adds arguments, which makes powers and roots straightforward.
+
+For $z=x+iy\ne0$ with polar coordinates $(r,\theta)$,
+$$
+r=|z|,\qquad x=r\cos\theta,\qquad y=r\sin\theta.
+$$
+
+## Argument and polar form
+
+<Recall of="complex-number" />
+<Recall of="complex-modulus" />
+
+<Definition slug="complex-argument" of="complex-number,complex-modulus">
+
+### Argument
+
+<Statement>
+
+For $z\ne0$, an *argument* of $z$ is a real number $\theta$ satisfying
+$$
+\cos\theta=\frac{\operatorname{Re}(z)}{|z|},
+\qquad
+\sin\theta=\frac{\operatorname{Im}(z)}{|z|}.
+$$
+Arguments are determined up to addition of $2\pi k$, where $k\in\mathbb Z$. The *principal argument* $\operatorname{Arg}(z)$ is the unique argument in
+$$
+-\pi<\operatorname{Arg}(z)\le\pi.
+$$
+
+</Statement>
+
+Choose the argument from the point's quadrant, not from $\tan\theta$ alone:
+tangent has period $\pi$, so it cannot distinguish opposite quadrants.
+
+The principal argument is one conventional choice; every argument remains
+valid. The number $z=0$ has no argument, because the origin does not
+determine a direction.
+
+</Definition>
+
+<Definition slug="polar-form" of="complex-number,complex-modulus,complex-argument">
+
+### Polar form
+
+<Statement>
+
+For $z\ne0$, the *polar form* of $z$ is
+$$
+z=r(\cos\theta+i\sin\theta)=re^{i\theta},
+\qquad r=|z|>0,
+$$
+where $\theta$ is an argument of $z$. The expressions $a+bi$ and $re^{i\theta}$ are two writings of the same complex number.
+
+</Statement>
+
+Euler's formula,
+$$
+e^{i\theta}=\cos\theta+i\sin\theta,
+$$
+identifies the two expressions in the statement. Replacing $\theta$ by $\theta+2\pi k$ leaves $z$ unchanged.
+
+Euler's formula is taken as given here rather than derived. The
+[Taylor series](/calculus/taylor-series/taylor-series) of the exponential,
+sine and cosine are the usual route to a proof.
+
+Multiplication by $e^{i\theta}$ rotates a point through angle $\theta$
+without changing its modulus; multiplication by $re^{i\theta}$ also scales it
+by $r$. In coordinates, for $z=x+iy$,
+$$
+\begin{pmatrix}
+\operatorname{Re}(e^{i\theta}z)\\
+\operatorname{Im}(e^{i\theta}z)
+\end{pmatrix}
+=
+\begin{pmatrix}
+\cos\theta&-\sin\theta\\
+\sin\theta&\cos\theta
+\end{pmatrix}
+\begin{pmatrix}x\\y\end{pmatrix}
+$$
+
+</Definition>
+
+<Example slug="polar-form-conversion" of="polar-form" difficulty="routine">
+
+### Convert between the two forms
+
+For $z=1+i$,
+$$
+|z|=\sqrt{1^2+1^2}=\sqrt2.
+$$
+The point lies in the first quadrant and $\tan\theta=1$, so $\theta=\pi/4$ is a principal argument. Hence
+$$
+1+i=\sqrt2\,e^{i\pi/4}.
+$$
+
+Conversely,
+$$
+\begin{aligned}
+2e^{-3\pi i/4}
+&=2\left(\cos\left(-\frac{3\pi}{4}\right)
++i\sin\left(-\frac{3\pi}{4}\right)\right)\\
+&=-\sqrt2-\sqrt2\,i.
+\end{aligned}
+$$
+
+</Example>
+
+<Theorem slug="modulus-laws" of="complex-modulus">
+
+### Modulus laws
+
+<Statement>
+
+For $z,z_1,z_2\in\mathbb C$ with $z_2\ne0$,
+$$
+z\overline z=|z|^2,\qquad
+|z_1z_2|=|z_1||z_2|,\qquad
+\left|\frac{z_1}{z_2}\right|=\frac{|z_1|}{|z_2|},
+$$
+$$
+|\operatorname{Re}(z)|\le|z|,
+\qquad
+|\operatorname{Im}(z)|\le|z|,
+\qquad
+|z_1+z_2|\le|z_1|+|z_2|,
+$$
+$$
+|z_1-z_2|\ge\bigl||z_1|-|z_2|\bigr|,
+\qquad
+\left|\sum_{j=1}^N z_j\right|
+\le\sum_{j=1}^N|z_j|\quad(N\ge1).
+$$
+
+</Statement>
+
+The inequality for $z_1+z_2$ is the triangle inequality in the Argand plane;
+the finite-sum version follows by applying it repeatedly. The reverse triangle
+inequality follows from
+$$
+|z_1|=|(z_1-z_2)+z_2|\le |z_1-z_2|+|z_2|
+$$
+and the same argument with $z_1$ and $z_2$ interchanged.
+
+</Theorem>
+
+## Multiplication and division in polar form
+
+<Method slug="polar-arithmetic" of="polar-form">
+
+### Multiply and divide in polar form
+
+<Statement>
+
+If $z_1=r_1e^{i\theta_1}$ and $z_2=r_2e^{i\theta_2}$, then
+$$
+z_1z_2=r_1r_2e^{i(\theta_1+\theta_2)}
+$$
+and, for $z_2\ne0$,
+$$
+\frac{z_1}{z_2}
+=\frac{r_1}{r_2}e^{i(\theta_1-\theta_2)}.
+$$
+In particular,
+$$
+(re^{i\theta})^{-1}=\frac1r e^{-i\theta}.
+$$
+
+</Statement>
+
+Geometrically, a product multiplies the moduli and adds the arguments and a quotient divides the moduli and reverses the second rotation.
+
+To see why the angles add, multiply
+$(\cos\theta_1+i\sin\theta_1)(\cos\theta_2+i\sin\theta_2)$ and use the
+angle-addition identities: its real and imaginary parts become
+$\cos(\theta_1+\theta_2)$ and $\sin(\theta_1+\theta_2)$. The quotient rule
+then follows by multiplying by the inverse.
+
+</Method>
+
+<Example slug="polar-product-and-quotient" of="polar-arithmetic" difficulty="routine">
+
+### Perform product and quotient calculations
+
+Let
+$$
+z_1=\sqrt2\,e^{3\pi i/2},
+\qquad
+z_2=\pi e^{3\pi i/2}.
+$$
+Both factors point down the imaginary axis. Their arguments add to $3\pi$,
+so the product points along the negative real axis:
+$$
+z_1z_2=\pi\sqrt2\,e^{3\pi i}= -\pi\sqrt2.
+$$
+
+If instead $z_2=\pi e^{3\pi i/4}$, then
+$$
+\frac{z_1}{z_2}
+=\frac{\sqrt2}{\pi}e^{i(3\pi/2-3\pi/4)}
+=\frac{\sqrt2}{\pi}e^{3\pi i/4}.
+$$
+
+</Example>
+
+<Proposition slug="principal-argument-laws" of="complex-argument,polar-arithmetic">
+
+### Principal arguments of products and quotients
+
+<Statement>
+
+For non-zero $z_1,z_2\in\mathbb C$, there are integers $k,\ell\in\mathbb Z$
+such that
+
+$$
+\operatorname{Arg}(z_1z_2)
+=\operatorname{Arg}(z_1)+\operatorname{Arg}(z_2)+2\pi k,
+$$
+$$
+\operatorname{Arg}\left(\frac{z_1}{z_2}\right)
+=\operatorname{Arg}(z_1)-\operatorname{Arg}(z_2)+2\pi\ell.
+$$
+
+</Statement>
+
+Adding or subtracting principal arguments gives an argument of the result,
+but it may lie outside the principal interval $(-\pi,\pi]$. The integers $k$
+and $\ell$ record the reduction back into that interval. For instance,
+$\operatorname{Arg}((-1)(-1))=0$, whereas
+$\operatorname{Arg}(-1)+\operatorname{Arg}(-1)=2\pi$; the latter is an
+argument of the product, but not its principal argument.
+
+Two polar forms describe the same non-zero number exactly when their moduli
+agree and their arguments differ by an integer multiple of $2\pi$.
+
+</Proposition>
+
+## Powers through De Moivre's formula
+
+<Theorem slug="de-moivre" of="polar-arithmetic">
+
+### De Moivre's formula
+
+<Statement>
+
+For $\theta\in\mathbb R$ and $n\in\mathbb Z$,
+$$
+\left(\cos\theta+i\sin\theta\right)^n
+=\cos(n\theta)+i\sin(n\theta).
+$$
+More generally, if $z=re^{i\theta}$ with $r>0$, then
+$$
+z^n=r^ne^{in\theta}.
+$$
+
+</Statement>
+
+For positive integers, use induction. The case $n=1$ is immediate and if the formula holds at $n=k$, multiplying by $re^{i\theta}$ gives
+$$
+z^{k+1}=r^ke^{ik\theta}re^{i\theta}=r^{k+1}e^{i(k+1)\theta}.
+$$
+The zero case is $z^0=1$ and the negative-integer case follows from the
+multiplicative inverse. The condition $r>0$ is essential for negative powers,
+because $0$ has no multiplicative inverse.
+
+</Theorem>
+
+<Example slug="polar-power-calculation" of="de-moivre" difficulty="routine">
+
+### Calculate a power
+
+For $z=\sqrt2\,e^{3\pi i/4}$,
+$$
+z^{104}
+=(\sqrt2)^{104}e^{104(3\pi i/4)}
+=2^{52}e^{78\pi i}
+=2^{52}.
+$$
+Polar form handles the large exponent by treating the modulus and the argument separately.
+
+</Example>
+
+## Roots of complex numbers
+
+<Definition slug="complex-nth-roots" of="polar-form">
+
+### An nth root of a complex number
+
+<Statement>
+
+For a complex number $z_0$ and a positive integer $n$, an *$n$th root* is a
+complex number $z$ satisfying
+$$
+z^n=z_0.
+$$
+
+</Statement>
+
+</Definition>
+
+<Theorem slug="complex-nth-root-formula" of="complex-nth-roots,polar-form">
+
+### Find the nth roots
+
+<Statement>
+
+If $z_0\ne0$, $n$ is a positive integer and $z_0=r_0e^{i\theta_0}$, its
+distinct $n$th roots are
+$$
+z_k=\sqrt[n]{r_0}\exp\left(i\frac{\theta_0+2\pi k}{n}\right),
+\qquad k=0,1,\ldots,n-1.
+$$
+They lie on a circle of radius $\sqrt[n]{r_0}$ centred at the origin and
+are equally spaced by an angle of $2\pi/n$. A non-zero complex number has
+exactly $n$ distinct $n$th roots.
+
+</Statement>
+
+To derive the formula, write $z=\rho e^{i\phi}$. If $z^n=z_0$, equality of moduli gives
+$\rho^n=r_0$, while equality of arguments gives
+$n\phi=\theta_0+2\pi k$. Taking $k=0,\ldots,n-1$ produces all distinct
+possibilities: two listed angles differ by less than $2\pi$, so they cannot
+describe the same point. Replacing $k$ by $k+n$ adds $2\pi$ to the root's
+angle, so any other integer $k$ repeats one of them. If $z_0=0$, the
+only $n$th root is $z=0$.
+
+</Theorem>
+
+<Example slug="eighth-roots-of-unity" of="complex-nth-root-formula" difficulty="routine">
+
+### Find the eighth roots of unity
+
+Since $1=e^{2\pi i k}$ for every integer $k$, the eighth roots of unity are
+$$
+z_k=e^{2\pi ik/8},\qquad k=0,1,\ldots,7.
+$$
+They are the eight equally spaced points on the unit circle. For example,
+$$
+z_0=1,\qquad
+z_1=\frac{\sqrt2}{2}+\frac{\sqrt2}{2}i,\qquad
+z_2=i,
+$$
+and the remaining roots continue around the circle.
+
+</Example>
+
+The same polar multiplication gives the trigonometric identities in
+[trigonometric and geometric applications](/algebra/complex-numbers/trigonometric-and-geometric-applications).
+An $n$th root solves $z^n=z_0$; [polynomial
+roots](/algebra/complex-numbers/complex-polynomials) extend the question to
+zeros of general polynomials.

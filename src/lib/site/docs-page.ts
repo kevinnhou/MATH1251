@@ -2,14 +2,18 @@ import "server-only";
 
 import {
 	type ResolvedDocs as CorpusResolved,
-	urlFromSlugs,
+	type PageIndex,
+	resolveFromPageIndex,
 } from "./build-corpus";
 
-import { compileCorpus } from "./corpus";
+import { compilePageIndex } from "./corpus";
 import type { SourcePage } from "./source";
 
 export type ResolvedDocs = CorpusResolved<SourcePage>;
 
-export function resolveDocsPage(slugs: string[]): ResolvedDocs | undefined {
-	return compileCorpus().byUrl.get(urlFromSlugs(slugs));
+export function resolveDocsPage(
+	slugs: readonly string[],
+	pageIndex: PageIndex<SourcePage> = compilePageIndex()
+): ResolvedDocs | undefined {
+	return resolveFromPageIndex(slugs, pageIndex);
 }

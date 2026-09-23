@@ -1,0 +1,457 @@
+---
+title: Rank-nullity
+description: How the dimensions of the kernel and image account for the dimension of the domain.
+tags: [algebra]
+ideas: [linear-maps, kernel, image, rank-nullity]
+---
+
+Rank-nullity says that the dimensions of the kernel and image of a linear map add up to the dimension of its domain. This page computes both dimensions for matrices by row reduction, states the theorem for matrices and for general linear maps and uses it to classify the solution sets of $Ax=b$.
+
+## Computing kernel and image dimensions
+
+<Recall of="kernel-of-linear-map" />
+
+<Recall of="image-of-linear-map" />
+
+<Recall of="dimension" />
+
+Geometrically, a linear map may collapse some input directions to zero
+(the kernel) while keeping other directions in its output (the image).
+Together these account for every degree of freedom in the domain.
+
+For a matrix, row reduction records this split: free variables give the
+[nullity](/algebra/linear-transformations/kernel-image-rank) and pivot columns
+give the [rank](/algebra/linear-transformations/kernel-image-rank). The
+following examples compute both.
+
+<Example of="rank-nullity-matrix" difficulty="routine">
+
+### Kernel and image bases of a matrix
+
+Consider
+
+$$
+A=
+\begin{pmatrix}
+1&0&1&2\\
+0&1&1&-1\\
+1&1&2&1
+\end{pmatrix}.
+$$
+
+The third row is the sum of the first two. Replacing $R_3$ by
+$R_3-R_1-R_2$ therefore gives a zero row, leaving pivots in columns $1$ and
+$2$. To find the kernel, let $x_3=\lambda_3$ and $x_4=\lambda_4$. The first two equations give
+
+$$
+x_1=-\lambda_3-2\lambda_4,
+\qquad
+x_2=-\lambda_3+\lambda_4.
+$$
+
+Therefore a basis for the kernel is
+
+$$
+\left\{
+\begin{pmatrix}
+-1\\-1\\1\\0
+\end{pmatrix},
+\begin{pmatrix}
+-2\\1\\0\\1
+\end{pmatrix}
+\right\}.
+$$
+
+The pivot positions are in columns $1$ and $2$, so the corresponding columns
+of the original matrix give a basis for the image. (Their leading coordinates
+also make their linear independence immediate.)
+
+$$
+\left\{
+\begin{pmatrix}
+1\\0\\1
+\end{pmatrix},
+\begin{pmatrix}
+0\\1\\1
+\end{pmatrix}
+\right\}.
+$$
+
+Hence $\operatorname{nullity}(A)=2$, $\operatorname{rank}(A)=2$ and
+
+$$
+\operatorname{rank}(A)+\operatorname{nullity}(A)=2+2=4,
+$$
+
+the number of columns.
+
+</Example>
+
+<Example of="rank-nullity-matrix" difficulty="exam">
+
+### Kernel basis of a row-echelon matrix
+
+Consider the row-echelon matrix
+
+$$
+A=
+\begin{pmatrix}
+1&2&3&4&5&7&1&5\\
+0&0&0&1&6&8&2&6\\
+0&0&0&0&1&9&3&7\\
+0&0&0&0&0&0&1&8\\
+0&0&0&0&0&0&0&0
+\end{pmatrix}.
+$$
+
+The leading columns are $1,4,5,7$, so the free variables are $x_2,x_3,x_6,x_8$. Set
+
+$$
+x_2=a,\qquad x_3=b,\qquad x_6=c,\qquad x_8=d.
+$$
+
+Solving $Ax=0$ from the bottom non-zero row upwards gives
+
+$$
+x_7=-8d,\qquad
+x_5=-9c+17d,\qquad
+x_4=46c-92d,
+$$
+
+The fourth row gives $x_7=-8d$ and substituting this into the third row
+gives $x_5=-9c+17d$. The second row then gives $x_4$ in the same way.
+
+Finally, the first row gives
+
+$$
+x_1=-2a-3b-146c+286d.
+$$
+
+Setting each free parameter in turn to $1$ and the others to $0$ gives one
+kernel basis vector per free variable. Thus a basis for the kernel is
+
+$$
+\left\{
+\begin{pmatrix}
+-2\\1\\0\\0\\0\\0\\0\\0
+\end{pmatrix},
+\begin{pmatrix}
+-3\\0\\1\\0\\0\\0\\0\\0
+\end{pmatrix},
+\begin{pmatrix}
+-146\\0\\0\\46\\-9\\1\\0\\0
+\end{pmatrix},
+\begin{pmatrix}
+286\\0\\0\\-92\\17\\0\\-8\\1
+\end{pmatrix}
+\right\}.
+$$
+
+Because the displayed matrix is already row-echelon, no row operation has
+changed its columns. Its pivot columns therefore give a basis for the image:
+
+$$
+\left\{
+\begin{pmatrix}1\\0\\0\\0\\0\end{pmatrix},
+\begin{pmatrix}4\\1\\0\\0\\0\end{pmatrix},
+\begin{pmatrix}5\\6\\1\\0\\0\end{pmatrix},
+\begin{pmatrix}1\\2\\3\\1\\0\end{pmatrix}
+\right\}.
+$$
+
+There are four pivot and four free columns, so
+
+$$
+\operatorname{rank}(A)=4,\qquad
+\operatorname{nullity}(A)=4.
+$$
+
+</Example>
+
+## Rank-nullity for matrices
+
+<Theorem slug="rank-nullity-matrix" of="nullity,rank-of-linear-map">
+
+### Rank-nullity theorem
+
+<Statement>
+
+For a matrix $A$ over a scalar field $\mathbb F$ with $n$ columns,
+
+$$
+\operatorname{rank}(A)+\operatorname{nullity}(A)=n.
+$$
+
+</Statement>
+
+In a row-echelon form, rank counts the pivot columns and nullity counts the free variables, or non-pivot columns. Their sum is therefore the number of columns of $A$.
+
+</Theorem>
+
+## Solution sets as affine translates
+
+<Theorem slug="solution-classes-of-ax-b" of="rank-nullity-matrix" see="affine-solution-set">
+
+### Classes of solutions of $Ax=b$
+
+<Statement>
+
+Let $A$ be a matrix over an infinite scalar field $\mathbb F$ (such as
+$\mathbb R$ or $\mathbb C$), let $b$ be a vector of
+the appropriate dimension and let $[A\mid b]$ be the augmented matrix formed
+by appending $b$ to $A$. The equation $Ax=b$ has:
+
+1. no solution if
+   $$
+   \operatorname{rank}(A)\ne\operatorname{rank}([A\mid b]);
+   $$
+2. a unique solution if
+   $$
+   \operatorname{rank}(A)=\operatorname{rank}([A\mid b])
+   \quad\text{and}\quad
+   \operatorname{nullity}(A)=0;
+   $$
+3. infinitely many solutions if
+   $$
+   \operatorname{rank}(A)=\operatorname{rank}([A\mid b])
+   \quad\text{and}\quad
+   \operatorname{nullity}(A)>0.
+   $$
+
+In the last case, if $\operatorname{nullity}(A)=k$, then every solution has the form
+
+$$
+x=x_p+\omega_1u_1+\cdots+\omega_ku_k,
+$$
+
+where $x_p$ is any particular solution of $Ax=b$, $\{u_1,\ldots,u_k\}$ is a basis for $\ker(A)$ and $\omega_1,\ldots,\omega_k\in\mathbb F$.
+
+</Statement>
+
+Appending $b$ increases the rank exactly when $b$ is not in the column
+space of $A$, that is, when $Ax=b$ is inconsistent. The infinite-field
+assumption ensures that a free parameter can take infinitely many values.
+
+When a particular solution exists, subtracting it from any other solution
+gives a vector in the kernel. So the solution set is the affine translate
+$x_p+\ker(A)$ of the kernel. The same pattern holds for any linear map: two inputs have the same output precisely when their difference lies in the kernel, so each non-empty fibre is a translate of the kernel.
+
+</Theorem>
+
+<Example of="solution-classes-of-ax-b" difficulty="routine">
+
+### General solution of an inhomogeneous system
+
+For
+
+$$
+A=
+\begin{pmatrix}
+1&0&1&2\\
+0&1&1&-1\\
+1&1&2&1
+\end{pmatrix},
+\qquad
+b=
+\begin{pmatrix}
+3\\1\\4
+\end{pmatrix},
+$$
+
+take $x_3=\lambda_3$ and $x_4=\lambda_4$. Solving the first two equations gives
+
+$$
+x_1=3-\lambda_3-2\lambda_4,
+\qquad
+x_2=1-\lambda_3+\lambda_4.
+$$
+
+Therefore
+
+$$
+x=
+\begin{pmatrix}
+3\\1\\0\\0
+\end{pmatrix}
+\!+\lambda_3
+\begin{pmatrix}
+-1\\-1\\1\\0
+\end{pmatrix}
+\!+\lambda_4
+\begin{pmatrix}
+-2\\1\\0\\1
+\end{pmatrix},
+\qquad
+\lambda_3,\lambda_4\in\mathbb R.
+$$
+
+The two direction vectors are the kernel basis found in the first example and the constant vector is a particular solution: $Ax_p=b$.
+
+</Example>
+
+## Rank-nullity for vector spaces
+
+<Theorem slug="rank-nullity-theorem" of="nullity,rank-of-linear-map">
+
+### Rank-nullity theorem for vector spaces
+
+<Statement>
+
+If $T:V\to W$ is a linear map over a scalar field $\mathbb F$ and $V$ is
+finite-dimensional, then
+
+$$
+\operatorname{rank}(T)+\operatorname{nullity}(T)=\dim(V).
+$$
+
+</Statement>
+
+The codomain need not be finite-dimensional: the image of a map from the
+finite-dimensional space $V$ is automatically finite-dimensional.
+
+</Theorem>
+
+<Proof of="rank-nullity-theorem">
+
+Let $k=\dim\ker(T)$ and choose a basis
+
+$$
+u_1,\ldots,u_k
+$$
+
+for $\ker(T)$. Extend it to a basis of $V$:
+
+$$
+u_1,\ldots,u_k,v_1,\ldots,v_r.
+$$
+
+The vectors $T(v_1),\ldots,T(v_r)$ span $\operatorname{im}(T)$. Indeed, if $x\in V$, write
+
+$$
+x=a_1u_1+\cdots+a_ku_k+b_1v_1+\cdots+b_rv_r.
+$$
+
+Applying $T$ gives
+
+$$
+T(x)=b_1T(v_1)+\cdots+b_rT(v_r),
+$$
+
+because $T(u_i)=0$ for each $i$.
+
+The vectors $T(v_1),\ldots,T(v_r)$ are linearly independent. If
+
+$$
+c_1T(v_1)+\cdots+c_rT(v_r)=0,
+$$
+
+then
+
+$$
+T(c_1v_1+\cdots+c_rv_r)=0,
+$$
+
+so $c_1v_1+\cdots+c_rv_r\in\ker(T)$. It is therefore a linear combination of $u_1,\ldots,u_k$. Since the full list
+
+$$
+u_1,\ldots,u_k,v_1,\ldots,v_r
+$$
+
+is linearly independent, $c_1=\cdots=c_r=0$. Thus $T(v_1),\ldots,T(v_r)$ is a basis of the image, so $\operatorname{rank}(T)=r$. The basis of $V$ has $k+r$ vectors, giving
+
+$$
+\operatorname{rank}(T)+\operatorname{nullity}(T)=r+k=\dim(V).
+$$
+
+</Proof>
+
+<Example of="rank-nullity-theorem" difficulty="routine">
+
+### Differentiation on polynomial spaces
+
+Over $\mathbb R$ and for $n\ge1$, consider
+
+$$
+D:P_n\to P_{n-1},
+\qquad
+D(p)=\frac{dp(x)}{dx}.
+$$
+
+For $p_1,p_2\in P_n$ and $\lambda\in\mathbb R$,
+
+$$
+D(p_1+p_2)=D(p_1)+D(p_2),
+\qquad
+D(\lambda p_1)=\lambda D(p_1),
+$$
+
+so $D$ is a linear map. If
+
+$$
+p(x)=c_0+c_1x+\cdots+c_nx^n,
+$$
+
+then
+
+$$
+D(p)=c_1+2c_2x+\cdots+n c_nx^{n-1}.
+$$
+
+Its kernel consists of the constant polynomials:
+
+$$
+\ker(D)=\{\alpha:\alpha\in\mathbb R\}
+=\operatorname{span}\{1\}.
+$$
+
+Thus $\operatorname{nullity}(D)=1$. Since $\dim(P_n)=n+1$, rank-nullity gives
+
+$$
+\operatorname{rank}(D)=n.
+$$
+
+The image is $P_{n-1}$: every polynomial of degree at most $n-1$ has a polynomial antiderivative in $P_n$. Hence its dimension is also $n$, agreeing with the rank calculation.
+
+</Example>
+
+## Summary and equivalent conditions
+
+The matrix and vector-space statements are
+
+$$
+\operatorname{rank}(A)+\operatorname{nullity}(A)
+=\text{number of columns of }A
+$$
+
+and
+
+$$
+\operatorname{rank}(T)+\operatorname{nullity}(T)=\dim(V).
+$$
+
+<Corollary slug="square-matrix-equivalences" of="rank-nullity-matrix,rank-nullity-theorem,solution-classes-of-ax-b,kernel-of-linear-map">
+
+### Equivalent conditions for a square matrix
+
+<Statement>
+
+For a square matrix $A\in M_{n\times n}(\mathbb R)$, the following statements are equivalent:
+
+1. $Ax=u$ has a unique solution for every $u\in\mathbb R^n$;
+2. $Ax=0$ has only the trivial solution;
+3. every column of the reduced echelon form of $A$ is leading;
+4. $\det(A)\ne0$;
+5. $A$ is invertible;
+6. the columns of $A$ are linearly independent;
+7. the columns of $A$ span $\mathbb R^n$;
+8. the columns of $A$ form a basis for $\mathbb R^n$;
+9. $\operatorname{rank}(A)=n$;
+10. $\operatorname{nullity}(A)=0$.
+
+</Statement>
+
+Rank-nullity links the kernel conditions to the column conditions: for a square matrix with $n$ columns, zero nullity is equivalent to rank $n$.
+
+</Corollary>
+
+Once bases are chosen, a linear map has a [matrix representation](/algebra/linear-transformations/matrix-representations) and these dimension counts become calculations on that matrix.

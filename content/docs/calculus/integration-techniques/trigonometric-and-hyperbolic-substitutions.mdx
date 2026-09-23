@@ -1,0 +1,131 @@
+---
+title: Trigonometric and hyperbolic substitutions
+description: Substitutions that clear $\sqrt{a^2\pm x^2}$ and $\sqrt{x^2-a^2}$.
+tags: [calculus]
+ideas: [trigonometric-substitution, hyperbolic-substitution]
+---
+
+This page clears the quadratic surds $\sqrt{a^2-x^2}$, $\sqrt{a^2+x^2}$ and $\sqrt{x^2-a^2}$. Each substitution matches a Pythagorean identity or its hyperbolic counterpart, so that the surd becomes a single trigonometric or hyperbolic function. Completing the square often produces one of these forms.
+
+The sign pattern suggests the substitution, but the chosen branch decides which sign of the square root is valid. Right triangles help recover $\sin\theta$ and $\cos\theta$ when back-substituting, provided their side lengths are non-negative. On a branch where $x$ may be negative, use the identities together with the chosen signs instead.
+
+Any powers of sine and cosine left over are [trigonometric integrals](/calculus/integration-techniques/trigonometric-integrals). Other surds may yield to a [rationalising substitution](/calculus/integration-techniques/rationalising-substitutions) that produces a [rational function](/calculus/integration-techniques/rational-functions), although not every surd has such a simple substitution.
+
+## Choosing a trigonometric or hyperbolic substitution
+
+<Method slug="trig-hyperbolic-substitution">
+
+### Substitutions for $\sqrt{a^2\pm x^2}$ and $\sqrt{x^2-a^2}$
+
+<Statement>
+
+For $a>0$, choose the indicated trigonometric or hyperbolic branch so that
+the substitution is one-to-one on the interval being integrated. Keep the
+absolute value when simplifying a square root until the chosen range fixes
+its sign; for example,
+$\sqrt{a^2-a^2\sin^2\theta}=a|\cos\theta|$.
+
+| Integrand factor | Substitutions | Identities |
+| --- | --- | --- |
+| $\sqrt{a^2-x^2}$ | $x=a\sin\theta$, $dx=a\cos\theta\,d\theta$ or $x=a\tanh\theta$, $dx=a\operatorname{sech}^2\theta\,d\theta$ | $\cos^2\theta+\sin^2\theta=1$, $\operatorname{sech}^2\theta+\tanh^2\theta=1$ |
+| $\sqrt{a^2+x^2}$ | $x=a\tan\theta$, $dx=a\sec^2\theta\,d\theta$ or $x=a\sinh\theta$, $dx=a\cosh\theta\,d\theta$ | $\sec^2\theta=\tan^2\theta+1$, $\cosh^2\theta=1+\sinh^2\theta$ |
+| $\sqrt{x^2-a^2}$ | $x=a\sec\theta$, $dx=a\sec\theta\tan\theta\,d\theta$ or, for $x\ge a$, $x=a\cosh\theta$, $dx=a\sinh\theta\,d\theta$ | $\sec^2\theta=1+\tan^2\theta$, $\cosh^2\theta=1+\sinh^2\theta$ |
+
+</Statement>
+
+For $\sqrt{a^2-x^2}$ the hypotenuse is $a$ and the side opposite $\theta$ is $x$, so the adjacent side is $\sqrt{a^2-x^2}$. For $\sqrt{a^2+x^2}$ the opposite side is $x$, the adjacent side is $a$ and the hypotenuse is $\sqrt{a^2+x^2}$. For $\sqrt{x^2-a^2}$, this triangle description assumes $x\ge a$: the hypotenuse is $x$, the adjacent side is $a$ and the opposite side is $\sqrt{x^2-a^2}$.
+
+The identity $\operatorname{sech}^2\theta+\tanh^2\theta=1$ is the same relation as $1-\tanh^2\theta=\operatorname{sech}^2\theta$.
+
+Writing $\sqrt{1-\sin^2\theta}=\cos\theta$ without the absolute value is legitimate on the range of $\sin^{-1}$, where $\cos\theta\ge 0$; it fails if $\theta$ is taken outside that range. For $\sqrt{x^2-a^2}$ on $x\le-a$, use a separate branch, such as $x=-a\cosh\theta$ with $\theta\ge0$, or choose a secant range and retain the required signs.
+
+</Method>
+
+## Trigonometric substitutions
+
+<Example slug="int-sqrt-one-minus-x2" of="trig-hyperbolic-substitution" see="trig-even-power" difficulty="exam">
+
+### $\int\sqrt{1-x^2}\,dx$
+
+The integrand is real on $[-1,1]$. On the interior of this interval, let
+$x=\sin\theta$, so $dx=\cos\theta\,d\theta$. On the range of $\sin^{-1}$, one has $\sqrt{1-\sin^2\theta}=\lvert\cos\theta\rvert=\cos\theta$. Then
+
+$$
+\begin{aligned}
+I&=\int\sqrt{1-\sin^2\theta}\,\cos\theta\,d\theta\\
+&=\int\cos^2\theta\,d\theta\\
+&=\frac{\theta}{2}+\frac{\sin 2\theta}{4}+C\\
+&=\frac{\theta}{2}+\frac{\sin\theta\cos\theta}{2}+C\\
+&=\frac12\sin^{-1}x+\frac12 x\sqrt{1-x^2}+C.
+\end{aligned}
+$$
+
+The integral $\int\cos^2\theta\,d\theta$ is the [even-power evaluation](/calculus/integration-techniques/trigonometric-integrals). Back-substitution uses $\sin 2\theta=2\sin\theta\cos\theta$, $\theta=\sin^{-1}x$, $\sin\theta=x$ and $\cos\theta=\sqrt{1-x^2}$.
+
+</Example>
+
+<Example slug="int-x2-sqrt-16-minus-x2" of="trig-hyperbolic-substitution" difficulty="exam">
+
+### $\int_0^4 x^2\sqrt{16-x^2}\,dx$
+
+Let $x=4\sin\theta$, so $dx=4\cos\theta\,d\theta$. The limits $x=0$ and $x=4$ become $\theta=0$ and $\theta=\frac{\pi}{2}$. On $\bigl[0,\frac{\pi}{2}\bigr]$ one has $\sqrt{16-16\sin^2\theta}=\sqrt{16(1-\sin^2\theta)}=4\cos\theta$. Then
+
+$$
+\begin{aligned}
+I&=\int_0^{\pi/2}16\sin^2\theta\,\sqrt{16-16\sin^2\theta}\,4\cos\theta\,d\theta\\
+&=\int_0^{\pi/2}16\sin^2\theta\cdot 4\cos\theta\cdot 4\cos\theta\,d\theta\\
+&=16^2\int_0^{\pi/2}\sin^2\theta\cos^2\theta\,d\theta\\
+&=16^2\int_0^{\pi/2}\left(\frac{\sin 2\theta}{2}\right)^2\,d\theta\\
+&=\frac{16^2}{4}\int_0^{\pi/2}\frac{1-\cos 4\theta}{2}\,d\theta\\
+&=32\int_0^{\pi/2}(1-\cos 4\theta)\,d\theta\\
+&=32\left[\theta-\frac{\sin 4\theta}{4}\right]_0^{\pi/2}\\
+&=32\left(\frac{\pi}{2}-\frac{\sin 2\pi}{4}\right)\\
+&=16\pi.
+\end{aligned}
+$$
+
+The calculation uses $\sin\theta\cos\theta=\frac{\sin 2\theta}{2}$ and $\sin^2 2\theta=\frac{1-\cos 4\theta}{2}$.
+
+</Example>
+
+<Example slug="int-a2-plus-x2-three-halves" of="trig-hyperbolic-substitution" difficulty="exam">
+
+### $\int\frac{dx}{(a^2+x^2)^{3/2}}$
+
+Assume $a>0$ and let $x=a\tan\theta$ with
+$-\frac{\pi}{2}<\theta<\frac{\pi}{2}$, so
+$dx=a\sec^2\theta\,d\theta$ and $\sec\theta>0$. Then
+
+$$
+\begin{aligned}
+I&=\int\frac{a\sec^2\theta}{(a^2+a^2\tan^2\theta)^{3/2}}\,d\theta\\
+&=\frac{1}{a^2}\int\frac{\sec^2\theta}{(1+\tan^2\theta)^{3/2}}\,d\theta\\
+&=\frac{1}{a^2}\int\frac{\sec^2\theta}{\sec^3\theta}\,d\theta\\
+&=\frac{1}{a^2}\int\frac{1}{\sec\theta}\,d\theta\\
+&=\frac{1}{a^2}\int\cos\theta\,d\theta\\
+&=\frac{1}{a^2}\sin\theta+C\\
+&=\frac{x}{a^2\sqrt{x^2+a^2}}+C.
+\end{aligned}
+$$
+
+The identity $\sec^2\theta=\tan^2\theta+1$ gives $(1+\tan^2\theta)^{3/2}=\sec^3\theta$ because $\sec\theta>0$ on the chosen branch. Also $\cos\theta=a/\sqrt{x^2+a^2}$, so $\sin\theta=\tan\theta\cos\theta=x/\sqrt{x^2+a^2}$ even when $x<0$.
+
+</Example>
+
+## Hyperbolic substitutions
+
+The same surds can be cleared by a hyperbolic identity. On the $\sqrt{a^2+x^2}$ row, $x=a\sinh\theta$ uses $\cosh^2\theta=1+\sinh^2\theta$ in place of $\sec^2\theta=1+\tan^2\theta$, so the surd becomes $a\cosh\theta$ instead of $a\sec\theta$.
+
+<Example slug="int-one-over-sqrt-4-plus-x2-hyperbolic" of="trig-hyperbolic-substitution" difficulty="routine">
+
+### $\int\frac{dx}{\sqrt{4+x^2}}$
+
+Let $x=2\sinh\theta$, so $dx=2\cosh\theta\,d\theta$. Then $\sqrt{4+x^2}=\sqrt{4+4\sinh^2\theta}=2\cosh\theta$, using $\cosh^2\theta-\sinh^2\theta=1$ with $\cosh\theta>0$. Hence
+
+$$
+I=\int\frac{2\cosh\theta}{2\cosh\theta}\,d\theta=\theta+C=\sinh^{-1}\!\left(\frac{x}{2}\right)+C.
+$$
+
+The trigonometric route on the same row, $x=2\tan\theta$, leads to $\int\sec\theta\,d\theta$ instead.
+
+</Example>

@@ -1,0 +1,14 @@
+{
+  "title": "Vector spaces",
+  "pagesIndex": "index",
+  "pages": [
+    "vector-spaces",
+    "subspaces",
+    "spans",
+    "linear-independence",
+    "basis-and-dimension",
+    "coordinates-and-bases",
+    "data-fitting",
+    "seen"
+  ]
+}

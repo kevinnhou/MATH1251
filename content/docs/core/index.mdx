@@ -1,6 +1,123 @@
 ---
-title: MATH1251
-description: MATH1251
+title: Core
+description: The ideas Algebra and Calculus share, from linear structure and evolution to approximation and accumulation.
+tags: [algebra, calculus]
+ideas: [coordinates, linear-structure, dynamical-systems, approximation, integration]
 ---
 
-See [Algebra](/algebra) and [Calculus](/calculus).
+MATH1251 has two strands. Algebra develops linear structure: linear
+combinations, linear maps, coordinates and eigenvalues. Calculus studies
+change, approximation and accumulation. The two strands keep coming back to a
+few shared ideas, which this page gathers in one place.
+
+## The two strands
+
+- [Algebra](/algebra): complex numbers, vector spaces, linear transformations
+  and eigenvalues.
+- [Calculus](/calculus): integration techniques, ordinary differential
+  equations, Taylor series, functions of several variables and double
+  integrals.
+
+## Shared ideas
+
+### Coordinates and linear structure
+
+A [basis](/algebra/vector-spaces/basis-and-dimension) gives every vector a
+unique list of coordinates, whether the vector is an arrow in space, a
+polynomial or an element of another finite-dimensional function space. Once
+bases are chosen, a [linear transformation has a
+matrix](/algebra/linear-transformations/matrix-representations). If an
+operator $V\to V$ has an [eigenbasis](/algebra/eigenvalues/diagonalisation),
+its matrix in that basis is diagonal, so it scales each basis direction
+independently.
+
+Coordinates describe a vector; they are not the vector. Changing the basis
+changes the coordinate column and the matrix, but not the underlying vector or
+map.
+
+The scalars are part of the structure. The notes work over $\mathbb R$ by
+default and over $\mathbb C$ when complex roots or eigenvectors are needed, so
+the same formula can describe different vector spaces.
+
+### Kernels and solution sets
+
+The [kernel](/algebra/linear-transformations/kernel-image-rank) of a linear
+map $T$ contains the inputs that $T$ sends to zero. If $T(x)=b$ has one
+particular solution $x_p$, then every solution has the form
+
+$$
+x=x_p+x_h,\qquad x_h\in\ker T.
+$$
+
+This one pattern describes the free directions in a [matrix
+equation](/algebra/linear-transformations/rank-nullity) and the homogeneous
+part of a [linear differential
+equation](/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators).
+
+### Roots, modes and evolution
+
+A mode is a simple solution whose shape the evolution preserves: $r^n$ in
+discrete time and $e^{rt}$ in continuous time. The values of $r$ are
+[characteristic roots](/algebra/complex-numbers/stability-of-systems) and
+[polar form](/algebra/complex-numbers/polar-form) reads each one as a scaling
+and a rotation.
+
+- In discrete time, $|r|$ controls growth or decay.
+- In continuous time, $\operatorname{Re}(r)$ controls growth or decay.
+- A nonzero imaginary part produces oscillation.
+
+[Scalar constant-coefficient
+ODEs](/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations)
+build their solutions from these roots. In [coupled linear
+ODEs](/algebra/eigenvalues/linear-ode-systems),
+[eigenvectors](/algebra/eigenvalues/eigenvalues-and-eigenvectors) give the
+directions that evolve as single exponential modes. [Matrix
+powers](/algebra/eigenvalues/spectral-applications) and [Markov
+systems](/algebra/eigenvalues/markov-systems) are the discrete-time versions
+of the same calculation.
+
+### Local approximation
+
+An approximation replaces a hard object with a simpler one and keeps track of
+the difference:
+
+$$
+\text{original object}=\text{simple model}+\text{error}.
+$$
+
+A [Taylor polynomial](/calculus/taylor-series/taylor-polynomials) matches
+derivatives at a centre and the
+[remainder](/calculus/taylor-series/taylors-theorem) measures the error away
+from that centre. An infinite Taylor series needs a separate convergence
+argument: matching every derivative does not by itself show that the series
+equals the function.
+
+In several variables, the [tangent
+plane](/calculus/functions-of-several-variables/geometry-and-approximation) is
+the first-order model. The [second-order
+model](/calculus/functions-of-several-variables/multivariable-approximation)
+adds curvature through the Hessian, which can classify interior [stationary
+points](/calculus/functions-of-several-variables/local-extrema). These models
+live in the polynomial spaces from Algebra, where
+[interpolation](/algebra/vector-spaces/data-fitting) instead fixes a
+polynomial by its values at distinct inputs.
+
+### Accumulation and changes of variables
+
+[Integration techniques](/calculus/integration-techniques) use the form of an
+integrand to find an antiderivative and they return as tools for [solving
+differential equations](/calculus/ordinary-differential-equations).
+[Double integrals](/calculus/double-integrals) accumulate a quantity over a
+planar region. Slicing reduces them to iterated single integrals and a [change
+of variables](/calculus/double-integrals/change-of-variables-and-polar-coordinates)
+can simplify the region or the integrand, with the Jacobian determinant
+accounting for local area scaling. It plays the same role as choosing a good
+basis: a better description makes the calculation simpler.
+
+## Where next
+
+The [concept map](/core/concept-map) shows how the course's ideas depend on
+one another and gives a reading path through each strand. [Mathematical
+language](/core/mathematical-language) covers the general vocabulary and
+notation the chapters assume. Each chapter defines its own terms where they
+first appear.
