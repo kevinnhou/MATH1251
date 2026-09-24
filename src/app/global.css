@@ -262,3 +262,7 @@ html > body[data-scroll-locked] {
 [data-sidebar] .md-fragment-inline .katex {
 	font-size: 0.95em;
 }
+
+html {
+	font-synthesis-weight: none;
+}

@@ -18,9 +18,9 @@
     "proxy.ts": true,
     "source.config.ts": true,
     "tsconfig.json": true,
-    "README.md": true
+    "README.md": true,
 
-    // "src": true
+    "src": true
   },
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,

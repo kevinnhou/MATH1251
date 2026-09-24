@@ -5,6 +5,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { z } from "zod";
 import { rehypeKatexDisplayScroll } from "./src/lib/markdown/katex-display";
+import { rehypeKatexHtml } from "./src/lib/markdown/katex-html";
 import { KATEX_OPTIONS, REMARK_MATH_OPTIONS } from "./src/lib/markdown/math";
 import { remarkMathEnv } from "./src/lib/math-env/remark";
 import { corpusMeta } from "./src/lib/site/corpus-meta/plugin";
@@ -28,6 +29,7 @@ export default defineConfig({
 		rehypePlugins: (v) => [
 			[rehypeKatex, KATEX_OPTIONS],
 			rehypeKatexDisplayScroll,
+			rehypeKatexHtml,
 			...v,
 		],
 		remarkPlugins: [
