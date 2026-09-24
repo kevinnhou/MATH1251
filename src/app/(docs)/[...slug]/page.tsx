@@ -20,6 +20,7 @@ import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import type { RelatedLink } from "@/lib/math-env/export-markdown";
 import { getKindViewToc } from "@/lib/math-env/kind-view";
 import { gitConfig } from "@/lib/site/config";
+import { loadPageContent } from "@/lib/site/content";
 import { compileCorpus, compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
 import { getPrerenderedDocsSlugs } from "@/lib/site/docs-routes";
@@ -41,8 +42,8 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 	const corpus = compileCorpus();
 	const { source: sourcePage } = resolved;
 	const { page } = sourcePage;
+	const { body: MDX, toc } = await loadPageContent(page.path);
 	const view = resolved.kind === "kind-view" ? resolved.view : undefined;
-	const MDX = page.data.body;
 	const markdownUrl =
 		view === undefined
 			? getPageMarkdownUrl(page).url
@@ -67,8 +68,8 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 			}}
 			toc={
 				view === undefined
-					? page.data.toc
-					: getKindViewToc(page.data.toc, sourcePage.envs, view.kind)
+					? toc
+					: getKindViewToc(toc, sourcePage.envs, view.kind)
 			}
 		>
 			<DocsTitle>

@@ -55,11 +55,10 @@ export {
 export {
 	type EnvHeading,
 	type EnvOccurrence,
-	getPageEnvs,
 	isPageEnvs,
 	type PageEnvs,
 	type PageSegment,
-	type PageWithExports,
+	parsePageEnvs,
 	type RecallOccurrence,
 } from "./page-envs";
 export { parseTenetSlug, parseTenetSlugList, TENET_SLUG_PATTERN } from "./slug";

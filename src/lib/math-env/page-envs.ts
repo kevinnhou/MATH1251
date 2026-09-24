@@ -38,14 +38,6 @@ export interface PageEnvs {
 	segments: PageSegment[];
 }
 
-export interface PageWithExports {
-	data: {
-		_exports?: Record<string, unknown>;
-	};
-}
-
-const EMPTY_PAGE_ENVS: PageEnvs = { entries: [], recalls: [], segments: [] };
-
 export function recallId(of: string, index: number): string {
 	return `recall-${of}-${index}`;
 }
@@ -58,10 +50,9 @@ export function isPageEnvs(value: unknown): value is PageEnvs {
 	);
 }
 
-export function getPageEnvs(page: PageWithExports): PageEnvs {
-	const candidate = page.data._exports?.envs;
+export function parsePageEnvs(candidate: unknown): PageEnvs | undefined {
 	if (!isPageEnvs(candidate)) {
-		return EMPTY_PAGE_ENVS;
+		return;
 	}
 
 	return {

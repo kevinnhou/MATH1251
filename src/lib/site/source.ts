@@ -1,36 +1,38 @@
-import { loader } from "fumadocs-core/source";
+import corpusMeta from "collections/corpus-meta";
+import { loader, type VirtualFile } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
-import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
-import { defineDocs } from "fumadocs-mdx/macro";
 import { cache } from "react";
-import { z } from "zod";
 import { getKindViewSlug, type MathEnvKind } from "@/lib/math-env/kinds";
-import { getPageEnvs, type PageEnvs } from "@/lib/math-env/page-envs";
+import type { PageEnvs } from "@/lib/math-env/page-envs";
 import { docsContentRoute, docsImageRoute, docsRoute } from "./config";
+import type { CorpusMetaPage, DocsMeta } from "./corpus-meta/types";
 import { type GraphModule, getStrand } from "./strands";
 
-const docs = defineDocs({
-	dir: "content/docs",
-	docs: {
-		postprocess: {
-			extractLinkReferences: true,
-			includeProcessedMarkdown: true,
-		},
-		schema: pageSchema.extend({
-			ideas: z.array(z.string()).default([]),
-			tags: z.array(z.string()).default([]),
-		}),
-	},
-	meta: {
-		schema: metaSchema,
-	},
-});
+type PageData = CorpusMetaPage["frontmatter"] &
+	Pick<CorpusMetaPage, "envs" | "extractedReferences" | "structuredData">;
 
-// See https://fumadocs.dev/docs/headless/source-api for more info
+const files: VirtualFile<{ metaData: DocsMeta; pageData: PageData }>[] = [
+	...corpusMeta.pages.map((page) => ({
+		data: {
+			...page.frontmatter,
+			envs: page.envs,
+			extractedReferences: page.extractedReferences,
+			structuredData: page.structuredData,
+		},
+		path: page.path,
+		type: "page" as const,
+	})),
+	...corpusMeta.metas.map((meta) => ({
+		data: meta.data,
+		path: meta.path,
+		type: "meta" as const,
+	})),
+];
+
 export const source = loader({
 	baseUrl: docsRoute,
 	plugins: [lucideIconsPlugin()],
-	source: docs.toFumadocsSource(),
+	source: { files },
 });
 
 export interface SourcePage {
@@ -41,7 +43,7 @@ export interface SourcePage {
 
 export const getSourcePages = cache((): SourcePage[] =>
 	source.getPages().map((page) => ({
-		envs: getPageEnvs(page),
+		envs: page.data.envs,
 		module: getStrand(page.slugs),
 		page,
 	}))
