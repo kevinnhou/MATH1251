@@ -1,20 +1,14 @@
-interface DocsRouteIndex {
-	kindViews: readonly {
-		pageSlugs: readonly string[];
-		slug: string;
-	}[];
-	pages: readonly {
-		page: {
-			slugs: readonly string[];
-		};
-	}[];
-}
+import type { CorpusPage, PageIndex } from "./build-corpus";
 
-export function getDocsRouteSlugs(index: DocsRouteIndex): string[][] {
-	return [
-		...index.pages.map(({ page }) => [...page.slugs]),
-		...index.kindViews.map(({ pageSlugs, slug }) => [...pageSlugs, slug]),
-	];
+/**
+ * Only notes pages are prerendered. Kind views are left out on purpose; with
+ * `dynamicParams = true` and `revalidate = false` they render on first request
+ * and are then cached for the deployment.
+ */
+export function getPrerenderedDocsSlugs(
+	index: Pick<PageIndex<CorpusPage>, "pages">
+): string[][] {
+	return index.pages.map(({ page }) => [...page.slugs]);
 }
 
 export function appendDocsRouteSuffix(

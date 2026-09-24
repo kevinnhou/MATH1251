@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { buildCorpusFromPageIndex, compilePageIndex } from "@/lib/site/corpus";
+import { compileCorpus, compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
 import {
 	appendDocsRouteSuffix,
-	getDocsRouteSlugs,
+	getPrerenderedDocsSlugs,
 } from "@/lib/site/docs-routes";
 import { markdownForResolved } from "@/lib/site/export-page";
 
@@ -19,13 +19,12 @@ export async function GET(
 		notFound();
 	}
 
-	const pageIndex = compilePageIndex();
-	const resolved = resolveDocsPage(slug.slice(0, -1), pageIndex);
+	const resolved = resolveDocsPage(slug.slice(0, -1));
 	if (!resolved) {
 		notFound();
 	}
 
-	const corpus = buildCorpusFromPageIndex(pageIndex);
+	const corpus = compileCorpus();
 	return new Response(
 		markdownForResolved(resolved, corpus.graph, corpus.tenets),
 		{
@@ -37,7 +36,7 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-	return appendDocsRouteSuffix(getDocsRouteSlugs(compilePageIndex()), [
+	return appendDocsRouteSuffix(getPrerenderedDocsSlugs(compilePageIndex()), [
 		"content.md",
 	]).map((slug) => ({ slug }));
 }

@@ -5,7 +5,7 @@ import { compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
 import {
 	appendDocsRouteSuffix,
-	getDocsRouteSlugs,
+	getPrerenderedDocsSlugs,
 } from "@/lib/site/docs-routes";
 
 export const revalidate = false;
@@ -43,7 +43,7 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-	return appendDocsRouteSuffix(getDocsRouteSlugs(compilePageIndex()), [
+	return appendDocsRouteSuffix(getPrerenderedDocsSlugs(compilePageIndex()), [
 		"image.png",
 	]).map((slug) => ({ slug }));
 }

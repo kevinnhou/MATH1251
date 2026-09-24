@@ -22,7 +22,7 @@ import { getKindViewToc } from "@/lib/math-env/kind-view";
 import { gitConfig } from "@/lib/site/config";
 import { compileCorpus, compilePageIndex } from "@/lib/site/corpus";
 import { resolveDocsPage } from "@/lib/site/docs-page";
-import { getDocsRouteSlugs } from "@/lib/site/docs-routes";
+import { getPrerenderedDocsSlugs } from "@/lib/site/docs-routes";
 import {
 	getKindViewMarkdownUrl,
 	getPageImageUrl,
@@ -116,10 +116,11 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 	);
 }
 
+export const revalidate = false;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-	return getDocsRouteSlugs(compilePageIndex()).map((slug) => ({ slug }));
+	return getPrerenderedDocsSlugs(compilePageIndex()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(

@@ -18,14 +18,27 @@ import { getStrand } from "./strands";
 
 export type { PageIndex, ResolvedDocs, SiteCorpus } from "./build-corpus";
 
-export const compilePageIndex = cache(() =>
+function memoInProduction<T>(build: () => T): () => T {
+	// Development must stay per-request so MDX edits show up without a restart.
+	if (process.env.NODE_ENV !== "production") {
+		return cache(build);
+	}
+
+	let memo: { current: T } | undefined;
+	return () => {
+		memo ??= { current: build() };
+		return memo.current;
+	};
+}
+
+export const compilePageIndex = memoInProduction(() =>
 	buildPageIndex({
 		pageExists: (slugs) => Boolean(source.getPage(slugs)),
 		pages: getSourcePages(),
 	})
 );
 
-export function buildCorpusFromPageIndex(
+function buildCorpusFromPageIndex(
 	pageIndex: PageIndex<SourcePage>
 ): SiteCorpus<SourcePage> {
 	return buildSiteCorpus({
@@ -43,6 +56,6 @@ export function buildCorpusFromPageIndex(
 	});
 }
 
-export const compileCorpus = cache(() =>
+export const compileCorpus = memoInProduction(() =>
 	buildCorpusFromPageIndex(compilePageIndex())
 );
