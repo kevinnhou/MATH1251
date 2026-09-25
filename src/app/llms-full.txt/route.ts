@@ -1,5 +1,6 @@
 import { compileCorpus } from "@/lib/site/corpus";
 import { assembleNotesMarkdown } from "@/lib/site/export-page";
+import { textFileResponse } from "@/lib/site/text-response";
 
 export const revalidate = false;
 
@@ -16,5 +17,5 @@ export function GET() {
 		})
 	);
 
-	return new Response(pages.join("\n\n"));
+	return textFileResponse(pages.join("\n\n"), "llms-full.txt");
 }

@@ -6,6 +6,7 @@ import {
 	getPrerenderedDocsSlugs,
 } from "@/lib/site/docs-routes";
 import { markdownForResolved } from "@/lib/site/export-page";
+import { textFileResponse } from "@/lib/site/text-response";
 
 export const revalidate = false;
 export const dynamicParams = true;
@@ -19,19 +20,16 @@ export async function GET(
 		notFound();
 	}
 
-	const resolved = resolveDocsPage(slug.slice(0, -1));
+	const pageSlugs = slug.slice(0, -1);
+	const resolved = resolveDocsPage(pageSlugs);
 	if (!resolved) {
 		notFound();
 	}
 
 	const corpus = compileCorpus();
-	return new Response(
+	return textFileResponse(
 		markdownForResolved(resolved, corpus.graph, corpus.tenets),
-		{
-			headers: {
-				"Content-Type": "text/markdown",
-			},
-		}
+		`${pageSlugs.join("-")}.md`
 	);
 }
 
