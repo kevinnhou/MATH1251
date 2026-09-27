@@ -2,6 +2,8 @@ import { isEditableTarget, isModifiedKey } from "@/lib/client/actions";
 
 const ROW = "[data-tree-row]";
 const FOLDER = "[data-tree-folder]";
+const HEADER_ROW = ":scope > [data-tree-header] [data-tree-row]";
+const TOGGLE = ":scope > [data-tree-header] [data-tree-toggle]";
 const DIGIT = /^[0-9]$/;
 
 const MOVES: Record<string, "up" | "down" | "out" | "in"> = {
@@ -78,7 +80,9 @@ function resolveMove(
 			return "toggle";
 		}
 
-		const content = row.closest(FOLDER)?.querySelector("[data-tree-content]");
+		const content = row
+			.closest(FOLDER)
+			?.querySelector(":scope > [data-tree-content]");
 		return content ? (visibleRows(content)[0] ?? null) : null;
 	}
 
@@ -88,12 +92,11 @@ function resolveMove(
 
 	const own = row.closest(FOLDER);
 	const parent = isHeader ? own?.parentElement?.closest(FOLDER) : own;
-	return parent?.querySelector<HTMLElement>(ROW) ?? null;
+	return parent?.querySelector<HTMLElement>(HEADER_ROW) ?? null;
 }
 
 function toggleFolder(header: HTMLElement): void {
-	const mark = header.querySelector<HTMLElement>("[data-icon]");
-	(header.tagName === "BUTTON" ? header : mark)?.click();
+	header.closest(FOLDER)?.querySelector<HTMLElement>(TOGGLE)?.click();
 }
 
 function visibleRows(scope: Element): HTMLElement[] {
@@ -120,7 +123,7 @@ export function focusSection(root: HTMLElement, index: number): boolean {
 	const sections = [...root.querySelectorAll<HTMLElement>(FOLDER)].filter(
 		(folder) => !folder.parentElement?.closest(FOLDER)
 	);
-	const header = sections[index]?.querySelector<HTMLElement>(ROW);
+	const header = sections[index]?.querySelector<HTMLElement>(HEADER_ROW);
 	header?.focus();
 	return header !== undefined;
 }

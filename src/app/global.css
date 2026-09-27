@@ -161,24 +161,12 @@ html > body[data-scroll-locked] {
 	pointer-events: none;
 }
 
-/* Folders holding the active page stay mounted when collapsed; rows fold instead. */
-[data-tree-pin] {
-	height: auto !important;
-	opacity: 1 !important;
-	transition: none !important;
+/* Sidebar rails. Rows keep their size while Base UI animates the panel height;
+   spacing is a margin rather than a gap so it can fold with the row. */
+[data-tree-content] {
+	interpolate-size: allow-keywords;
 }
 
-/* In the base layer so it outranks preflight's [hidden] rule, including the
-   frame where React sets a plain `hidden` before Base UI makes it until-found. */
-@layer base {
-	[data-tree-pin][hidden] {
-		display: flex !important;
-		content-visibility: visible !important;
-	}
-}
-
-/* Rows keep their size while Base UI animates the panel height; spacing is a
-   margin rather than a gap so it can fold with the row. */
 [data-tree-content] > :not([data-rail-mark]) {
 	flex-shrink: 0;
 	min-height: 0;
@@ -192,8 +180,10 @@ html > body[data-scroll-locked] {
 		visibility 200ms;
 }
 
-[data-tree-pinned]
-	> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
+/* A collapsed folder holding the current page folds every row outside the
+   active chain, including rows of folders nested inside it. */
+:is([data-tree-pinned], [data-tree-pinned] [data-tree-content])
+> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
 	visibility: hidden;
 	height: 0;
 	padding-block: 0;
@@ -311,5 +301,4 @@ html > body[data-scroll-locked] {
 
 html {
 	font-synthesis-weight: none;
-	interpolate-size: allow-keywords;
 }

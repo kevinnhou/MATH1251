@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "fumadocs-core/framework";
-import type { Folder, Node } from "fumadocs-core/page-tree";
+import type { Folder } from "fumadocs-core/page-tree";
 import {
 	SidebarFolder,
 	SidebarFolderContent,
@@ -9,39 +9,58 @@ import {
 	SidebarFolderTrigger,
 	SidebarItem,
 	SidebarSeparator,
-	useFolder,
-	useFolderDepth,
 } from "fumadocs-ui/components/sidebar/base";
 import { createLinkItemRenderer } from "fumadocs-ui/components/sidebar/link-item";
 import { createPageTreeRenderer } from "fumadocs-ui/components/sidebar/page-tree";
 import {
+	Collapsible,
+	CollapsibleContent,
+} from "fumadocs-ui/components/ui/collapsible";
+import {
 	ScrollArea,
 	ScrollViewport,
 } from "fumadocs-ui/components/ui/scroll-area";
+import { useTreePath } from "fumadocs-ui/contexts/tree";
 import {
 	type ReactNode,
+	type RefObject,
 	useEffect,
 	useLayoutEffect,
-	useMemo,
 	useRef,
 } from "react";
 import { cn } from "@/lib/cn";
 import { handleTreeKey } from "./sidebar-keys";
 import { useSidebarTreeState } from "./sidebar-state";
 
-const itemLinkClass =
-	"relative flex flex-row items-center gap-2 px-2 py-1.5 text-start text-fd-muted-foreground wrap-anywhere outline-none hover:text-fd-foreground focus-visible:bg-fd-accent focus-visible:text-fd-foreground data-[active=true]:font-medium data-[active=true]:text-fd-foreground data-[active=true]:before:-me-0.5 data-[active=true]:before:font-bold data-[active=true]:before:font-mono data-[active=true]:before:text-[0.8em] data-[active=true]:before:content-['>'] data-[active=true]:bg-[repeating-linear-gradient(315deg,var(--color-fd-border)_0_1px,#0000_0_50%)] data-[active=true]:bg-size-[6px_6px] [&_svg]:size-4 [&_svg]:shrink-0";
+const rowClass =
+	"relative flex flex-row items-center gap-2 px-2 py-1.5 text-start text-fd-muted-foreground wrap-anywhere outline-none hover:text-fd-foreground [&_svg]:size-4 [&_svg]:shrink-0";
 
-const ACTIVE_ROW =
-	":scope > [data-active='true'], :scope > * > [data-active='true']";
+// Current page: a `>` cursor over the hatched field. The rail bar beside it
+// is placed by useRailMarks.
+const activeRowClass =
+	"data-[active=true]:font-medium data-[active=true]:text-fd-foreground data-[active=true]:before:-me-0.5 data-[active=true]:before:font-bold data-[active=true]:before:font-mono data-[active=true]:before:text-[0.8em] data-[active=true]:before:content-['>'] data-[active=true]:bg-[repeating-linear-gradient(315deg,var(--color-fd-border)_0_1px,#0000_0_50%)] data-[active=true]:bg-size-[6px_6px]";
 
-const folderClass =
-	"group/folder font-medium text-fd-foreground [&>svg[data-icon]]:hidden";
+// Keyboard highlight, distinct from the current page.
+const focusRowClass =
+	"focus-visible:bg-fd-accent focus-visible:text-fd-foreground";
+
+const itemClass = cn(rowClass, activeRowClass, focusRowClass);
+
+const headerClass = "font-medium text-fd-foreground";
+
+const railClass =
+	"relative flex flex-col ps-3.5 before:absolute before:inset-s-2 before:inset-y-0 before:w-1 before:bg-[repeating-linear-gradient(315deg,currentColor_0_1px,#0000_0_50%)] before:bg-size-[6px_6px] before:text-fd-foreground/25 before:content-['']";
+
+const ROW = "[data-tree-row]";
+const HEADER_ROW = ":scope > [data-tree-header] [data-tree-row]";
+// The direct child of a rail that is, or contains, the current page.
+const ACTIVE_CHILD =
+	":scope > [data-active='true'], :scope > :has([data-active='true'])";
 
 export function SidebarTreeViewport({ children }: { children: ReactNode }) {
-	const { scrollTop, setScrollTop } = useSidebarTreeState();
+	const { scrollTopRef } = useSidebarTreeState();
 	const viewportRef = useRef<HTMLDivElement>(null);
-	const initialScroll = useRef(scrollTop);
+	const listRef = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
 		const viewport = viewportRef.current;
@@ -49,11 +68,13 @@ export function SidebarTreeViewport({ children }: { children: ReactNode }) {
 			return;
 		}
 
-		viewport.scrollTop = initialScroll.current;
+		viewport.scrollTop = scrollTopRef.current;
 		return () => {
-			setScrollTop(viewport.scrollTop);
+			scrollTopRef.current = viewport.scrollTop;
 		};
-	}, [setScrollTop]);
+	}, [scrollTopRef]);
+
+	useRailMarks(listRef);
 
 	return (
 		<ScrollArea className="min-h-0 flex-1">
@@ -61,17 +82,96 @@ export function SidebarTreeViewport({ children }: { children: ReactNode }) {
 				className="mask-[linear-gradient(to_bottom,transparent,white_12px,white_calc(100%-12px),transparent)] overscroll-contain p-4"
 				data-tree-root=""
 				onKeyDown={(event) => handleTreeKey(event, event.currentTarget)}
-				onScroll={(event) => {
-					setScrollTop(event.currentTarget.scrollTop);
-				}}
 				ref={viewportRef}
 			>
-				{children}
+				<div className="flex flex-col gap-px" ref={listRef}>
+					{children}
+				</div>
 			</ScrollViewport>
 		</ScrollArea>
 	);
 }
 
+// One controller per tree places the bar on every rail. Route changes slide
+// it; size changes (folding, opening) jump it so it stays on its row.
+function useRailMarks(listRef: RefObject<HTMLDivElement | null>) {
+	const pathname = usePathname();
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: re-place when the route changes
+	useLayoutEffect(() => {
+		if (listRef.current) {
+			placeRailMarks(listRef.current, true);
+		}
+	}, [listRef, pathname]);
+
+	useEffect(() => {
+		const list = listRef.current;
+		if (!list) {
+			return;
+		}
+
+		let height = -1;
+		const observer = new ResizeObserver(([entry]) => {
+			const next = entry?.contentRect.height;
+			if (next !== undefined && next !== height) {
+				height = next;
+				placeRailMarks(list, false);
+			}
+		});
+		observer.observe(list);
+		return () => observer.disconnect();
+	}, [listRef]);
+}
+
+function placeRailMarks(list: HTMLElement, slide: boolean) {
+	// Read every rail before writing any mark, so layout is computed once.
+	const placements = [
+		...list.querySelectorAll<HTMLElement>("[data-rail-mark]"),
+	].map((mark) => {
+		const rail = mark.parentElement;
+		const child = rail?.querySelector<HTMLElement>(ACTIVE_CHILD);
+		const row = child?.matches(ROW)
+			? child
+			: child?.querySelector<HTMLElement>(HEADER_ROW);
+		if (!(rail && row)) {
+			return { mark };
+		}
+
+		const railTop = rail.getBoundingClientRect().top;
+		const box = row.getBoundingClientRect();
+		return { height: box.height, mark, top: box.top - railTop };
+	});
+
+	const jumped: HTMLElement[] = [];
+	for (const { height, mark, top } of placements) {
+		if (top === undefined) {
+			mark.style.opacity = "0";
+			delete mark.dataset.placed;
+			continue;
+		}
+
+		if (!(slide && mark.dataset.placed !== undefined)) {
+			mark.style.transition = "none";
+			jumped.push(mark);
+		}
+		mark.style.height = `${height}px`;
+		mark.style.opacity = "1";
+		mark.style.transform = `translateY(${top}px)`;
+		mark.dataset.placed = "";
+	}
+
+	if (jumped.length > 0) {
+		requestAnimationFrame(() => {
+			for (const mark of jumped) {
+				mark.style.transition = "";
+			}
+		});
+	}
+}
+
+// Page-tree folder. `expanded` is the persisted [+]/[−] state; the panel stays
+// open while the folder holds the current page, and a collapsed folder then
+// folds every row but the active one (see [data-tree-pinned] in global.css).
 export function PersistentFolder({
 	children,
 	item,
@@ -80,93 +180,123 @@ export function PersistentFolder({
 	item: Folder;
 }) {
 	const pathname = usePathname();
-	const { folderOpen } = useSidebarTreeState();
+	const holdsActivePage = useTreePath().includes(item);
+	const { folderOpen, setFolderOpen } = useSidebarTreeState();
 	const id = folderKey(item);
+	const stored = folderOpen(id);
+	const collapsible = item.collapsible !== false;
+	const expanded =
+		!collapsible || (stored ?? item.defaultOpen ?? holdsActivePage);
+	const pinned = !expanded && holdsActivePage;
 	const indexUrl = item.index?.url;
-	const active =
-		indexUrl !== undefined &&
-		(pathname === indexUrl || pathname.startsWith(`${indexUrl}/`));
-	const holdsActivePage = useMemo(
-		() => item.children.some((node) => containsUrl(node, pathname)),
-		[item, pathname]
-	);
+
+	// Entering a folder opens it, as Fumadocs does. On first mount this only
+	// records the default, so a folder the reader collapsed stays collapsed.
+	const held = useRef<boolean | null>(null);
+	useEffect(() => {
+		const entered =
+			holdsActivePage &&
+			(held.current === false ||
+				(held.current === null && stored === undefined));
+		held.current = holdsActivePage;
+		if (entered) {
+			setFolderOpen(id, true);
+		}
+	}, [holdsActivePage, id, setFolderOpen, stored]);
+
+	const toggle = () => setFolderOpen(id, !expanded);
 
 	return (
-		<SidebarFolder
-			active={active}
-			collapsible={item.collapsible}
-			data-tree-folder=""
-			defaultOpen={folderOpen(id, item.defaultOpen ?? false)}
-		>
-			<FolderOpenSync id={id} />
-			{item.index ? (
-				<StyledFolderLink
-					active={pathname === item.index.url}
-					external={item.index.external}
-					href={item.index.url}
-				>
-					{item.icon}
-					{item.name}
-					<FolderToggleMark />
-				</StyledFolderLink>
-			) : (
-				<StyledFolderTrigger>
-					{item.icon}
-					{item.name}
-					<FolderToggleMark />
-				</StyledFolderTrigger>
-			)}
-			<StyledFolderContent pinActive={holdsActivePage}>
+		<Collapsible data-tree-folder="" open={expanded || holdsActivePage}>
+			<div className="group/folder relative" data-tree-header="">
+				{item.index ? (
+					<>
+						<SidebarItem
+							active={pathname === indexUrl}
+							className={cn(itemClass, headerClass, collapsible && "pe-10")}
+							data-tree-folder-open={expanded}
+							data-tree-row=""
+							external={item.index.external}
+							href={item.index.url}
+							onClick={() => {
+								if (pathname === indexUrl) {
+									toggle();
+								} else {
+									setFolderOpen(id, true);
+								}
+							}}
+						>
+							{item.icon}
+							{item.name}
+						</SidebarItem>
+						{collapsible ? (
+							<button
+								aria-expanded={expanded}
+								aria-label={expanded ? "Collapse" : "Expand"}
+								className="absolute inset-e-0 inset-y-0 flex items-center px-2 text-fd-foreground"
+								data-tree-toggle=""
+								onClick={toggle}
+								tabIndex={-1}
+								type="button"
+							>
+								<ToggleMark open={expanded} />
+							</button>
+						) : null}
+					</>
+				) : (
+					<button
+						aria-expanded={collapsible ? expanded : undefined}
+						className={cn(itemClass, headerClass, "w-full")}
+						data-tree-folder-open={expanded}
+						data-tree-row=""
+						data-tree-toggle=""
+						onClick={collapsible ? toggle : undefined}
+						type="button"
+					>
+						{item.icon}
+						{item.name}
+						{collapsible ? (
+							<ToggleMark className="ms-auto" open={expanded} />
+						) : null}
+					</button>
+				)}
+			</div>
+			<CollapsibleContent
+				className={railClass}
+				data-tree-content=""
+				data-tree-pinned={pinned || undefined}
+			>
+				<span
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-s-2 top-0 z-10 w-1 bg-fd-foreground opacity-0 transition-[transform,height] duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
+					data-rail-mark=""
+				/>
 				{children}
-			</StyledFolderContent>
-		</SidebarFolder>
+			</CollapsibleContent>
+		</Collapsible>
 	);
 }
 
-function containsUrl(node: Node, url: string): boolean {
-	if (node.type === "page") {
-		return node.url === url;
-	}
-
-	if (node.type === "folder") {
-		return (
-			node.index?.url === url ||
-			node.children.some((child) => containsUrl(child, url))
-		);
-	}
-
-	return false;
-}
-
-function FolderOpenSync({ id }: { id: string }) {
-	const folder = useFolder();
-	const { setFolderOpen } = useSidebarTreeState();
-	useEffect(() => {
-		if (folder) {
-			setFolderOpen(id, folder.open);
-		}
-	}, [folder, id, setFolderOpen]);
-	return null;
-}
-
-function FolderToggleMark() {
-	const folder = useFolder();
-	if (!folder?.collapsible) {
-		return null;
-	}
-
+function ToggleMark({
+	className,
+	open,
+}: {
+	className?: string;
+	open: boolean;
+}) {
 	return (
 		<span
+			aria-hidden="true"
 			className={cn(
-				"ms-auto shrink-0 font-mono text-[0.7rem] leading-none",
-				!folder.open &&
-					"opacity-0 group-hover/folder:opacity-100 group-focus-visible/folder:opacity-100"
+				"shrink-0 font-mono text-[0.7rem] leading-none",
+				!open &&
+					"opacity-0 group-hover/folder:opacity-100 group-has-focus-visible/folder:opacity-100",
+				className
 			)}
-			data-icon=""
 		>
 			<span className="font-bold">[</span>
 			<span className="inline-block w-[1ch] text-center opacity-70">
-				{folder.open ? "\u2212" : "+"}
+				{open ? "−" : "+"}
 			</span>
 			<span className="font-bold">]</span>
 		</span>
@@ -174,12 +304,10 @@ function FolderToggleMark() {
 }
 
 function StyledSeparator({ className, ...props }: React.ComponentProps<"p">) {
-	const depth = useFolderDepth();
 	return (
 		<SidebarSeparator
 			className={cn(
-				"mt-5 mb-1 gap-0 px-2 font-mono text-[0.7rem] text-fd-muted-foreground uppercase leading-none tracking-[0.16em] empty:mb-0 [&_svg]:size-4 [&_svg]:shrink-0",
-				depth === 0 && "first:mt-0",
+				"mt-5 mb-1 gap-0 px-2 font-mono text-[0.7rem] text-fd-muted-foreground uppercase leading-none tracking-[0.16em] first:mt-0 empty:mb-0 [&_svg]:size-4 [&_svg]:shrink-0",
 				className
 			)}
 			{...props}
@@ -193,152 +321,31 @@ function StyledItem({
 }: React.ComponentProps<typeof SidebarItem>) {
 	return (
 		<SidebarItem
-			className={cn(itemLinkClass, className)}
+			className={cn(itemClass, className)}
 			data-tree-row=""
 			{...props}
 		/>
 	);
 }
 
-function StyledFolderTrigger({
-	className,
-	...props
-}: React.ComponentProps<typeof SidebarFolderTrigger>) {
-	const folder = useFolder();
-	return (
-		<SidebarFolderTrigger
-			className={(state) =>
-				cn(
-					itemLinkClass,
-					folderClass,
-					"w-full",
-					typeof className === "function" ? className(state) : className
-				)
-			}
-			data-tree-folder-open={folder?.open}
-			data-tree-row=""
-			{...props}
-		/>
-	);
-}
-
-function StyledFolderLink({
-	className,
-	...props
-}: React.ComponentProps<typeof SidebarFolderLink>) {
-	const folder = useFolder();
-	return (
-		<SidebarFolderLink
-			className={cn(itemLinkClass, folderClass, "w-full", className)}
-			data-tree-folder-open={folder?.open}
-			data-tree-row=""
-			{...props}
-		/>
-	);
-}
-
-function StyledFolderContent({
-	children,
-	className,
-	pinActive = false,
-	...props
-}: React.ComponentProps<typeof SidebarFolderContent> & {
-	pinActive?: boolean;
-}) {
-	const folder = useFolder();
-	const pinned = pinActive && folder?.open === false;
-	return (
-		<SidebarFolderContent
-			className={(state) =>
-				cn(
-					"relative flex flex-col ps-3.5",
-					"before:absolute before:inset-s-2 before:inset-y-0 before:w-1 before:bg-[repeating-linear-gradient(315deg,currentColor_0_1px,#0000_0_50%)] before:bg-size-[6px_6px] before:text-fd-foreground/25 before:content-['']",
-					typeof className === "function" ? className(state) : className
-				)
-			}
-			data-tree-content=""
-			data-tree-pin={pinActive || undefined}
-			data-tree-pinned={pinned || undefined}
-			hiddenUntilFound={pinActive}
-			{...props}
-		>
-			<RailMark />
-			{children}
-		</SidebarFolderContent>
-	);
-}
-
-function RailMark() {
-	const pathname = usePathname();
-	const markRef = useRef<HTMLSpanElement>(null);
-	const placed = useRef(false);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when the active row changes
-	useLayoutEffect(() => {
-		const mark = markRef.current;
-		const rail = mark?.parentElement;
-		if (!(mark && rail)) {
-			return;
-		}
-
-		const place = (slide: boolean) => {
-			const row = rail.querySelector<HTMLElement>(ACTIVE_ROW);
-			if (!row) {
-				mark.style.opacity = "0";
-				placed.current = false;
-				return;
-			}
-
-			const jump = !(slide && placed.current);
-			if (jump) {
-				mark.style.transition = "none";
-			}
-			mark.style.height = `${row.offsetHeight}px`;
-			mark.style.opacity = "1";
-			mark.style.transform = `translateY(${row.offsetTop}px)`;
-			if (jump) {
-				mark.getBoundingClientRect();
-				mark.style.transition = "";
-				placed.current = true;
-			}
-		};
-
-		place(true);
-		let railHeight = rail.offsetHeight;
-		const observer = new ResizeObserver(() => {
-			if (rail.offsetHeight !== railHeight) {
-				railHeight = rail.offsetHeight;
-				place(false);
-			}
-		});
-		observer.observe(rail);
-		return () => observer.disconnect();
-	}, [pathname]);
-
-	return (
-		<span
-			aria-hidden="true"
-			className="pointer-events-none absolute inset-s-2 top-0 z-10 w-1 bg-fd-foreground opacity-0 transition-[transform,height] duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
-			data-rail-mark=""
-			ref={markRef}
-		/>
-	);
-}
+// Folders in the page tree render through the `Folder` prop (PersistentFolder),
+// so the folder parts registered here are the library defaults and only reach
+// menu-link folders, which this site does not configure.
+const libraryFolderParts = {
+	SidebarFolder,
+	SidebarFolderContent,
+	SidebarFolderLink,
+	SidebarFolderTrigger,
+};
 
 export const SidebarPageTree = createPageTreeRenderer({
-	SidebarFolder,
-	SidebarFolderContent: StyledFolderContent,
-	SidebarFolderLink: StyledFolderLink,
-	SidebarFolderTrigger: StyledFolderTrigger,
+	...libraryFolderParts,
 	SidebarItem: StyledItem,
 	SidebarSeparator: StyledSeparator,
 });
 
 export const SidebarLinkItem = createLinkItemRenderer({
-	SidebarFolder,
-	SidebarFolderContent: StyledFolderContent,
-	SidebarFolderLink: StyledFolderLink,
-	SidebarFolderTrigger: StyledFolderTrigger,
+	...libraryFolderParts,
 	SidebarItem: StyledItem,
 });
 

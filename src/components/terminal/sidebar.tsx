@@ -88,10 +88,14 @@ function TerminalSidebarChrome({
 
 		const onKeyDown = (event: KeyboardEvent) => {
 			const index = sectionIndex(event);
+			if (index === null) {
+				return;
+			}
+
 			const root = document.querySelector<HTMLElement>(
 				"#nd-sidebar [data-tree-root]"
 			);
-			if (index === null || !root) {
+			if (!root) {
 				return;
 			}
 

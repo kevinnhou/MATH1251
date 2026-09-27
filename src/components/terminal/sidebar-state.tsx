@@ -3,17 +3,18 @@
 import {
 	createContext,
 	type ReactNode,
+	type RefObject,
 	useCallback,
 	useContext,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 
 interface SidebarTreeStateValue {
-	folderOpen: (id: string, fallback?: boolean) => boolean;
-	scrollTop: number;
+	folderOpen: (id: string) => boolean | undefined;
+	scrollTopRef: RefObject<number>;
 	setFolderOpen: (id: string, open: boolean) => void;
-	setScrollTop: (value: number) => void;
 }
 
 const SidebarTreeStateContext = createContext<SidebarTreeStateValue | null>(
@@ -26,10 +27,10 @@ export function SidebarTreeStateProvider({
 	children: ReactNode;
 }) {
 	const [folders, setFolders] = useState<Record<string, boolean>>({});
-	const [scrollTop, setScrollTop] = useState(0);
+	const scrollTopRef = useRef(0);
 
 	const folderOpen = useCallback(
-		(id: string, fallback = false) => folders[id] ?? fallback,
+		(id: string): boolean | undefined => folders[id],
 		[folders]
 	);
 
@@ -46,11 +47,10 @@ export function SidebarTreeStateProvider({
 	const value = useMemo(
 		(): SidebarTreeStateValue => ({
 			folderOpen,
-			scrollTop,
+			scrollTopRef,
 			setFolderOpen,
-			setScrollTop,
 		}),
-		[folderOpen, scrollTop, setFolderOpen]
+		[folderOpen, setFolderOpen]
 	);
 
 	return (

@@ -55,18 +55,16 @@ export function TerminalPanes({
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col" data-terminal-cascade="3">
 					<SidebarTreeViewport>
-						<div className="flex flex-col gap-px">
-							{menuItems
-								.filter((item) => item.type !== "icon")
-								.map((item, index, list) => (
-									<SidebarLinkItem
-										className={index === list.length - 1 ? "mb-4" : undefined}
-										item={item}
-										key={`${item.type}-${index}`}
-									/>
-								))}
-							<SidebarPageTree {...components} Folder={PersistentFolder} />
-						</div>
+						{menuItems
+							.filter((item) => item.type !== "icon")
+							.map((item, index, list) => (
+								<SidebarLinkItem
+									className={index === list.length - 1 ? "mb-4" : undefined}
+									item={item}
+									key={`${item.type}-${index}`}
+								/>
+							))}
+						<SidebarPageTree {...components} Folder={PersistentFolder} />
 					</SidebarTreeViewport>
 				</div>
 			</div>
