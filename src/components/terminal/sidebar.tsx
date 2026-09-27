@@ -18,6 +18,7 @@ import { cn } from "@/lib/cn";
 import { TerminalPanes } from "./panes";
 import { TerminalPrompt } from "./prompt";
 import { useTerminal } from "./provider";
+import { focusSection, sectionIndex } from "./sidebar-keys";
 import { SidebarTreeStateProvider } from "./sidebar-state";
 
 export function TerminalSidebar({
@@ -81,6 +82,34 @@ function TerminalSidebarChrome({
 	}, [focusEpoch, inputRef]);
 
 	useEffect(() => {
+		if (mode !== "full" || pane !== "tree") {
+			return;
+		}
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			const index = sectionIndex(event);
+			const root = document.querySelector<HTMLElement>(
+				"#nd-sidebar [data-tree-root]"
+			);
+			if (index === null || !root) {
+				return;
+			}
+
+			const sidebar = sidebarRef.current;
+			if (sidebar.collapsed) {
+				sidebar.setCollapsed(false);
+			}
+
+			if (focusSection(root, index)) {
+				event.preventDefault();
+			}
+		};
+
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [mode, pane]);
+
+	useEffect(() => {
 		if (closeDrawerAfter === 0) {
 			return;
 		}
@@ -90,7 +119,7 @@ function TerminalSidebarChrome({
 	}, [closeDrawerAfter, inputRef, setOpen]);
 
 	const header = (desktopField: boolean) => (
-		<div className="flex flex-col gap-3 p-4 pb-2">
+		<div className="flex flex-col gap-3 border-b p-4">
 			<div className="flex">
 				{slots.navTitle ? (
 					<slots.navTitle className="me-auto inline-flex items-center gap-2.5 font-medium text-[0.9375rem]" />
@@ -100,7 +129,7 @@ function TerminalSidebarChrome({
 					<SidebarCollapseTrigger
 						className={cn(
 							buttonVariants({
-								className: "mb-auto text-fd-muted-foreground",
+								className: "mb-auto rounded-none text-fd-muted-foreground",
 								color: "ghost",
 								size: "icon-sm",
 							})
@@ -119,10 +148,10 @@ function TerminalSidebarChrome({
 		iconLinks.length > 0 ||
 		slots.themeSwitch ||
 		footer ? (
-			<div className="flex flex-col p-4 pt-2">
+			<div className="flex flex-col border-t">
 				{slots.languageSelect ? (
 					<slots.languageSelect.root
-						className="mb-2 justify-start bg-fd-secondary/50 text-start text-fd-muted-foreground"
+						className="m-2 mb-0 justify-start rounded-none text-start text-fd-muted-foreground"
 						variant="secondary"
 					>
 						<Languages className="size-4.5" />
@@ -130,12 +159,16 @@ function TerminalSidebarChrome({
 						<ChevronDown className="ms-auto size-3.5" />
 					</slots.languageSelect.root>
 				) : null}
-				<div className="flex items-center rounded-lg border bg-fd-secondary/50 p-0.5 pe-0 text-fd-muted-foreground empty:hidden">
+				<div className="flex items-center px-2 py-1.5 text-fd-muted-foreground empty:hidden">
 					{iconLinks.map((item, index) => (
 						<LinkItem
 							aria-label={item.label}
 							className={cn(
-								buttonVariants({ color: "ghost", size: "icon-sm" })
+								buttonVariants({
+									className: "rounded-none",
+									color: "ghost",
+									size: "icon-sm",
+								})
 							)}
 							item={item}
 							key={`${item.url}-${index}`}
@@ -144,7 +177,7 @@ function TerminalSidebarChrome({
 						</LinkItem>
 					))}
 					{slots.themeSwitch ? (
-						<slots.themeSwitch className="ms-auto rounded-none border-y-0 border-e-0 px-1 py-0 *:rounded-md" />
+						<slots.themeSwitch className="ms-auto rounded-none p-0.5 *:rounded-none" />
 					) : null}
 				</div>
 				{footer}
@@ -174,9 +207,9 @@ function TerminalSidebarChrome({
 								className={cn(
 									"absolute inset-s-0 inset-y-0 flex w-full flex-col items-end border-e bg-fd-card text-sm duration-250 *:w-(--fd-sidebar-width)",
 									isCollapsed && [
-										"inset-y-2 w-(--fd-sidebar-width) rounded-xl border transition-transform",
+										"inset-y-2 w-(--fd-sidebar-width) border transition-transform",
 										hovered
-											? "translate-x-2 shadow-lg rtl:-translate-x-2"
+											? "translate-x-2 shadow-[4px_4px_0_0_var(--color-fd-border)] rtl:-translate-x-2"
 											: "-translate-x-(--fd-sidebar-width) rtl:translate-x-full",
 									]
 								)}
@@ -197,7 +230,7 @@ function TerminalSidebarChrome({
 						</div>
 						<div
 							className={cn(
-								"fixed inset-s-4 top-[calc(--spacing(4)+var(--fd-docs-row-3))] z-10 flex rounded-xl border bg-fd-muted p-0.5 text-fd-muted-foreground shadow-lg transition-opacity",
+								"fixed inset-s-4 top-[calc(--spacing(4)+var(--fd-docs-row-3))] z-10 flex border bg-fd-card p-0.5 text-fd-muted-foreground shadow-[3px_3px_0_0_var(--color-fd-border)] transition-opacity",
 								(!isCollapsed || hovered) && "pointer-events-none opacity-0"
 							)}
 							data-sidebar-panel=""
@@ -205,7 +238,7 @@ function TerminalSidebarChrome({
 							<SidebarCollapseTrigger
 								className={cn(
 									buttonVariants({
-										className: "rounded-lg",
+										className: "rounded-none",
 										color: "ghost",
 										size: "icon-sm",
 									})
@@ -219,7 +252,7 @@ function TerminalSidebarChrome({
 				)}
 			</SidebarContent>
 			<SidebarDrawer className="flex flex-col" closed={!open}>
-				<div className="flex flex-col gap-3 p-4 pb-2">
+				<div className="flex flex-col gap-3 border-b p-4">
 					<div className="flex items-center gap-1.5 text-fd-muted-foreground">
 						<div className="flex flex-1">
 							{iconLinks.map((item, index) => (
@@ -227,7 +260,7 @@ function TerminalSidebarChrome({
 									aria-label={item.label}
 									className={cn(
 										buttonVariants({
-											className: "p-2",
+											className: "rounded-none p-2",
 											color: "ghost",
 											size: "icon-sm",
 										})
@@ -245,11 +278,13 @@ function TerminalSidebarChrome({
 								<slots.languageSelect.text />
 							</slots.languageSelect.root>
 						) : null}
-						{slots.themeSwitch ? <slots.themeSwitch className="p-0" /> : null}
+						{slots.themeSwitch ? (
+							<slots.themeSwitch className="rounded-none p-0.5 *:rounded-none" />
+						) : null}
 						<SidebarTrigger
 							className={cn(
 								buttonVariants({
-									className: "p-2",
+									className: "rounded-none p-2",
 									color: "ghost",
 									size: "icon-sm",
 								})
@@ -283,7 +318,7 @@ function SidebarDrawer({
 			<SidebarDrawerOverlay className="fixed inset-0 z-40 backdrop-blur-xs data-[state=closed]:animate-fd-fade-out data-[state=open]:animate-fd-fade-in" />
 			<SidebarDrawerContent
 				className={cn(
-					"fixed inset-e-0 inset-y-0 z-40 flex w-[85%] max-w-95 flex-col border-s bg-fd-background text-[0.9375rem] shadow-lg data-[state=closed]:animate-fd-sidebar-out data-[state=open]:animate-fd-sidebar-in",
+					"fixed inset-e-0 inset-y-0 z-40 flex w-[85%] max-w-95 flex-col border-s bg-fd-background text-[0.9375rem] data-[state=closed]:animate-fd-sidebar-out data-[state=open]:animate-fd-sidebar-in",
 					className
 				)}
 				inert={closed || undefined}

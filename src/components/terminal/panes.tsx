@@ -41,15 +41,21 @@ export function TerminalPanes({
 				data-terminal-pane="tree"
 				inert={treeHidden || undefined}
 			>
-				<div className="flex flex-col gap-3 p-4 pb-2" data-terminal-cascade="1">
+				<div
+					className="flex flex-col gap-3 p-4 pb-2 empty:hidden"
+					data-terminal-cascade="1"
+				>
 					{tabs.length > 0 && tabMode === "auto" ? (
-						<SidebarTabsDropdown options={tabs} />
+						<SidebarTabsDropdown
+							className="rounded-none bg-transparent"
+							options={tabs}
+						/>
 					) : null}
 					{banner}
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col" data-terminal-cascade="3">
 					<SidebarTreeViewport>
-						<div className="flex flex-col gap-0.5">
+						<div className="flex flex-col gap-px">
 							{menuItems
 								.filter((item) => item.type !== "icon")
 								.map((item, index, list) => (
@@ -59,12 +65,7 @@ export function TerminalPanes({
 										key={`${item.type}-${index}`}
 									/>
 								))}
-							<SidebarPageTree
-								{...components}
-								Folder={({ children, item }) => (
-									<PersistentFolder item={item}>{children}</PersistentFolder>
-								)}
-							/>
+							<SidebarPageTree {...components} Folder={PersistentFolder} />
 						</div>
 					</SidebarTreeViewport>
 				</div>

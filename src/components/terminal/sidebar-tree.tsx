@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "fumadocs-core/framework";
-import type { Folder } from "fumadocs-core/page-tree";
+import type { Folder, Node } from "fumadocs-core/page-tree";
 import {
 	SidebarFolder,
 	SidebarFolderContent,
@@ -18,15 +18,25 @@ import {
 	ScrollArea,
 	ScrollViewport,
 } from "fumadocs-ui/components/ui/scroll-area";
-import { type ReactNode, useEffect, useLayoutEffect, useRef } from "react";
+import {
+	type ReactNode,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { cn } from "@/lib/cn";
+import { handleTreeKey } from "./sidebar-keys";
 import { useSidebarTreeState } from "./sidebar-state";
 
 const itemLinkClass =
-	"relative flex flex-row items-center gap-2 rounded-lg p-2 text-start text-fd-muted-foreground wrap-anywhere transition-colors hover:bg-fd-accent/50 hover:text-fd-accent-foreground/80 hover:transition-none data-[active=true]:bg-fd-primary/10 data-[active=true]:text-fd-primary data-[active=true]:hover:transition-colors [&_svg]:size-4 [&_svg]:shrink-0";
+	"relative flex flex-row items-center gap-2 px-2 py-1.5 text-start text-fd-muted-foreground wrap-anywhere outline-none hover:text-fd-foreground focus-visible:bg-fd-accent focus-visible:text-fd-foreground data-[active=true]:font-medium data-[active=true]:text-fd-foreground data-[active=true]:before:-me-0.5 data-[active=true]:before:font-bold data-[active=true]:before:font-mono data-[active=true]:before:text-[0.8em] data-[active=true]:before:content-['>'] data-[active=true]:bg-[repeating-linear-gradient(315deg,var(--color-fd-border)_0_1px,#0000_0_50%)] data-[active=true]:bg-size-[6px_6px] [&_svg]:size-4 [&_svg]:shrink-0";
 
-const highlightClass =
-	"data-[active=true]:before:absolute data-[active=true]:before:inset-s-2.5 data-[active=true]:before:inset-y-2.5 data-[active=true]:before:w-px data-[active=true]:before:bg-fd-primary data-[active=true]:before:content-['']";
+const ACTIVE_ROW =
+	":scope > [data-active='true'], :scope > * > [data-active='true']";
+
+const folderClass =
+	"group/folder font-medium text-fd-foreground [&>svg[data-icon]]:hidden";
 
 export function SidebarTreeViewport({ children }: { children: ReactNode }) {
 	const { scrollTop, setScrollTop } = useSidebarTreeState();
@@ -49,6 +59,8 @@ export function SidebarTreeViewport({ children }: { children: ReactNode }) {
 		<ScrollArea className="min-h-0 flex-1">
 			<ScrollViewport
 				className="mask-[linear-gradient(to_bottom,transparent,white_12px,white_calc(100%-12px),transparent)] overscroll-contain p-4"
+				data-tree-root=""
+				onKeyDown={(event) => handleTreeKey(event, event.currentTarget)}
 				onScroll={(event) => {
 					setScrollTop(event.currentTarget.scrollTop);
 				}}
@@ -74,11 +86,16 @@ export function PersistentFolder({
 	const active =
 		indexUrl !== undefined &&
 		(pathname === indexUrl || pathname.startsWith(`${indexUrl}/`));
+	const holdsActivePage = useMemo(
+		() => item.children.some((node) => containsUrl(node, pathname)),
+		[item, pathname]
+	);
 
 	return (
 		<SidebarFolder
 			active={active}
 			collapsible={item.collapsible}
+			data-tree-folder=""
 			defaultOpen={folderOpen(id, item.defaultOpen ?? false)}
 		>
 			<FolderOpenSync id={id} />
@@ -90,16 +107,35 @@ export function PersistentFolder({
 				>
 					{item.icon}
 					{item.name}
+					<FolderToggleMark />
 				</StyledFolderLink>
 			) : (
 				<StyledFolderTrigger>
 					{item.icon}
 					{item.name}
+					<FolderToggleMark />
 				</StyledFolderTrigger>
 			)}
-			<StyledFolderContent>{children}</StyledFolderContent>
+			<StyledFolderContent pinActive={holdsActivePage}>
+				{children}
+			</StyledFolderContent>
 		</SidebarFolder>
 	);
+}
+
+function containsUrl(node: Node, url: string): boolean {
+	if (node.type === "page") {
+		return node.url === url;
+	}
+
+	if (node.type === "folder") {
+		return (
+			node.index?.url === url ||
+			node.children.some((child) => containsUrl(child, url))
+		);
+	}
+
+	return false;
 }
 
 function FolderOpenSync({ id }: { id: string }) {
@@ -113,20 +149,39 @@ function FolderOpenSync({ id }: { id: string }) {
 	return null;
 }
 
-function StyledSeparator({
-	className,
-	style,
-	...props
-}: React.ComponentProps<"p">) {
+function FolderToggleMark() {
+	const folder = useFolder();
+	if (!folder?.collapsible) {
+		return null;
+	}
+
+	return (
+		<span
+			className={cn(
+				"ms-auto shrink-0 font-mono text-[0.7rem] leading-none",
+				!folder.open &&
+					"opacity-0 group-hover/folder:opacity-100 group-focus-visible/folder:opacity-100"
+			)}
+			data-icon=""
+		>
+			<span className="font-bold">[</span>
+			<span className="inline-block w-[1ch] text-center opacity-70">
+				{folder.open ? "\u2212" : "+"}
+			</span>
+			<span className="font-bold">]</span>
+		</span>
+	);
+}
+
+function StyledSeparator({ className, ...props }: React.ComponentProps<"p">) {
 	const depth = useFolderDepth();
 	return (
 		<SidebarSeparator
 			className={cn(
-				"mt-6 mb-1 inline-flex items-center gap-2 px-2 empty:mb-0 [&_svg]:size-4 [&_svg]:shrink-0",
+				"mt-5 mb-1 gap-0 px-2 font-mono text-[0.7rem] text-fd-muted-foreground uppercase leading-none tracking-[0.16em] empty:mb-0 [&_svg]:size-4 [&_svg]:shrink-0",
 				depth === 0 && "first:mt-0",
 				className
 			)}
-			style={{ paddingInlineStart: itemOffset(depth), ...style }}
 			{...props}
 		/>
 	);
@@ -134,14 +189,12 @@ function StyledSeparator({
 
 function StyledItem({
 	className,
-	style,
 	...props
 }: React.ComponentProps<typeof SidebarItem>) {
-	const depth = useFolderDepth();
 	return (
 		<SidebarItem
-			className={cn(itemLinkClass, depth >= 1 && highlightClass, className)}
-			style={{ paddingInlineStart: itemOffset(depth), ...style }}
+			className={cn(itemLinkClass, className)}
+			data-tree-row=""
 			{...props}
 		/>
 	);
@@ -149,23 +202,21 @@ function StyledItem({
 
 function StyledFolderTrigger({
 	className,
-	style,
 	...props
 }: React.ComponentProps<typeof SidebarFolderTrigger>) {
 	const folder = useFolder();
-	const depth = folder?.depth ?? 1;
 	return (
 		<SidebarFolderTrigger
 			className={(state) =>
 				cn(
+					itemLinkClass,
+					folderClass,
 					"w-full",
-					folder?.collapsible
-						? "wrap-anywhere relative flex flex-row items-center gap-2 rounded-lg p-2 text-start text-fd-muted-foreground transition-colors hover:bg-fd-accent/50 hover:text-fd-accent-foreground/80 [&_svg]:size-4 [&_svg]:shrink-0"
-						: itemLinkClass,
 					typeof className === "function" ? className(state) : className
 				)
 			}
-			style={{ paddingInlineStart: itemOffset(depth - 1), ...style }}
+			data-tree-folder-open={folder?.open}
+			data-tree-row=""
 			{...props}
 		/>
 	);
@@ -173,40 +224,103 @@ function StyledFolderTrigger({
 
 function StyledFolderLink({
 	className,
-	style,
 	...props
 }: React.ComponentProps<typeof SidebarFolderLink>) {
-	const depth = useFolderDepth();
+	const folder = useFolder();
 	return (
 		<SidebarFolderLink
-			className={cn(
-				itemLinkClass,
-				"w-full",
-				depth > 1 && highlightClass,
-				className
-			)}
-			style={{ paddingInlineStart: itemOffset(depth - 1), ...style }}
+			className={cn(itemLinkClass, folderClass, "w-full", className)}
+			data-tree-folder-open={folder?.open}
+			data-tree-row=""
 			{...props}
 		/>
 	);
 }
 
 function StyledFolderContent({
+	children,
 	className,
+	pinActive = false,
 	...props
-}: React.ComponentProps<typeof SidebarFolderContent>) {
-	const depth = useFolderDepth();
+}: React.ComponentProps<typeof SidebarFolderContent> & {
+	pinActive?: boolean;
+}) {
+	const folder = useFolder();
+	const pinned = pinActive && folder?.open === false;
 	return (
 		<SidebarFolderContent
 			className={(state) =>
 				cn(
-					"relative flex flex-col gap-0.5 pt-0.5",
-					depth === 1 &&
-						"before:absolute before:inset-s-2.5 before:inset-y-1 before:w-px before:bg-fd-border before:content-['']",
+					"relative flex flex-col ps-3.5",
+					"before:absolute before:inset-s-2 before:inset-y-0 before:w-1 before:bg-[repeating-linear-gradient(315deg,currentColor_0_1px,#0000_0_50%)] before:bg-size-[6px_6px] before:text-fd-foreground/25 before:content-['']",
 					typeof className === "function" ? className(state) : className
 				)
 			}
+			data-tree-content=""
+			data-tree-pin={pinActive || undefined}
+			data-tree-pinned={pinned || undefined}
+			hiddenUntilFound={pinActive}
 			{...props}
+		>
+			<RailMark />
+			{children}
+		</SidebarFolderContent>
+	);
+}
+
+function RailMark() {
+	const pathname = usePathname();
+	const markRef = useRef<HTMLSpanElement>(null);
+	const placed = useRef(false);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when the active row changes
+	useLayoutEffect(() => {
+		const mark = markRef.current;
+		const rail = mark?.parentElement;
+		if (!(mark && rail)) {
+			return;
+		}
+
+		const place = (slide: boolean) => {
+			const row = rail.querySelector<HTMLElement>(ACTIVE_ROW);
+			if (!row) {
+				mark.style.opacity = "0";
+				placed.current = false;
+				return;
+			}
+
+			const jump = !(slide && placed.current);
+			if (jump) {
+				mark.style.transition = "none";
+			}
+			mark.style.height = `${row.offsetHeight}px`;
+			mark.style.opacity = "1";
+			mark.style.transform = `translateY(${row.offsetTop}px)`;
+			if (jump) {
+				mark.getBoundingClientRect();
+				mark.style.transition = "";
+				placed.current = true;
+			}
+		};
+
+		place(true);
+		let railHeight = rail.offsetHeight;
+		const observer = new ResizeObserver(() => {
+			if (rail.offsetHeight !== railHeight) {
+				railHeight = rail.offsetHeight;
+				place(false);
+			}
+		});
+		observer.observe(rail);
+		return () => observer.disconnect();
+	}, [pathname]);
+
+	return (
+		<span
+			aria-hidden="true"
+			className="pointer-events-none absolute inset-s-2 top-0 z-10 w-1 bg-fd-foreground opacity-0 transition-[transform,height] duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none"
+			data-rail-mark=""
+			ref={markRef}
 		/>
 	);
 }
@@ -238,8 +352,4 @@ export function folderKey(item: Folder): string {
 	}
 
 	return String(item.name);
-}
-
-function itemOffset(depth: number): string {
-	return `calc(${2 + 3 * Math.max(depth, 0)} * var(--spacing))`;
 }

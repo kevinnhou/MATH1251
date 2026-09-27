@@ -37,7 +37,7 @@ export function TerminalHeader(props: ComponentProps<"header">) {
 				<slots.sidebar.trigger
 					className={cn(
 						buttonVariants({
-							className: "p-2",
+							className: "rounded-none p-2",
 							color: "ghost",
 							size: "icon-sm",
 						})

@@ -80,8 +80,7 @@ export function TerminalPrompt({
 	return (
 		<div
 			className={cn(
-				"border bg-fd-secondary/50 font-mono text-[12px] text-fd-foreground",
-				listOpen ? "rounded-none" : "rounded-lg",
+				"border bg-fd-background font-mono text-[12px] text-fd-foreground",
 				className
 			)}
 		>

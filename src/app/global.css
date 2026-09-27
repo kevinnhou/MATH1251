@@ -28,12 +28,14 @@
 .fd-scroll-container:has(> a > div > .tab-icon) {
 	background: var(--color-fd-popover);
 	border-color: var(--color-fd-border);
-	box-shadow: none;
+	border-radius: 0;
+	box-shadow: 3px 3px 0 0 var(--color-fd-border);
 	backdrop-filter: none;
 }
 
 .tab-option {
 	background-color: var(--color-fd-popover);
+	border-radius: 0;
 }
 
 button:has(> div > .tab-icon) > div:has(> .tab-icon),
@@ -159,7 +161,51 @@ html > body[data-scroll-locked] {
 	pointer-events: none;
 }
 
+/* Folders holding the active page stay mounted when collapsed; rows fold instead. */
+[data-tree-pin] {
+	height: auto !important;
+	opacity: 1 !important;
+	transition: none !important;
+}
+
+/* In the base layer so it outranks preflight's [hidden] rule, including the
+   frame where React sets a plain `hidden` before Base UI makes it until-found. */
+@layer base {
+	[data-tree-pin][hidden] {
+		display: flex !important;
+		content-visibility: visible !important;
+	}
+}
+
+/* Rows keep their size while Base UI animates the panel height; spacing is a
+   margin rather than a gap so it can fold with the row. */
+[data-tree-content] > :not([data-rail-mark]) {
+	flex-shrink: 0;
+	min-height: 0;
+	margin-top: 1px;
+	overflow: clip;
+	transition:
+		height 200ms cubic-bezier(0.2, 0, 0, 1),
+		padding-block 200ms cubic-bezier(0.2, 0, 0, 1),
+		margin-top 200ms cubic-bezier(0.2, 0, 0, 1),
+		opacity 150ms ease,
+		visibility 200ms;
+}
+
+[data-tree-pinned]
+	> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
+	visibility: hidden;
+	height: 0;
+	padding-block: 0;
+	margin-top: 0;
+	opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
+	[data-tree-content] > * {
+		transition: none !important;
+	}
+
 	[data-terminal-pane-target="output"]
 		[data-terminal-pane="tree"]
 		[data-terminal-cascade],
@@ -265,4 +311,5 @@ html > body[data-scroll-locked] {
 
 html {
 	font-synthesis-weight: none;
+	interpolate-size: allow-keywords;
 }
