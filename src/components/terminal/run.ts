@@ -1,9 +1,16 @@
 import type { RefObject } from "react";
 import { fetchText, openExternal } from "@/lib/client/actions";
+import { currentPagesFromUrl, type PageCatalog } from "@/lib/course/catalog";
+import { catalogResource } from "@/lib/course/client";
 import { isSafeExternalUrl } from "@/lib/site/url";
 import { lookupCommand } from "@/lib/terminal/commands";
 import { pushHistory, saveHistory } from "@/lib/terminal/history";
-import { announce, loadingOutput, usageOutput } from "@/lib/terminal/output";
+import {
+	announce,
+	errorOutput,
+	loadingOutput,
+	usageOutput,
+} from "@/lib/terminal/output";
 import { fetchNotesSearch } from "@/lib/terminal/search";
 import type { TerminalAction } from "@/lib/terminal/state";
 import type {
@@ -13,7 +20,8 @@ import type {
 	TerminalOutput,
 } from "@/lib/terminal/types";
 
-export interface RunContext extends Omit<CompleteContext, "parsed"> {
+export interface RunContext
+	extends Omit<CompleteContext, "catalog" | "current" | "parsed"> {
 	abortRef: RefObject<AbortController | null>;
 	announce: (message: string) => void;
 	closeDrawer: () => void;
@@ -21,6 +29,7 @@ export interface RunContext extends Omit<CompleteContext, "parsed"> {
 	historyEntries: string[];
 	navigate: (url: string) => void;
 	publishOutput: (output: TerminalOutput, echo?: string) => void;
+	route: string;
 }
 
 const browserRuntime: CommandRuntime = {
@@ -51,10 +60,27 @@ export async function runTerminalLine(
 	const controller = new AbortController();
 	ctx.abortRef.current = controller;
 
+	let catalog: PageCatalog;
+	try {
+		catalog = await catalogResource.load();
+	} catch {
+		ctx.publishOutput(
+			errorOutput(
+				"Course catalog unavailable. Check your connection and try again."
+			),
+			echo
+		);
+		return;
+	}
+
+	if (controller.signal.aborted) {
+		return;
+	}
+
 	const { descriptor, parsed } = lookupCommand(raw);
 	let result = descriptor.execute({
-		catalog: ctx.catalog,
-		current: ctx.current,
+		catalog,
+		current: currentPagesFromUrl(catalog, ctx.route),
 		cwd: ctx.cwd,
 		graph: ctx.graph,
 		parsed,

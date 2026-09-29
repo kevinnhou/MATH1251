@@ -21,7 +21,9 @@ src/lib/terminal/          terminal logic (pure, no React)
   types.ts
 
 src/lib/course/catalog.ts  page catalog types and URL lookup
-src/lib/site/corpus.ts     builds the catalog from the corpus
+src/lib/course/client.ts   catalogResource: loads /catalog.json once
+src/lib/course/routes.ts   render-time routes: page URLs and kind views
+src/lib/site/corpus.ts     builds the catalog and routes from the corpus
 
 src/components/terminal/   terminal UI
   provider.tsx             owns the state; contexts, window listeners
@@ -34,9 +36,23 @@ src/lib/client/keybinds.ts every site wide hotkey
 src/app/api/search/route.ts search endpoint (`format=terminal`)
 ```
 
-`src/app/(docs)/layout.tsx` mounts `GraphProvider` › `TerminalProvider` ›
-`VirtualDocsLayout`. The terminal sits above the Fumadocs layout, so it can
-serve the graph and the page, while the sidebar lives inside the layout.
+`src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `GraphProvider` ›
+`TerminalProvider` › `VirtualDocsLayout`. The terminal sits above the Fumadocs
+layout, so it can serve the graph and the page, while the sidebar lives inside
+the layout.
+
+The terminal works from two sources of course data (see COMPILE.md §10):
+
+- **`useCourseRoutes()`**: page URLs and kind views, available at render.
+  Enough for the current page (`routes.match`), sidebar sections
+  (`routes.subdirectories`) and kind-view tree entries.
+- **The catalog**: titles, descriptions and aliases, which commands and
+  completions need. `TerminalProvider` loads it with
+  `useResource(catalogResource)` after the page renders. Completions stay
+  empty until it arrives; `run.ts` awaits `catalogResource.load()` before
+  executing and prints an error if it can't load. The resource is a shared
+  store, so a load started by `run.ts` also enables completions. Offline it comes from the
+  service worker (see PWA.md).
 
 ## Commands
 
@@ -113,15 +129,17 @@ they cycle completions (at most 8).
 
 ## Directories
 
-Directories are derived from the catalog (`dirs.ts`): every ancestor of a
-note page. There are two levels: **roots** (`/core`, `/algebra`,
+Commands derive directories from the catalog (`dirs.ts`): every ancestor of a
+note page. The sidebar, which renders before the catalog loads, gets the same
+structure from `routes.subdirectories`. There are two levels: **roots** (`/core`, `/algebra`,
 `/calculus`, the Fumadocs tabs) and the **chapters** inside them. Kind-view
 pages are not directories.
 
 `TerminalLocation` holds:
 
 - `cwd`: the working directory. The tree shows it and the prompt shows its
-  name (`[eigenvalues/ …]`). It starts at the current page's root.
+  name (`[eigenvalues/ …]`). It starts at the current page's root, or at
+  the home root on a page outside the course (such as `/~offline`).
 - `view`: what the tree shows instead, a `TreeView`:
   - `list`: a directory from `ls`. Cleared whenever `cwd` changes or the
     route does.
@@ -135,7 +153,9 @@ pages are not directories.
 Roots are separate trees. `cd` resolves paths (`../vector-spaces`, slugs or
 titles) within the current root and stops at its top; other roots are only
 reachable with `switch`. Opening a page inside `cwd` keeps it; opening one
-outside resets `cwd` to that page's root (`followRoute`).
+outside resets `cwd` to that page's root (`followRoute`). Pages outside the
+course leave `cwd` alone, so the tree and the root selector (`tabs.tsx`, which
+follows `cwd` rather than the URL) never lose their place.
 
 ## Search
 
@@ -164,7 +184,7 @@ so typing re-renders only the prompt:
 
 | Hook | Changes | Holds | Used by |
 |---|---|---|---|
-| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `catalog`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
+| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
 | `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `view` | sidebar, panes, tree, prompt, output pane |
 | `useTerminal()` | every keystroke | everything above, plus surface, completions, history focus | `TerminalPrompt` only |
 
@@ -203,7 +223,7 @@ Fumadocs mounts only the shell for the current `mode`, so there is one tree
 and one output pane at a time.
 
 Rows that the digit hotkeys target carry `[data-tree-section]`, set at
-render: in a directory listing, its subdirectories (from the catalog), or
+render: in a directory listing, its subdirectories (`routes.subdirectories`), or
 every entry when it has none; in a search, the first result of each group.
 
 ## Keys
@@ -237,6 +257,9 @@ page scrolling.
 - Section hotkeys only touch the DOM on a digit press.
 - The directory index is built once per catalog (`WeakMap`); the tree's
   scoped nodes are memoised on root and directory.
+- The catalog is fetched once per page load (`jsonResource`) rather than
+  embedded in every page; the routes index is built once in
+  `CourseRoutesProvider`.
 - Contexts are split so keystrokes re-render the prompt alone (see above).
 - Completions are memoised on the parsed line and frozen while cycling.
 - Search is server-side (`/api/search?format=terminal`, at most 24 hits);

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "fumadocs-core/framework";
+import { useRouter } from "fumadocs-core/framework";
 import {
 	createContext,
 	type ReactNode,
@@ -15,10 +15,11 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useCurrentRoute } from "@/components/course/provider";
 import { useGraph } from "@/components/graph/provider";
-import type { PageCatalog } from "@/lib/course/catalog";
+import { useResource } from "@/lib/client/resource";
 import { currentPagesFromUrl } from "@/lib/course/catalog";
-import { homeRoute } from "@/lib/site/config";
+import { catalogResource } from "@/lib/course/client";
 import { completeLine } from "@/lib/terminal/commands";
 import { loadHistory } from "@/lib/terminal/history";
 import { paneTarget, type TerminalSurface } from "@/lib/terminal/mode";
@@ -46,7 +47,6 @@ interface SidebarControls {
 
 interface TerminalApi {
 	bindSidebar: (controls: SidebarControls) => () => void;
-	catalog: PageCatalog;
 	changeDirectory: (url: string) => void;
 	clearInspectOutput: () => void;
 	focusPrompt: (options?: { expand?: boolean }) => void;
@@ -109,15 +109,10 @@ export function useTerminal(): TerminalViewValue & TerminalApi {
 	return { ...view, ...api };
 }
 
-export function TerminalProvider({
-	catalog,
-	children,
-}: {
-	catalog: PageCatalog;
-	children: ReactNode;
-}) {
+export function TerminalProvider({ children }: { children: ReactNode }) {
+	const catalog = useResource(catalogResource);
 	const router = useRouter();
-	const routeUrl = usePathname() || homeRoute;
+	const { inCatalog: inCourse, url: routeUrl } = useCurrentRoute();
 	const graph = useGraph();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const outputRef = useRef<HTMLDivElement>(null);
@@ -126,34 +121,34 @@ export function TerminalProvider({
 	const sidebarRef = useRef<SidebarControls | null>(null);
 	const hintId = useId();
 	const completionListId = useId();
-	const [state, dispatch] = useReducer(
-		terminalReducer,
-		routeUrl,
-		initialTerminalState
+	const [state, dispatch] = useReducer(terminalReducer, null, () =>
+		initialTerminalState(routeUrl, inCourse)
 	);
 	const [focusEpoch, setFocusEpoch] = useState(0);
 	const [liveMessage, setLiveMessage] = useState("");
 	const { location, surface } = state;
-	const current = useMemo(
-		() => currentPagesFromUrl(catalog, routeUrl),
-		[catalog, routeUrl]
-	);
 	const parsed = useMemo(() => parseLine(surface.input), [surface.input]);
 	const completions = useMemo(() => {
-		if (!surface.completionsOpen) {
+		if (!(surface.completionsOpen && catalog.status === "ready")) {
 			return [];
 		}
 
 		return (
 			state.cycle?.list ??
-			completeLine({ catalog, current, cwd: location.cwd, graph, parsed })
+			completeLine({
+				catalog: catalog.value,
+				current: currentPagesFromUrl(catalog.value, routeUrl),
+				cwd: location.cwd,
+				graph,
+				parsed,
+			})
 		);
 	}, [
 		catalog,
-		current,
 		graph,
 		location.cwd,
 		parsed,
+		routeUrl,
 		state.cycle,
 		surface.completionsOpen,
 	]);
@@ -166,7 +161,7 @@ export function TerminalProvider({
 		if (url !== state.route && state.pendingNavigation !== url) {
 			abortRef.current?.abort();
 		}
-		dispatch({ type: "route", url });
+		dispatch({ inCourse, type: "route", url });
 	});
 	useEffect(() => onRoute(routeUrl), [routeUrl]);
 
@@ -226,18 +221,17 @@ export function TerminalProvider({
 		runTerminalLine(raw ?? surface.input, {
 			abortRef,
 			announce: setLiveMessage,
-			catalog,
 			closeDrawer: () => {
 				sidebarRef.current?.closeDrawer();
 				inputRef.current?.blur();
 			},
-			current,
 			cwd: location.cwd,
 			dispatch,
 			graph,
 			historyEntries: state.history.entries,
 			navigate: (url) => router.push(url),
 			publishOutput,
+			route: routeUrl,
 		});
 
 	const windowContext = () => ({
@@ -267,7 +261,6 @@ export function TerminalProvider({
 	const api = useMemo(
 		(): TerminalApi => ({
 			bindSidebar,
-			catalog,
 			changeDirectory,
 			clearInspectOutput,
 			focusPrompt,
@@ -278,7 +271,6 @@ export function TerminalProvider({
 		}),
 		[
 			bindSidebar,
-			catalog,
 			changeDirectory,
 			clearInspectOutput,
 			focusPrompt,

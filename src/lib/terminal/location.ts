@@ -1,8 +1,12 @@
+import { homeRoute } from "@/lib/site/config";
 import { rootOf } from "./dirs";
 import type { CommandResult, TerminalLocation } from "./types";
 
-export function initialLocation(route: string): TerminalLocation {
-	return { cwd: rootOf(route), view: null };
+export function initialLocation(
+	route: string,
+	inCourse: boolean
+): TerminalLocation {
+	return { cwd: rootOf(inCourse ? route : homeRoute), view: null };
 }
 
 export function applyCommandLocation(
@@ -15,8 +19,13 @@ export function applyCommandLocation(
 
 export function followRoute(
 	location: TerminalLocation,
-	route: string
+	route: string,
+	inCourse: boolean
 ): TerminalLocation {
+	if (!inCourse) {
+		return location;
+	}
+
 	return moveTo(
 		location,
 		isWithin(route, location.cwd) ? location.cwd : rootOf(route)

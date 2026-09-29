@@ -16,3 +16,7 @@ export const gitConfig = {
 	repo: "math1251",
 	user: "kevinnhou",
 };
+
+export const offlineRoute = "/~offline";
+export const graphDataRoute = "/graph-data.json";
+export const catalogRoute = "/catalog.json";

@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "fumadocs-core/framework";
 import {
 	createContext,
 	type ReactNode,
@@ -11,10 +10,10 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { PageCatalog } from "@/lib/course/catalog";
-import { currentPagesFromUrl } from "@/lib/course/catalog";
+import { useCurrentRoute } from "@/components/course/provider";
+import { useResource } from "@/lib/client/resource";
 import type { GraphAction } from "@/lib/graph/actions";
-import { useGraphDocument } from "@/lib/graph/client";
+import { graphResource } from "@/lib/graph/client";
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import {
 	applyGraphAction,
@@ -23,7 +22,6 @@ import {
 	type GraphSession,
 	type GraphTargetResolver,
 } from "@/lib/graph/session";
-import { homeRoute } from "@/lib/site/config";
 
 interface StoredSession {
 	homeId: string;
@@ -41,21 +39,11 @@ export function useGraph(): GraphRuntime {
 	return value;
 }
 
-export function GraphProvider({
-	catalog,
-	children,
-}: {
-	catalog: PageCatalog;
-	children: ReactNode;
-}) {
-	const routeUrl = usePathname() || homeRoute;
-	const current = useMemo(
-		() => currentPagesFromUrl(catalog, routeUrl),
-		[catalog, routeUrl]
-	);
-	const homeId = current.source.url;
-	const canvasAvailable = current.inCatalog && !current.route.kindView;
-	const load = useGraphDocument();
+export function GraphProvider({ children }: { children: ReactNode }) {
+	const current = useCurrentRoute();
+	const homeId = current.sourceUrl;
+	const canvasAvailable = current.inCatalog && !current.kindView;
+	const load = useResource(graphResource);
 	const [narrow, setNarrow] = useState(false);
 	const [stored, setStored] = useState<StoredSession>(() => ({
 		homeId,
@@ -78,7 +66,7 @@ export function GraphProvider({
 		return () => media.removeEventListener("change", update);
 	}, []);
 
-	const document = load.status === "ready" ? load.document : undefined;
+	const document = load.status === "ready" ? load.value : undefined;
 	const dispatch = useCallback(
 		(
 			action: GraphAction,
@@ -110,13 +98,13 @@ export function GraphProvider({
 
 		if (load.status !== "ready") {
 			return load.status === "error"
-				? { homeId, retry: load.retry, status: "error" }
+				? { homeId, retry: graphResource.preload, status: "error" }
 				: { homeId, status: "loading" };
 		}
 
 		return {
 			dispatch,
-			document: load.document,
+			document: load.value,
 			homeId,
 			narrow,
 			session,

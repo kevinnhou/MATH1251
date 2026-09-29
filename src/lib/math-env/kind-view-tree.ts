@@ -1,12 +1,12 @@
 import type { Folder, Item, Node, Root } from "fumadocs-core/page-tree";
-import type { KindView } from "./kind-view";
+import type { KindViewRef } from "./kind-view";
 import { getKindLabel } from "./kinds";
 
 const trailingSlashes = /\/+$/;
 
 export function withActiveKindViewPages(
 	tree: Root,
-	views: readonly KindView[],
+	views: readonly KindViewRef[],
 	pathname: string
 ): Root {
 	const active = views.find(
@@ -110,7 +110,7 @@ function addKindViewItems(
 	};
 }
 
-function createKindViewItem(view: KindView): Item {
+function createKindViewItem(view: KindViewRef): Item {
 	return {
 		$id: `kind-view:${view.parentUrl}:${view.kind}`,
 		name: getKindLabel(view.kind, true),

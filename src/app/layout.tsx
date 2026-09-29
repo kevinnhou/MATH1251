@@ -1,10 +1,10 @@
-import { SerwistProvider } from "@serwist/turbopack/react";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import type { Metadata, Viewport } from "next";
 import "katex/dist/katex.css";
 import "./global.css";
 import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { PwaProvider } from "@/components/pwa/provider";
 import { siteName, themeBackground } from "@/lib/site/config";
 
 const alliance = localFont({
@@ -52,12 +52,9 @@ export default function Layout({ children }: LayoutProps<"/">) {
 			suppressHydrationWarning
 		>
 			<body className="flex min-h-svh flex-col">
-				<SerwistProvider
-					disable={process.env.NODE_ENV === "development"}
-					swUrl="/serwist/sw.js"
-				>
+				<PwaProvider>
 					<RootProvider search={{ enabled: false }}>{children}</RootProvider>
-				</SerwistProvider>
+				</PwaProvider>
 			</body>
 		</html>
 	);
