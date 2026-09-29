@@ -8,17 +8,17 @@ export const LLM_PROVIDER_LABELS: Record<LlmProvider, string> = {
 	cursor: "Cursor",
 };
 
-export const LLM_PROMPT_ENCODED_LIMIT = 8000;
+const LLM_PROMPT_ENCODED_LIMIT = 8000;
 
-export type AskTask = "page" | "kind-view" | "excerpt";
+type AskTask = "page" | "kind-view" | "excerpt";
 
-export interface AskSource {
+interface AskSource {
 	body?: string;
 	type: AskTask;
 	url: string;
 }
 
-export interface FormatAskPromptInput {
+interface FormatAskPromptInput {
 	related?: string[];
 	source: AskSource;
 	task: AskTask;
@@ -39,11 +39,11 @@ export function llmUrls(prompt: string): Record<LlmProvider, string> {
 	};
 }
 
-export function encodedPromptLength(prompt: string): number {
+function encodedPromptLength(prompt: string): number {
 	return encodeURIComponent(prompt).length;
 }
 
-export function sanitiseAskPayload(text: string): string {
+function sanitiseAskPayload(text: string): string {
 	let next = text;
 	for (const tag of CLOSING_TAGS) {
 		next = next.replaceAll(tag, tag.replace("</", "</ "));

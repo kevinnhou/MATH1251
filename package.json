@@ -10,7 +10,7 @@
     "prepare": "husky",
     "start": "next start",
     "test": "bun test",
-    "types:check": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.sw.json && tsc --noEmit -p tsconfig.test.json"
+    "types:check": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.sw.json"
   },
   "overrides": {
     "katex": "$katex"

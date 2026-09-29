@@ -1,3 +1,5 @@
+import type { CatalogPage } from "@/lib/course/catalog";
+import { findPageByUrl } from "@/lib/course/catalog";
 import { formatPageRelated, selectPageRelated } from "@/lib/graph/related";
 import { formatRefLink } from "@/lib/math-env/export-markdown";
 import {
@@ -5,96 +7,84 @@ import {
 	LLM_PROVIDER_LABELS,
 	llmUrls,
 } from "@/lib/site/llm-ask";
-import { isGraphModule } from "@/lib/site/strands";
 import { isSafeExternalUrl, toAbsoluteUrl } from "@/lib/site/url";
+import {
+	childDirectories,
+	type Directory,
+	type DirectoryOutcome,
+	displayPath,
+	resolveDirectory,
+	resolveRoot,
+	rootOf,
+	roots,
+} from "./dirs";
 import { graphCommand } from "./graph-command";
 import {
 	ambiguousOutput,
 	errorOutput,
-	groupedLinks,
 	markdownOutput,
 	messageOutput,
+	plural,
 	searchHitsOutput,
-	strandGroups,
 	usageOutput,
 } from "./output";
-import { findPageByUrl } from "./pages";
 import { argumentText, commandToken, parseLine, quoteIfNeeded } from "./parse";
-import {
-	advertisedNames,
-	type CommandRegistry,
-	findRegistered,
-} from "./registry";
 import { rankPages, resolvePage } from "./resolve";
+import { searchResults } from "./search";
 import type {
-	CatalogPage,
 	CommandDescriptor,
 	CommandResult,
 	CompleteContext,
 	Completion,
-	CurrentPages,
 	ExecuteContext,
-	PageCatalog,
 	ParsedLine,
 	ResolveOutcome,
 	TerminalOutput,
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
-const LEADING_SLASH = /^\//;
-
-export function coreDescriptors(): CommandDescriptor[] {
+function coreDescriptors(): CommandDescriptor[] {
 	return [
-		command("cd", ["cd"], executeCd, completePageArgument, "cd <page>"),
-		command("ls", ["ls"], executeLs, completePageArgument, "ls [strand|path]"),
-		command("md", ["md"], executeMarkdown, completePageArgument, "md <page|.>"),
+		command(["cd"], executeCd, completeDirectoryArgument, "cd [dir|..]"),
+		command(["ls"], executeLs, completeDirectoryArgument, "ls [dir]"),
+		command(["open"], executeOpen, completePageArgument, "open <page|dir>"),
 		command(
-			"gpt",
+			["switch", "checkout"],
+			executeSwitch,
+			completeRootArgument,
+			"switch <root>"
+		),
+		command(["md"], executeMarkdown, completePageArgument, "md <page|.>"),
+		command(
 			["gpt", "chatgpt"],
 			(ctx) => executeAsk(ctx, "gpt"),
 			completePageArgument,
 			"gpt <page|.>"
 		),
 		command(
-			"claude",
 			["claude"],
 			(ctx) => executeAsk(ctx, "claude"),
 			completePageArgument,
 			"claude <page|.>"
 		),
 		command(
-			"cursor",
 			["cursor"],
 			(ctx) => executeAsk(ctx, "cursor"),
 			completePageArgument,
 			"cursor <page|.>"
 		),
 		graphCommand(),
-		{
-			advertised: true,
-			execute: () => done(helpOutput()),
-			id: "help",
-			names: ["help"],
-			usage: "help",
-		},
-		{
-			advertised: true,
-			execute: (ctx) => done(messageOutput(ctx.current.route.url)),
-			id: "pwd",
-			names: ["pwd"],
-			usage: "pwd",
-		},
-		{
-			advertised: true,
-			execute: () => done(null),
-			id: "clear",
-			names: ["clear"],
-			usage: "clear",
-		},
+		command(["help"], () => done(helpOutput()), undefined, "help"),
+		command(
+			["pwd"],
+			(ctx) => done(messageOutput(displayPath(ctx.cwd))),
+			undefined,
+			"pwd"
+		),
+		command(["clear"], () => done(null, { view: null }), undefined, "clear"),
 		{
 			advertised: false,
 			execute: executeNotesSearch,
-			id: "search",
 			loading: "Searching…",
 			names: [],
 			usage: "",
@@ -102,154 +92,214 @@ export function coreDescriptors(): CommandDescriptor[] {
 	];
 }
 
+interface CommandRegistry {
+	byName: Map<string, CommandDescriptor>;
+	commands: readonly CommandDescriptor[];
+	fallback: CommandDescriptor;
+}
+
+const registry = createRegistry(coreDescriptors());
+
+function createRegistry(
+	commands: readonly CommandDescriptor[]
+): CommandRegistry {
+	const byName = new Map<string, CommandDescriptor>();
+	let fallback: CommandDescriptor | undefined;
+	for (const descriptor of commands) {
+		if (descriptor.names.length === 0) {
+			fallback = descriptor;
+		}
+
+		for (const name of descriptor.names) {
+			const key = name.toLowerCase();
+			if (byName.has(key)) {
+				throw new Error(`Command name already registered: ${name}`);
+			}
+
+			byName.set(key, descriptor);
+		}
+	}
+
+	if (fallback === undefined) {
+		throw new Error("Command registry is missing a search fallback.");
+	}
+
+	return { byName, commands, fallback };
+}
+
 function command(
-	id: string,
 	names: readonly string[],
 	execute: CommandDescriptor["execute"],
 	complete: CommandDescriptor["complete"],
 	usage: string
 ): CommandDescriptor {
-	return {
-		advertised: true,
-		complete,
-		execute,
-		id,
-		names,
-		usage,
-	};
+	return { advertised: true, complete, execute, names, usage };
 }
 
 function done(
 	output: TerminalOutput | null,
 	extra?: Omit<CommandResult, "output">
 ): CommandResult {
-	return extra ? { output, ...extra } : { output };
+	return { output, ...extra };
 }
 
-export function lookupCommand(
-	input: string,
-	registry: CommandRegistry
-): { descriptor?: CommandDescriptor; parsed: ParsedLine } {
+export function lookupCommand(input: string): {
+	descriptor: CommandDescriptor;
+	parsed: ParsedLine;
+} {
 	const parsed = parseLine(input);
-	return { descriptor: descriptorFor(parsed, registry), parsed };
+	return { descriptor: descriptorFor(parsed), parsed };
 }
 
-function descriptorFor(
-	parsed: ParsedLine,
-	registry: CommandRegistry
-): CommandDescriptor | undefined {
-	const name = commandToken(parsed)?.toLowerCase();
-	if (name === undefined || name === "") {
-		return;
-	}
-
-	return findRegistered(registry, name) ?? registry.fallback;
+function descriptorFor(parsed: ParsedLine): CommandDescriptor {
+	const name = commandToken(parsed)?.toLowerCase() ?? "";
+	return registry.byName.get(name) ?? registry.fallback;
 }
 
-export function completeLine(
-	parsed: ParsedLine,
-	catalog: PageCatalog,
-	current: CurrentPages,
-	registry: CommandRegistry,
-	graph: CompleteContext["graph"]
-): Completion[] {
+export function completeLine(ctx: CompleteContext): Completion[] {
+	const { parsed } = ctx;
 	if (parsed.tokens.length === 0) {
-		return commandCompletions("", registry);
+		return commandCompletions("");
 	}
 
 	if (parsed.tokens.length === 1 && !parsed.trailingSpace) {
-		return commandCompletions(parsed.partial, registry);
+		return commandCompletions(parsed.partial);
 	}
 
-	return (
-		descriptorFor(parsed, registry)?.complete?.({
-			catalog,
-			current,
-			graph,
-			parsed,
-		}) ?? []
-	);
+	return descriptorFor(parsed).complete?.(ctx) ?? [];
 }
 
 function executeCd(ctx: ExecuteContext): CommandResult {
-	const query = argumentText(ctx.parsed);
-	const resolved = resolvePage(ctx.catalog, query, ctx.current.route);
-	if (resolved.kind === "empty") {
-		return done(usageOutput("cd <page>"));
+	return inDirectory(ctx, "cd", argumentText(ctx.parsed), (dir) =>
+		done(null, {
+			announce: `In ${displayPath(dir.url)}.`,
+			cwd: dir.url,
+			view: null,
+		})
+	);
+}
+
+function executeLs(ctx: ExecuteContext): CommandResult {
+	return inDirectory(ctx, "ls", argumentText(ctx.parsed) || ".", (dir) =>
+		done(null, {
+			announce: `Listing ${displayPath(dir.url)}.`,
+			view: { dir: dir.url, kind: "list" },
+		})
+	);
+}
+
+function inDirectory(
+	ctx: ExecuteContext,
+	name: string,
+	query: string,
+	run: (dir: Directory) => CommandResult
+): CommandResult {
+	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query);
+	if (resolved.kind === "dir") {
+		return run(resolved.dir);
 	}
 
-	if (resolved.kind === "none") {
-		return done(errorOutput(`cd: no such page: ${query}`));
+	return done(directoryError(name, query, resolved, ctx.cwd));
+}
+
+function directoryError(
+	name: string,
+	query: string,
+	outcome: Exclude<DirectoryOutcome, { kind: "dir" }>,
+	cwd: string
+): TerminalOutput {
+	switch (outcome.kind) {
+		case "page":
+			return errorOutput(`${name}: not a directory: ${query} (try open)`);
+		case "above-root":
+			return errorOutput(
+				`${name}: already at the top of ${displayPath(rootOf(cwd))} (try switch)`
+			);
+		case "other-root":
+			return errorOutput(
+				`${name}: ${query} is in ${outcome.root.name} (try switch ${outcome.root.name})`
+			);
+		default:
+			return errorOutput(`${name}: no such directory: ${query}`);
+	}
+}
+
+function executeOpen(ctx: ExecuteContext): CommandResult {
+	const query = argumentText(ctx.parsed);
+	if (query === "") {
+		return done(usageOutput("open <page|dir>"));
+	}
+
+	const page = pageInCwd(ctx, query);
+	const resolved: ResolveOutcome = page
+		? { kind: "match", page }
+		: resolvePage(ctx.catalog, query, ctx.current.route);
+	if (resolved.kind === "none" || resolved.kind === "empty") {
+		return done(errorOutput(`open: no such page: ${query}`));
 	}
 
 	if (resolved.kind === "ambiguous") {
 		return done(ambiguousOutput(query, resolved.pages));
 	}
 
-	if (resolved.page.url === ctx.current.route.url) {
-		return done(messageOutput(`${resolved.page.url}`), { closeDrawer: true });
-	}
-
-	return done(messageOutput(`${resolved.page.url}`), {
+	const { url } = resolved.page;
+	return done(messageOutput(url), {
 		closeDrawer: true,
-		navigate: resolved.page.url,
+		navigate: url === ctx.current.route.url ? undefined : url,
 	});
 }
 
-function executeLs(ctx: ExecuteContext): CommandResult {
-	const filter = argumentText(ctx.parsed).toLowerCase();
-	const pages = ctx.catalog.pages.filter((page) =>
-		matchesLsFilter(page, filter)
-	);
-	if (pages.length === 0) {
+function pageInCwd(
+	ctx: ExecuteContext,
+	query: string
+): CatalogPage | undefined {
+	const outcome = resolveDirectory(ctx.catalog, ctx.cwd, query);
+	if (outcome.kind === "dir") {
+		return outcome.dir.page;
+	}
+
+	return outcome.kind === "page" ? outcome.page : undefined;
+}
+
+function executeSwitch(ctx: ExecuteContext): CommandResult {
+	const query = argumentText(ctx.parsed);
+	const names = roots(ctx.catalog).map((dir) => dir.name);
+	if (query === "") {
+		return done(usageOutput(`switch <${names.join("|")}>`));
+	}
+
+	const root = resolveRoot(ctx.catalog, query);
+	if (!root?.page) {
 		return done(
-			errorOutput(
-				filter === ""
-					? "ls: nothing to list."
-					: `ls: no pages match "${filter}".`
-			)
+			errorOutput(`switch: no such root: ${query} (${names.join(", ")})`)
 		);
 	}
 
-	return done(
-		groupedLinks(strandGroups(pages), {
-			title: filter === "" ? "pages" : `pages matching ${filter}`,
-		})
-	);
-}
-
-function matchesLsFilter(page: CatalogPage, filter: string): boolean {
-	if (page.kindView) {
-		return false;
+	if (rootOf(ctx.current.route.url) === root.url) {
+		return done(null, { announce: `On ${root.name}.`, cwd: root.url });
 	}
 
-	if (filter === "") {
-		return true;
-	}
-
-	if (isGraphModule(filter)) {
-		return page.strand === filter;
-	}
-
-	const path = page.url.replace(LEADING_SLASH, "").toLowerCase();
-	return (
-		path.startsWith(filter) ||
-		page.title.source.toLowerCase().startsWith(filter) ||
-		page.title.plain.toLowerCase().startsWith(filter) ||
-		page.url.toLowerCase().startsWith(`/${filter}`)
-	);
+	return done(null, {
+		announce: `Switched to ${root.name}.`,
+		cwd: root.url,
+		navigate: root.page.url,
+	});
 }
 
 async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
 	const query = ctx.parsed.raw.trim();
 	try {
-		const results = await ctx.runtime.searchNotes(query, ctx.signal);
-		return done(searchHitsOutput(query, results));
-	} catch (error) {
-		if (ctx.signal.aborted || isAbortError(error)) {
-			return done(null);
+		const hits = await ctx.runtime.searchNotes(query, ctx.signal);
+		const results = searchResults(ctx.catalog, hits);
+		if (results.length === 0) {
+			return done(searchHitsOutput(query, hits));
 		}
 
+		return done(null, {
+			announce: `${plural(results.length, "page")} match “${query}”.`,
+			view: { kind: "search", query, results },
+		});
+	} catch {
 		return done(
 			errorOutput("Search failed. Check your connection and try again.")
 		);
@@ -279,11 +329,7 @@ async function executeMarkdown(ctx: ExecuteContext): Promise<CommandResult> {
 				title: page.title.plain,
 			})
 		);
-	} catch (error) {
-		if (ctx.signal.aborted || isAbortError(error)) {
-			return done(null);
-		}
-
+	} catch {
 		return done(errorOutput(`md: unable to fetch Markdown for ${page.url}.`));
 	}
 }
@@ -311,17 +357,14 @@ function executeAsk(
 		},
 		task: page.kindView ? "kind-view" : "page",
 	});
-	const urls = llmUrls(prompt);
-	const href = provider === "gpt" ? urls.chatgpt : urls[provider];
+	const key = provider === "gpt" ? "chatgpt" : provider;
+	const href = llmUrls(prompt)[key];
 	if (!isSafeExternalUrl(href)) {
 		return done(errorOutput(`${provider}: blocked an unsupported URL.`));
 	}
 
 	const opened = ctx.runtime.openExternal(href);
-	const label =
-		provider === "gpt"
-			? LLM_PROVIDER_LABELS.chatgpt
-			: LLM_PROVIDER_LABELS[provider];
+	const label = LLM_PROVIDER_LABELS[key];
 	if (opened) {
 		return done(messageOutput(`Opened ${page.title.plain} in ${label}.`), {
 			closeDrawer: true,
@@ -396,6 +439,50 @@ function resolveToOutput(
 	return errorOutput(`no such page: ${query === "" ? "." : query}`);
 }
 
+function completeDirectoryArgument(ctx: CompleteContext): Completion[] {
+	const partial = argumentPartial(ctx.parsed);
+	const head = partial.slice(0, partial.lastIndexOf("/") + 1);
+	const tail = partial.slice(head.length).toLowerCase();
+	const base = resolveDirectory(
+		ctx.catalog,
+		ctx.cwd,
+		head === "/" ? "~" : head || "."
+	);
+	if (base.kind !== "dir") {
+		return [];
+	}
+
+	const up: Completion[] =
+		base.dir.parent && "..".startsWith(tail)
+			? [{ detail: "up", label: "..", replace: `${head}..` }]
+			: [];
+	const children = (
+		head === "/" ? [base.dir] : childDirectories(ctx.catalog, base.dir.url)
+	)
+		.filter(
+			(dir) =>
+				dir.name.startsWith(tail) ||
+				dir.page?.title.plain.toLowerCase().startsWith(tail)
+		)
+		.map((dir) => ({
+			detail: dir.page?.title ?? dir.name,
+			label: `${dir.name}/`,
+			replace: quoteIfNeeded(`${head}${dir.name}`),
+		}));
+	return [...children, ...up].slice(0, TERMINAL_COMPLETION_LIMIT);
+}
+
+function completeRootArgument(ctx: CompleteContext): Completion[] {
+	const partial = argumentPartial(ctx.parsed).toLowerCase();
+	return roots(ctx.catalog)
+		.filter((dir) => dir.name.startsWith(partial))
+		.map((dir) => ({
+			detail: dir.page?.title ?? dir.name,
+			label: dir.name,
+			replace: dir.name,
+		}));
+}
+
 function completePageArgument(ctx: CompleteContext): Completion[] {
 	const partial = argumentPartial(ctx.parsed);
 	const current = ctx.current.route;
@@ -433,12 +520,12 @@ function completePageArgument(ctx: CompleteContext): Completion[] {
 	}));
 }
 
-function commandCompletions(
-	partial: string,
-	registry: CommandRegistry
-): Completion[] {
+function commandCompletions(partial: string): Completion[] {
 	const needle = partial.toLowerCase();
-	return advertisedNames(registry)
+	return registry.commands
+		.flatMap((descriptor) =>
+			descriptor.advertised ? descriptor.names.slice(0, 1) : []
+		)
 		.filter((name) => needle === "" || name.startsWith(needle))
 		.slice(0, TERMINAL_COMPLETION_LIMIT)
 		.map((name) => ({
@@ -456,14 +543,10 @@ function argumentPartial(parsed: ParsedLine): string {
 }
 
 function helpOutput(): TerminalOutput {
-	const lines = coreDescriptors()
+	const lines = registry.commands
 		.filter((descriptor) => descriptor.advertised)
 		.map((descriptor) => `  ${descriptor.usage}`);
 	return usageOutput(
 		["Try:", ...lines, "  anything else searches the notes"].join("\n")
 	);
-}
-
-function isAbortError(error: unknown): boolean {
-	return error instanceof DOMException && error.name === "AbortError";
 }

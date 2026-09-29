@@ -18,12 +18,3 @@ export function getStrand(slugs: string[]): GraphModule | undefined {
 		return strand;
 	}
 }
-
-export function getTitleStrand(
-	slugs: string[]
-): "algebra" | "calculus" | undefined {
-	const strand = getStrand(slugs);
-	if (strand === "algebra" || strand === "calculus") {
-		return strand;
-	}
-}

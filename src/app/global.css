@@ -6,14 +6,12 @@
 	--graph-module-algebra: #ffadad;
 	--graph-module-calculus: #a8c7e8;
 	--graph-module-core: #74828a;
-	--graph-node-default: #74828a;
 }
 
 .dark {
 	--graph-module-algebra: #af7178;
 	--graph-module-calculus: #7a93ab;
 	--graph-module-core: #74828a;
-	--graph-node-default: #74828a;
 }
 
 * {
@@ -28,12 +26,14 @@
 .fd-scroll-container:has(> a > div > .tab-icon) {
 	background: var(--color-fd-popover);
 	border-color: var(--color-fd-border);
-	box-shadow: none;
+	border-radius: 0;
+	box-shadow: 3px 3px 0 0 var(--color-fd-border);
 	backdrop-filter: none;
 }
 
 .tab-option {
 	background-color: var(--color-fd-popover);
+	border-radius: 0;
 }
 
 button:has(> div > .tab-icon) > div:has(> .tab-icon),
@@ -159,7 +159,37 @@ html > body[data-scroll-locked] {
 	pointer-events: none;
 }
 
+[data-tree-content] {
+	interpolate-size: allow-keywords;
+}
+
+[data-tree-content] > :not([data-rail-mark]) {
+	flex-shrink: 0;
+	min-height: 0;
+	margin-top: 1px;
+	overflow: clip;
+	transition:
+		height 200ms cubic-bezier(0.2, 0, 0, 1),
+		padding-block 200ms cubic-bezier(0.2, 0, 0, 1),
+		margin-top 200ms cubic-bezier(0.2, 0, 0, 1),
+		opacity 150ms ease,
+		visibility 200ms;
+}
+
+:is([data-tree-pinned], [data-tree-pinned] [data-tree-content])
+	> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
+	visibility: hidden;
+	height: 0;
+	padding-block: 0;
+	margin-top: 0;
+	opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
+	[data-tree-content] > * {
+		transition: none !important;
+	}
+
 	[data-terminal-pane-target="output"]
 		[data-terminal-pane="tree"]
 		[data-terminal-cascade],

@@ -1,11 +1,10 @@
 import {
 	compileMarkdownFragment,
 	compileMarkdownPreview,
-	type MarkdownFragment,
-	type RenderedMarkdown,
 } from "@/lib/markdown/fragment";
+import type { MarkdownFragment, RenderedMarkdown } from "@/lib/markdown/types";
 
-export const STATEMENT_PREVIEW_CHARS = 220;
+const STATEMENT_PREVIEW_CHARS = 220;
 
 export type StatementView = MarkdownFragment<"block"> & {
 	preview: RenderedMarkdown<"block">;
@@ -17,20 +16,4 @@ export function compileStatement(markdown: string): StatementView {
 		...fragment,
 		preview: compileMarkdownPreview(markdown, STATEMENT_PREVIEW_CHARS),
 	};
-}
-
-export function previewStatementHtml(
-	markdown: string | undefined,
-	maxChars = STATEMENT_PREVIEW_CHARS
-): string | undefined {
-	if (!markdown) {
-		return;
-	}
-
-	const preview = compileMarkdownPreview(markdown, maxChars);
-	if (preview.html.length === 0) {
-		return;
-	}
-
-	return preview.html;
 }

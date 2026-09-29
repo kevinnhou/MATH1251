@@ -1,7 +1,7 @@
+import type { CurrentPages, PageCatalog } from "@/lib/course/catalog";
 import { inspectPolicy } from "@/lib/graph/inspect";
-import { nodePlainTitle } from "@/lib/graph/node-summary";
 import { parseGraphArgs } from "@/lib/graph/parse";
-import { commitGraphAction, resolveGraphTarget } from "@/lib/graph/session";
+import { resolveGraphTarget } from "@/lib/graph/session";
 import {
 	GRAPH_DEPTH_ARGS,
 	GRAPH_STRAND_ARGS,
@@ -17,9 +17,7 @@ import type {
 	CommandResult,
 	CompleteContext,
 	Completion,
-	CurrentPages,
 	ExecuteContext,
-	PageCatalog,
 	ParsedLine,
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
@@ -39,7 +37,6 @@ export function graphCommand(): CommandDescriptor {
 		advertised: true,
 		complete: completeGraphCommand,
 		execute: executeGraphCommand,
-		id: "graph",
 		names: ["graph"],
 		usage: "graph <depth|strand|focus|find|immerse|collapse|reset>",
 	};
@@ -82,23 +79,14 @@ function executeGraphCommand(ctx: ExecuteContext): CommandResult {
 		return { output: usageOutput(parsed.error) };
 	}
 
-	const { document } = graph;
-	const result = commitGraphAction(
-		graph.session,
-		parsed.value,
-		{
-			document,
-			homeId: graph.homeId,
-			resolveTarget: (raw) =>
-				resolveFocusTarget(
-					raw,
-					document,
-					graph.homeId,
-					ctx.catalog,
-					ctx.current
-				),
-		},
-		graph.setSession
+	const result = graph.dispatch(parsed.value, (raw) =>
+		resolveFocusTarget(
+			raw,
+			graph.document,
+			graph.homeId,
+			ctx.catalog,
+			ctx.current
+		)
 	);
 	const output = graphOutcomeToTerminal(result.effect);
 	if (!output) {
@@ -112,7 +100,7 @@ function executeGraphCommand(ctx: ExecuteContext): CommandResult {
 	});
 	if (decision === "clear" && result.effect.kind === "inspect") {
 		return {
-			output: mutedMessage(`Focused ${nodePlainTitle(result.effect.node)}.`),
+			output: mutedMessage(`Focused ${result.effect.node.title.plain}.`),
 		};
 	}
 

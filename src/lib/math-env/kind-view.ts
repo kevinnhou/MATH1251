@@ -1,22 +1,12 @@
-import {
-	getKindLabel,
-	getKindViewSlug,
-	type MathEnvKind,
-	parseKindViewSlug,
-} from "./kinds";
+import { getKindLabel, getKindViewSlug, type MathEnvKind } from "./kinds";
 import type { PageEnvs } from "./page-envs";
-
-export interface KindRoute {
-	kind: MathEnvKind;
-	pageSlugs: string[];
-}
 
 export interface KindViewRenderOptions {
 	pageUrl?: string;
 	viewKind?: MathEnvKind;
 }
 
-export interface KindViewCopy {
+interface KindViewCopy {
 	aliases: string[];
 	chip: string;
 	description: string;
@@ -39,7 +29,7 @@ export function getKindViewUrl(pageUrl: string, kind: MathEnvKind): string {
 	return `${pageUrl.replace(trailingSlashes, "")}/${getKindViewSlug(kind)}`;
 }
 
-export function kindViewFor(
+function kindViewFor(
 	page: { title: string; url: string },
 	kind: MathEnvKind
 ): KindViewCopy {
@@ -58,7 +48,7 @@ export function kindViewFor(
 	};
 }
 
-export function kindViewRecord(
+function kindViewRecord(
 	page: { locale?: string; slugs: string[]; title: string; url: string },
 	kind: MathEnvKind
 ): KindView {
@@ -71,7 +61,7 @@ export function kindViewRecord(
 	};
 }
 
-export function kindsOnPage(envs: PageEnvs): MathEnvKind[] {
+function kindsOnPage(envs: PageEnvs): MathEnvKind[] {
 	const kinds: MathEnvKind[] = [];
 	const seen = new Set<MathEnvKind>();
 
@@ -101,7 +91,7 @@ export function getKindViewToc<T extends { url: string }>(
 	return toc.filter((item) => urls.has(item.url));
 }
 
-export function generatedKindsForPage(
+function generatedKindsForPage(
 	kinds: readonly MathEnvKind[],
 	pageSlugs: string[],
 	pageExists: (slugs: string[]) => boolean
@@ -111,12 +101,12 @@ export function generatedKindsForPage(
 	);
 }
 
-export interface KindViewPageInput {
+interface KindViewPageInput {
 	envs: PageEnvs;
 	page: {
+		data: { title: string };
 		locale?: string;
 		slugs: string[];
-		title: string;
 		url: string;
 	};
 }
@@ -132,7 +122,7 @@ export function kindViewsFromPages(
 					{
 						locale: page.locale,
 						slugs: page.slugs,
-						title: page.title,
+						title: page.data.title,
 						url: page.url,
 					},
 					kind
@@ -155,25 +145,4 @@ export function uniqueTrimmed(values: string[]): string[] {
 	}
 
 	return next;
-}
-
-export function parseKindView(slugs: string[]): KindRoute | undefined {
-	if (slugs.length < 2) {
-		return;
-	}
-
-	const kindSegment = slugs.at(-1);
-	if (kindSegment === undefined) {
-		return;
-	}
-
-	const kind = parseKindViewSlug(kindSegment);
-	if (kind === undefined) {
-		return;
-	}
-
-	return {
-		kind,
-		pageSlugs: slugs.slice(0, -1),
-	};
 }

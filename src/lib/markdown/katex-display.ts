@@ -2,7 +2,7 @@ import type { Root } from "hast";
 import { classList } from "./hast";
 
 const KATEX_DISPLAY_CLASS = "katex-display";
-export const KATEX_DISPLAY_SCROLL_CLASS = "katex-display-scroll";
+const KATEX_DISPLAY_SCROLL_CLASS = "katex-display-scroll";
 
 export function wrapKatexDisplays(tree: Root): void {
 	tree.children = wrapChildren(tree.children);

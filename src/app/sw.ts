@@ -39,7 +39,6 @@ const serwist = new Serwist({
 					pathname.startsWith("/og/") ||
 					pathname.startsWith("/llms")),
 		},
-		// defaultCache keeps only 4 fonts; KaTeX needs about 20 to render offline.
 		{
 			handler: new CacheFirst({
 				cacheName: "next-static-media",
@@ -54,8 +53,6 @@ const serwist = new Serwist({
 			matcher: ({ sameOrigin, url: { pathname } }) =>
 				sameOrigin && pathname.startsWith("/_next/static/media/"),
 		},
-		// defaultCache matches HTML on a request Content-Type that navigations
-		// never send, so pages would otherwise fall through to its catch-all.
 		{
 			handler: new NetworkFirst({
 				cacheName: PAGES_CACHE_NAME.html,

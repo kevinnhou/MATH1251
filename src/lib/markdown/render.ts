@@ -8,11 +8,9 @@ import { parseMarkdown } from "./parse";
 import { sanitizeHast } from "./sanitize";
 import type { MarkdownMode } from "./types";
 
-export { markdownToPlain } from "./plain";
+type MarkdownRenderMode = MarkdownMode;
 
-export type MarkdownRenderMode = MarkdownMode;
-
-export interface MarkdownRenderOptions {
+interface MarkdownRenderOptions {
 	mode?: MarkdownRenderMode;
 	query?: string;
 }
@@ -36,10 +34,6 @@ export function renderMarkdown(
 
 export function renderMarkdownInline(source: string, query?: string): string {
 	return renderMarkdown(source, { mode: "inline", query });
-}
-
-export function renderMarkdownBlock(source: string, query?: string): string {
-	return renderMarkdown(source, { mode: "block", query });
 }
 
 export function renderMarkdownTree(

@@ -8,25 +8,26 @@ export interface TerminalSurface {
 	output: TerminalOutput | null;
 }
 
-export function emptySurface(): TerminalSurface {
+export function draftSurface(input: string): TerminalSurface {
+	const typing = input.trim() !== "";
 	return {
-		completionsOpen: false,
+		completionsOpen: typing,
 		echo: "",
-		input: "",
-		mode: "browse",
+		input,
+		mode: typing ? "edit" : "browse",
 		output: null,
 	};
+}
+
+export function emptySurface(): TerminalSurface {
+	return draftSurface("");
 }
 
 export function paneTarget(surface: TerminalSurface): TerminalPane {
 	return surface.mode === "output" ? "output" : "tree";
 }
 
-export function showOutput(
-	_surface: TerminalSurface,
-	output: TerminalOutput,
-	echo = ""
-): TerminalSurface {
+export function showOutput(output: TerminalOutput, echo = ""): TerminalSurface {
 	return {
 		completionsOpen: false,
 		echo,
@@ -37,32 +38,10 @@ export function showOutput(
 }
 
 export function leaveOutput(
-	_surface: TerminalSurface,
+	surface: TerminalSurface,
 	seed = ""
 ): TerminalSurface {
-	return {
-		completionsOpen: seed.trim() !== "",
-		echo: "",
-		input: seed,
-		mode: seed.trim() === "" ? "browse" : "edit",
-		output: null,
-	};
-}
-
-export function setDraft(
-	surface: TerminalSurface,
-	input: string
-): TerminalSurface {
-	if (surface.mode === "output") {
-		return leaveOutput(surface, input);
-	}
-
-	return {
-		...surface,
-		completionsOpen: input.trim() !== "",
-		input,
-		mode: input.trim() === "" ? "browse" : "edit",
-	};
+	return surface.mode === "output" ? draftSurface(seed) : surface;
 }
 
 export function dismissLayer(surface: TerminalSurface): {

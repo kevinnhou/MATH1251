@@ -1,19 +1,8 @@
-import {
-	type Folder,
-	findPath,
-	type Item,
-	type Node,
-	type Root,
-} from "fumadocs-core/page-tree";
+import type { Folder, Item, Node, Root } from "fumadocs-core/page-tree";
 import type { KindView } from "./kind-view";
 import { getKindLabel } from "./kinds";
 
 const trailingSlashes = /\/+$/;
-
-interface TransformResult<T> {
-	changed: boolean;
-	node: T;
-}
 
 export function withActiveKindViewPages(
 	tree: Root,
@@ -27,10 +16,10 @@ export function withActiveKindViewPages(
 		return tree;
 	}
 
-	const next = withAllKindViewPages(
-		tree,
-		views.filter((view) => view.parentUrl === active.parentUrl)
-	);
+	const items = views
+		.filter((view) => view.parentUrl === active.parentUrl)
+		.map(createKindViewItem);
+	const next = insertKindViewPages(tree, active.parentUrl, items);
 	if (next === tree) {
 		return tree;
 	}
@@ -41,110 +30,43 @@ export function withActiveKindViewPages(
 	};
 }
 
-export function withAllKindViewPages(
-	tree: Root,
-	views: readonly KindView[]
-): Root {
-	const itemsByUrl = new Map<string, Item[]>();
-	for (const view of views) {
-		const items = itemsByUrl.get(view.parentUrl) ?? [];
-		if (items.some((item) => item.url === view.url)) {
-			continue;
-		}
-
-		items.push(createKindViewItem(view));
-		itemsByUrl.set(view.parentUrl, items);
-	}
-
-	if (itemsByUrl.size === 0) {
-		return tree;
-	}
-
-	const children = transformNodes(tree.children, itemsByUrl);
-	const fallback = tree.fallback
-		? transformRoot(tree.fallback, itemsByUrl)
-		: undefined;
-	if (!(children.changed || fallback?.changed)) {
-		return tree;
-	}
-
-	return {
-		...tree,
-		children: children.changed ? children.node : tree.children,
-		fallback: fallback?.changed ? fallback.node : tree.fallback,
-	};
-}
-
-function transformRoot(
+function insertKindViewPages(
 	root: Root,
-	itemsByUrl: Map<string, Item[]>
-): TransformResult<Root> {
-	const children = transformNodes(root.children, itemsByUrl);
-	if (!children.changed) {
-		return { changed: false, node: root };
+	parentUrl: string,
+	items: Item[]
+): Root {
+	const children = insertNodes(root.children, parentUrl, items);
+	const fallback = root.fallback
+		? insertKindViewPages(root.fallback, parentUrl, items)
+		: undefined;
+	if (children === root.children && fallback === root.fallback) {
+		return root;
 	}
 
-	return {
-		changed: true,
-		node: {
-			...root,
-			children: children.node,
-		},
-	};
+	return fallback ? { ...root, children, fallback } : { ...root, children };
 }
 
-function transformNodes(
-	nodes: Node[],
-	itemsByUrl: Map<string, Item[]>
-): TransformResult<Node[]> {
-	let changed = false;
-	const nextNodes = nodes.map((node) => {
-		const result = transformNode(node, itemsByUrl);
-		changed ||= result.changed;
-		return result.node;
-	});
-
-	return {
-		changed,
-		node: changed ? nextNodes : nodes,
-	};
+function insertNodes(nodes: Node[], parentUrl: string, items: Item[]): Node[] {
+	const next = nodes.map((node) => insertNode(node, parentUrl, items));
+	return next.every((node, index) => node === nodes[index]) ? nodes : next;
 }
 
-function transformNode(
-	node: Node,
-	itemsByUrl: Map<string, Item[]>
-): TransformResult<Node> {
+function insertNode(node: Node, parentUrl: string, items: Item[]): Node {
 	if (node.type === "separator") {
-		return { changed: false, node };
+		return node;
 	}
 
 	if (node.type === "page") {
-		const kindViewItems = itemsByUrl.get(node.url);
-		return kindViewItems
-			? {
-					changed: true,
-					node: createKindViewFolder(node, node.url, kindViewItems),
-				}
-			: { changed: false, node };
+		return node.url === parentUrl
+			? createKindViewFolder(node, parentUrl, items)
+			: node;
 	}
 
-	const indexUrl = node.index?.url;
-	const kindViewItems = indexUrl ? itemsByUrl.get(indexUrl) : undefined;
-	const withItems = kindViewItems
-		? addKindViewItems(node, indexUrl ?? "", kindViewItems)
-		: node;
-	const children = transformNodes(withItems.children, itemsByUrl);
-	const changed = withItems !== node || children.changed;
-	if (!changed) {
-		return { changed: false, node };
-	}
-
-	return {
-		changed: true,
-		node: children.changed
-			? { ...withItems, children: children.node }
-			: withItems,
-	};
+	const children = insertNodes(node.children, parentUrl, items);
+	const folder = children === node.children ? node : { ...node, children };
+	return node.index?.url === parentUrl
+		? addKindViewItems(folder, parentUrl, items)
+		: folder;
 }
 
 function createKindViewFolder(
@@ -203,19 +125,4 @@ function getKindViewFolderId(parentUrl: string): string {
 
 function normalisePathname(pathname: string): string {
 	return pathname.replace(trailingSlashes, "") || "/";
-}
-
-export function findKindViewFolder(
-	tree: Root,
-	parentUrl: string
-): Folder | undefined {
-	const isTarget = (node: Node) =>
-		node.type === "folder" &&
-		(node.$id === getKindViewFolderId(parentUrl) ||
-			node.index?.url === parentUrl);
-	const targetPath =
-		findPath(tree.children, isTarget) ??
-		(tree.fallback ? findPath(tree.fallback.children, isTarget) : null);
-	const last = targetPath?.at(-1);
-	return last?.type === "folder" ? last : undefined;
 }

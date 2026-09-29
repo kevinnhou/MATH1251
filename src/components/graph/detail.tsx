@@ -2,9 +2,13 @@
 
 import { useId } from "react";
 import { BlockHtml, InlineHtml } from "@/components/markdown/html";
-import { summariseGraphNode } from "@/lib/graph/node-summary";
-import { GRAPH_MODULE_VARS } from "@/lib/graph/theme";
-import { type GraphNode, isEnvNode, isPageNode } from "@/lib/graph/types";
+import {
+	type GraphNode,
+	isEnvNode,
+	isPageNode,
+	nodeKindLabel,
+} from "@/lib/graph/types";
+import { moduleColorVar } from "./canvas-paint";
 import { BracketAction } from "./chrome";
 import { isCurrentPageNode } from "./url";
 
@@ -20,36 +24,28 @@ export function GraphNodeDetail({
 	onOpen: (url: string) => void;
 }) {
 	const titleId = useId();
-	const summary = summariseGraphNode(node);
-	const accent = summary.module
-		? `var(${GRAPH_MODULE_VARS[summary.module]})`
-		: undefined;
-	const canOpen =
-		Boolean(summary.url) && !isCurrentPageNode(summary.url, currentPageUrl);
-	const kindLabel = summary.kindCode
-		? `${summary.kindCode} / ${summary.kindWord}`
-		: summary.type;
+	const canOpen = !isCurrentPageNode(node.id, currentPageUrl);
 
 	return (
 		<section
 			aria-labelledby={titleId}
 			className="flex max-h-48 w-full flex-col border-fd-foreground border-l-2 bg-fd-card text-fd-foreground"
-			style={{ borderLeftColor: accent }}
+			style={{ borderLeftColor: `var(${moduleColorVar(node.module)})` }}
 		>
 			<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-3 py-2.5">
 				<p className="font-mono text-[9px] text-fd-muted-foreground uppercase leading-none tracking-[0.16em]">
-					{kindLabel}
+					{nodeKindLabel(node)}
 				</p>
 				<p className="wrap-break-word text-[13px] leading-snug" id={titleId}>
 					<InlineHtml html={node.title.html} />
 				</p>
 				<DetailBody node={node} />
 			</div>
-			{onFocus || (canOpen && summary.url) ? (
+			{onFocus || canOpen ? (
 				<div className="flex shrink-0 justify-end gap-3 px-3 pb-2">
 					{onFocus ? <BracketAction label="FOCUS" onClick={onFocus} /> : null}
-					{canOpen && summary.url ? (
-						<BracketAction label="OPEN" onClick={() => onOpen(summary.url)} />
+					{canOpen ? (
+						<BracketAction label="OPEN" onClick={() => onOpen(node.id)} />
 					) : null}
 				</div>
 			) : null}

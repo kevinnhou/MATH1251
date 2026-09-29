@@ -4,10 +4,10 @@ import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import { SidebarIcon } from "lucide-react";
 import type { ComponentProps } from "react";
+import { TerminalLauncher } from "@/components/terminal/prompt";
 import { cn } from "@/lib/cn";
-import { TerminalPrompt } from "./prompt";
 
-export function TerminalHeader(props: ComponentProps<"header">) {
+export function Subnav(props: ComponentProps<"header">) {
 	const {
 		isNavTransparent,
 		props: { nav },
@@ -32,12 +32,12 @@ export function TerminalHeader(props: ComponentProps<"header">) {
 				<slots.navTitle className="inline-flex items-center gap-2.5 font-semibold" />
 			) : null}
 			<div className="flex-1">{nav?.children}</div>
-			<TerminalPrompt compact />
+			<TerminalLauncher />
 			{slots.sidebar ? (
 				<slots.sidebar.trigger
 					className={cn(
 						buttonVariants({
-							className: "p-2",
+							className: "rounded-md p-2",
 							color: "ghost",
 							size: "icon-sm",
 						})

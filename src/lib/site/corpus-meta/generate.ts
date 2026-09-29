@@ -10,7 +10,7 @@ import { glob } from "tinyglobby";
 import { visit } from "unist-util-visit";
 import { VFile } from "vfile";
 import { parse as parseYaml } from "yaml";
-import { parsePageEnvs } from "@/lib/math-env/page-envs";
+import type { PageEnvs } from "@/lib/math-env/page-envs";
 import type {
 	CorpusMeta,
 	CorpusMetaFile,
@@ -23,7 +23,7 @@ type CollectionItem = ReturnType<Core["getCollections"]>[number];
 export type DocsCollectionItem = Extract<CollectionItem, { type: "docs" }>;
 
 interface Captured {
-	envs: unknown;
+	envs: PageEnvs | undefined;
 	extractedReferences: { href: string }[];
 	structuredData: unknown;
 }
@@ -138,7 +138,7 @@ async function readPage(
 		);
 	}
 
-	const envs = parsePageEnvs(captured.envs);
+	const { envs } = captured;
 	if (!envs) {
 		throw new Error(`[corpus-meta] ${relativePath}: invalid envs`);
 	}

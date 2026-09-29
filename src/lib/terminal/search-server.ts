@@ -1,11 +1,12 @@
+import type { PageCatalog } from "@/lib/course/catalog";
+import { findPageByUrl } from "@/lib/course/catalog";
 import {
 	compileMarkdownFragment,
 	highlightMarkdownFragment,
 } from "@/lib/markdown/fragment";
 import { literalInlineFragment } from "@/lib/markdown/types";
-import { findPageByUrl } from "./pages";
 import { SEARCH_LIMIT } from "./search";
-import type { PageCatalog, SearchDocument, SearchHit } from "./types";
+import type { SearchDocument, SearchHit } from "./types";
 
 export function readSearchLimit(url: URL): number {
 	const raw = url.searchParams.get("limit");

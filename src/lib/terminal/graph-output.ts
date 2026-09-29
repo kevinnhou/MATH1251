@@ -1,6 +1,5 @@
-import { summariseGraphNode } from "@/lib/graph/node-summary";
 import type { GraphEffect } from "@/lib/graph/session";
-import type { GraphNode } from "@/lib/graph/types";
+import { type GraphNode, isPageNode, nodeKindLabel } from "@/lib/graph/types";
 import {
 	errorOutput,
 	groupedLinks,
@@ -10,16 +9,14 @@ import {
 import type { TerminalOutput } from "./types";
 
 export function inspectNodeOutput(node: GraphNode): TerminalOutput {
-	const summary = summariseGraphNode(node);
+	const preview = isPageNode(node) ? node.description : node.preview;
 	return inspectOutput({
-		actionUrl: summary.url,
-		message: summary.preview,
-		nodeId: summary.id,
-		preview: summary.previewRendered,
-		title: summary.title,
-		type: summary.kindCode
-			? `${summary.kindCode} / ${summary.kindWord}`
-			: summary.type,
+		actionUrl: node.id,
+		message: preview?.plain ?? (isPageNode(node) ? node.id : node.kind),
+		nodeId: node.id,
+		preview,
+		title: node.title,
+		type: nodeKindLabel(node),
 	});
 }
 

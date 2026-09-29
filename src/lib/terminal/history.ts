@@ -109,6 +109,6 @@ export function saveHistory(entries: string[]) {
 			JSON.stringify(entries.slice(-TERMINAL_HISTORY_LIMIT))
 		);
 	} catch {
-		// Ignore quota and private-mode failures.
+		//
 	}
 }

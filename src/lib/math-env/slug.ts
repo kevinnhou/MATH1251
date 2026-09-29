@@ -1,6 +1,6 @@
 import type { ParseResult } from "@/lib/result";
 
-export const TENET_SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
+const TENET_SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 export function parseTenetSlug(value: string): ParseResult<string> {
 	const slug = value.trim();

@@ -4,14 +4,6 @@ import { renderMarkdown, renderMarkdownTree } from "./render";
 import { truncateMarkdownTree } from "./truncate";
 import type { MarkdownFragment, MarkdownMode, RenderedMarkdown } from "./types";
 
-export type {
-	InlineLabel,
-	MarkdownFragment,
-	MarkdownMode,
-	RenderedMarkdown,
-} from "./types";
-export { literalInlineFragment, plainInlineLabel } from "./types";
-
 export function compileMarkdownFragment<M extends MarkdownMode>(
 	source: string,
 	mode: M

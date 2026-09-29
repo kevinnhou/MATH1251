@@ -34,8 +34,27 @@ function withSeparatorLabel(node: Separator): Separator {
 	return {
 		...node,
 		...labelId(node.$id, node.name, "sep"),
-		name: markdownLabelNode(node.name),
+		name: separatorLabelNode(node.name),
 	};
+}
+
+const BRACKETED = /^\[(.+)\]$/;
+
+function separatorLabelNode(
+	value: ReactNode | undefined
+): ReactNode | undefined {
+	const inner = typeof value === "string" ? BRACKETED.exec(value)?.[1] : null;
+	if (!inner) {
+		return markdownLabelNode(value);
+	}
+
+	return (
+		<>
+			<span className="font-bold tracking-normal">[</span>
+			<span className="me-[-0.16em]">{markdownLabelNode(inner)}</span>
+			<span className="font-bold tracking-normal">]</span>
+		</>
+	);
 }
 
 function withPageLabel(node: Item): Item {

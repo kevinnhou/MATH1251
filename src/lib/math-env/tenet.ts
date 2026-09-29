@@ -25,7 +25,6 @@ export interface Tenet {
 	pageUrl: string;
 	see: string[];
 	slug: string;
-	statement?: string;
 	statementView?: StatementView;
 	title: MarkdownFragment<"inline">;
 }
@@ -35,17 +34,16 @@ export interface TenetIndex {
 	citedBy: Map<string, ResolvedRef[]>;
 }
 
-export interface TenetSourcePage {
+interface TenetSourcePage {
 	envs: PageEnvs;
-	title: string;
-	url: string;
+	page: { data: { title: string }; url: string };
 }
 
 export function getTenetHref(tenet: Tenet): string {
 	return `${tenet.pageUrl}#${tenet.occurrenceId}`;
 }
 
-export function toResolvedRef(tenet: Tenet): ResolvedRef {
+function toResolvedRef(tenet: Tenet): ResolvedRef {
 	return {
 		href: getTenetHref(tenet),
 		kind: tenet.kind,
@@ -73,8 +71,8 @@ export function createTenetIndex(
 function registerTenets(pages: readonly TenetSourcePage[]): Map<string, Tenet> {
 	const bySlug = new Map<string, Tenet>();
 
-	for (const page of pages) {
-		for (const entry of page.envs.entries) {
+	for (const { envs, page } of pages) {
+		for (const entry of envs.entries) {
 			const { slug } = entry;
 			if (slug === undefined) {
 				continue;
@@ -84,7 +82,7 @@ function registerTenets(pages: readonly TenetSourcePage[]): Map<string, Tenet> {
 				throw new Error(`Tenet slug "${slug}" is defined more than once.`);
 			}
 
-			bySlug.set(slug, toTenet(page, { ...entry, slug }));
+			bySlug.set(slug, toTenet(page.url, { ...entry, slug }));
 		}
 	}
 
@@ -92,23 +90,20 @@ function registerTenets(pages: readonly TenetSourcePage[]): Map<string, Tenet> {
 }
 
 function toTenet(
-	page: TenetSourcePage,
+	pageUrl: string,
 	entry: EnvOccurrence & { slug: string }
 ): Tenet {
 	return {
 		kind: entry.kind,
 		occurrenceId: entry.id,
 		of: entry.of,
-		pageUrl: page.url,
+		pageUrl,
 		see: entry.see,
 		slug: entry.slug,
 		title: compileTitle(entry.title, entry.slug),
 		...(entry.difficulty ? { difficulty: entry.difficulty } : {}),
 		...(entry.statement
-			? {
-					statement: entry.statement,
-					statementView: compileStatement(entry.statement),
-				}
+			? { statementView: compileStatement(entry.statement) }
 			: {}),
 	};
 }
@@ -118,8 +113,8 @@ function collectCitations(
 ): Map<string, ResolvedRef[]> {
 	const citedBy = new Map<string, ResolvedRef[]>();
 
-	for (const page of pages) {
-		for (const entry of page.envs.entries) {
+	for (const { envs, page } of pages) {
+		for (const entry of envs.entries) {
 			addCitations(citedBy, [...entry.of, ...entry.see], {
 				href: `${page.url}#${entry.id}`,
 				kind: entry.kind,
@@ -130,11 +125,11 @@ function collectCitations(
 			});
 		}
 
-		for (const recall of page.envs.recalls) {
+		for (const recall of envs.recalls) {
 			addCitations(citedBy, [recall.of], {
 				href: `${page.url}#${recall.id}`,
 				kind: "recall",
-				title: compileMarkdownFragment(page.title, "inline"),
+				title: compileMarkdownFragment(page.data.title, "inline"),
 			});
 		}
 	}

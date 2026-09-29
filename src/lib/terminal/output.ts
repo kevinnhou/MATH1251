@@ -1,14 +1,8 @@
+import type { CatalogPage } from "@/lib/course/catalog";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 import { plainInlineLabel } from "@/lib/markdown/types";
-import { type GraphModule, STRAND_LABELS } from "@/lib/site/strands";
 import { isSafeInternalUrl } from "@/lib/site/url";
-import type {
-	CatalogPage,
-	LinkGroup,
-	OutputLink,
-	SearchHit,
-	TerminalOutput,
-} from "./types";
+import type { LinkGroup, OutputLink, SearchHit, TerminalOutput } from "./types";
 
 export function errorOutput(message: string): TerminalOutput {
 	return { kind: "error", message };
@@ -69,10 +63,7 @@ export function groupedLinks(
 	};
 }
 
-export function pageLinkGroup(
-	heading: string,
-	pages: CatalogPage[]
-): LinkGroup {
+function pageLinkGroup(heading: string, pages: CatalogPage[]): LinkGroup {
 	return {
 		heading,
 		items: pages.map(
@@ -95,24 +86,6 @@ export function ambiguousOutput(
 	});
 }
 
-export function strandGroups(pages: CatalogPage[]): LinkGroup[] {
-	const order: GraphModule[] = ["core", "algebra", "calculus"];
-	const groups: LinkGroup[] = [];
-	for (const strand of order) {
-		const items = pages.filter((page) => page.strand === strand);
-		if (items.length > 0) {
-			groups.push(pageLinkGroup(STRAND_LABELS[strand], items));
-		}
-	}
-
-	const unstranded = pages.filter((page) => page.strand === undefined);
-	if (unstranded.length > 0) {
-		groups.push(pageLinkGroup("other", unstranded));
-	}
-
-	return groups;
-}
-
 export function searchHitsOutput(
 	query: string,
 	hits: SearchHit[]
@@ -124,43 +97,37 @@ export function searchHitsOutput(
 		message:
 			safe.length === 0
 				? `No search results for “${query}”.`
-				: `${safe.length} result${safe.length === 1 ? "" : "s"}.`,
+				: `${plural(safe.length, "result")}.`,
 		query,
 	};
 }
 
-export function announce(output: TerminalOutput, echo?: string): string {
-	if (
-		output.kind === "error" ||
-		output.kind === "usage" ||
-		output.kind === "message"
-	) {
-		return output.message;
-	}
+export function plural(count: number, noun: string): string {
+	return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
 
-	if (output.kind === "search-results") {
-		return output.message;
+export function announce(output: TerminalOutput): string {
+	switch (output.kind) {
+		case "error":
+		case "loading":
+		case "message":
+		case "search-results":
+		case "usage":
+			return output.message;
+		case "link-list": {
+			const count = output.groups.reduce(
+				(sum, group) => sum + group.items.length,
+				0
+			);
+			return output.message ?? `${count} pages`;
+		}
+		case "markdown":
+			return `Markdown for ${output.title}`;
+		case "inspect":
+			return plainInlineLabel(output.title);
+		default: {
+			const _exhaustive: never = output;
+			return _exhaustive;
+		}
 	}
-
-	if (output.kind === "link-list") {
-		const count = output.groups.reduce(
-			(sum, group) => sum + group.items.length,
-			0
-		);
-		return output.message ?? `${count} pages`;
-	}
-
-	if (output.kind === "markdown") {
-		return `Markdown for ${output.title}`;
-	}
-
-	if (output.kind === "inspect") {
-		return plainInlineLabel(output.title);
-	}
-
-	if (output.kind === "loading") {
-		return output.message;
-	}
-
-	return echo ?? "Command finished.";
 }

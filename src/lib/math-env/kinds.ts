@@ -8,9 +8,9 @@ export const MATH_ENV_STYLES = ["work", "spec", "theory", "proof"] as const;
 
 export type MathEnvStyle = (typeof MATH_ENV_STYLES)[number];
 
-export type GraphMaterialisation = "always" | "if-cited" | "never";
+type GraphMaterialisation = "always" | "if-cited" | "never";
 
-export interface MathEnvKindConfig {
+interface MathEnvKindConfig {
 	code: string;
 	graph: GraphMaterialisation;
 	label: string;
@@ -112,10 +112,6 @@ export function graphMaterialisation(kind: MathEnvKind): GraphMaterialisation {
 	return MATH_ENV_KINDS[kind].graph;
 }
 
-export function isMathEnvKind(value: string): value is MathEnvKind {
-	return Object.hasOwn(MATH_ENV_KINDS, value);
-}
-
 export function getKindLabel(kind: MathEnvKind, plural = false): string {
 	const config = getMathEnvConfig(kind);
 	return plural ? config.plural : config.label;
@@ -125,15 +121,7 @@ export function getKindViewSlug(kind: MathEnvKind): string {
 	return getKindLabel(kind, true).toLowerCase();
 }
 
-export function parseKindViewSlug(slug: string): MathEnvKind | undefined {
-	for (const kind of Object.keys(MATH_ENV_KINDS) as MathEnvKind[]) {
-		if (getKindViewSlug(kind) === slug) {
-			return kind;
-		}
-	}
-}
-
-export function isExampleDifficulty(value: string): value is ExampleDifficulty {
+function isExampleDifficulty(value: string): value is ExampleDifficulty {
 	return EXAMPLE_DIFFICULTIES.some((difficulty) => difficulty === value);
 }
 
