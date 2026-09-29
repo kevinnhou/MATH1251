@@ -1,12 +1,8 @@
 import { Logomark } from "@/components/site/logomark";
-import { markdownToPlain } from "@/lib/markdown";
-import {
-	getKindLabel,
-	MATH_ENV_KINDS,
-	type MathEnvKind,
-} from "@/lib/math-env/kinds";
-import type { PageEnvs } from "@/lib/math-env/page-envs";
-import { type GraphModule, getStrand } from "@/lib/site/strands";
+import type { GraphModule } from "@/lib/course/strands";
+import { MATH_ENV_KINDS } from "@/lib/math-env/kinds";
+import type { ResolvedDocs } from "@/lib/site/corpus";
+import { describeDocsPage } from "@/lib/site/docs-page";
 
 const ACCENT: Record<GraphModule, string> = {
 	algebra: "#ffadad",
@@ -15,7 +11,6 @@ const ACCENT: Record<GraphModule, string> = {
 };
 
 const FALLBACK_ACCENT = ACCENT.core;
-const MATH_ENV_KIND_ORDER = Object.keys(MATH_ENV_KINDS) as MathEnvKind[];
 
 function BracketMark({ value }: { value: string }) {
 	return (
@@ -45,21 +40,12 @@ function BracketMark({ value }: { value: string }) {
 	);
 }
 
-export interface OgPageData {
-	data: {
-		description?: string;
-		ideas?: string[];
-		title: string;
-	};
-	slugs: string[];
-}
-
-export interface OgCensusItem {
+interface OgCensusItem {
 	code: string;
 	count: number;
 }
 
-export interface OgImageProps {
+interface OgImageProps {
 	accent: string;
 	census: OgCensusItem[];
 	chip?: string;
@@ -68,43 +54,21 @@ export interface OgImageProps {
 	title: string;
 }
 
-export function toOgImageProps(resolved: {
-	chip?: string;
-	envs: PageEnvs;
-	page: OgPageData;
-	viewKind?: MathEnvKind;
-}): OgImageProps {
-	const { page, viewKind } = resolved;
-	const title = markdownToPlain(page.data.title).trim();
-	const description = page.data.description
-		? markdownToPlain(page.data.description).trim()
-		: undefined;
-	const strand = getStrand(page.slugs);
-	const { entries } = resolved.envs;
-	const kinds = viewKind === undefined ? MATH_ENV_KIND_ORDER : [viewKind];
+export function toOgImageProps(resolved: ResolvedDocs): OgImageProps {
+	const { envs, module: strand } = resolved.source;
+	const { kinds, ...text } = describeDocsPage(resolved).image;
 
 	return {
+		...text,
 		accent: strand === undefined ? FALLBACK_ACCENT : ACCENT[strand],
 		census: kinds.flatMap((kind) => {
-			const count = entries.filter((entry) => entry.kind === kind).length;
+			const count = envs.entries.filter((entry) => entry.kind === kind).length;
 			if (count === 0) {
 				return [];
 			}
 
 			return [{ code: MATH_ENV_KINDS[kind].code, count }];
 		}),
-		chip:
-			resolved.chip ??
-			(viewKind === undefined
-				? strand?.toUpperCase()
-				: getKindLabel(viewKind, true).toUpperCase()),
-		description:
-			description && description.toLowerCase() !== title.toLowerCase()
-				? description
-				: undefined,
-		ideas:
-			viewKind === undefined ? (page.data.ideas ?? []).filter(Boolean) : [],
-		title,
 	};
 }
 

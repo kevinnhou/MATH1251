@@ -37,7 +37,6 @@ export default defineConfig({
 			remarkMdxMermaid,
 			remarkMathEnv,
 		],
-		valueToExport: ["envs"],
 	},
 	plugins: [corpusMeta()],
 });

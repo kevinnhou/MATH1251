@@ -42,21 +42,24 @@ export function SidebarSearchTree({
 	return (
 		<>
 			<TreeSeparator>{`${results.length} / ${query}`}</TreeSeparator>
-			{groups.map((lines, groupIndex) => (
-				<div
-					className="mt-2 flex flex-col first-of-type:mt-0"
-					data-tree-group=""
-					key={lines[0]?.key ?? groupIndex}
-				>
-					{lines.map((line) => (
-						<SearchLineRow
-							active={pathname === line.item?.url}
-							key={line.key}
-							line={line}
-						/>
-					))}
-				</div>
-			))}
+			{groups.map((lines, groupIndex) => {
+				const first = lines.find((line) => line.item);
+				return (
+					<div
+						className="mt-2 flex flex-col first-of-type:mt-0"
+						key={lines[0]?.key ?? groupIndex}
+					>
+						{lines.map((line) => (
+							<SearchLineRow
+								active={pathname === line.item?.url}
+								key={line.key}
+								line={line}
+								section={line === first}
+							/>
+						))}
+					</div>
+				);
+			})}
 		</>
 	);
 }
@@ -64,9 +67,11 @@ export function SidebarSearchTree({
 function SearchLineRow({
 	active,
 	line,
+	section,
 }: {
 	active: boolean;
 	line: SearchLine;
+	section: boolean;
 }) {
 	const content = (
 		<>
@@ -100,7 +105,7 @@ function SearchLineRow({
 
 	if (!line.item) {
 		return (
-			<TreeRow as="label" header>
+			<TreeRow as="div" header>
 				{content}
 			</TreeRow>
 		);
@@ -111,6 +116,7 @@ function SearchLineRow({
 			active={active}
 			className="data-[active=true]:before:content-none"
 			data-hit-url={line.item.url}
+			data-tree-section={section || undefined}
 			external={line.item.external}
 			header={line.folder}
 			href={line.item.url}

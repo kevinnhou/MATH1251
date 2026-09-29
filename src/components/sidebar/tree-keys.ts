@@ -3,8 +3,10 @@ import { isModifiedKey } from "@/lib/client/actions";
 export const TREE = {
 	folder: "[data-tree-folder]",
 	headerRow: ":scope > [data-tree-header] [data-tree-row]",
+	hit: (url: string) => `[data-hit-url="${CSS.escape(url)}"]`,
 	root: "[data-tree-root]",
 	row: "[data-tree-row]",
+	section: "[data-tree-section]",
 	toggle: ":scope > [data-tree-header] [data-tree-toggle]",
 } as const;
 
@@ -107,40 +109,12 @@ function visibleRows(scope: Element): HTMLElement[] {
 	);
 }
 
-export function sectionHeader(
-	root: HTMLElement | null,
-	index: number
-): HTMLElement | undefined {
-	if (!root) {
-		return;
-	}
-
-	const groups = root.querySelectorAll<HTMLElement>("[data-tree-group]");
-	if (groups.length > 0) {
-		return groups[index]?.querySelector<HTMLElement>(TREE.row) ?? undefined;
-	}
-
-	const sections = [...root.querySelectorAll<HTMLElement>(TREE.folder)].filter(
-		(folder) => !folder.parentElement?.closest(TREE.folder)
-	);
-	if (sections.length > 0) {
-		return (
-			sections[index]?.querySelector<HTMLElement>(TREE.headerRow) ?? undefined
-		);
-	}
-
-	const rows = [...root.querySelectorAll<HTMLElement>(TREE.row)].filter(
-		(row) => row.dataset.treeUp === undefined && !row.closest(TREE.folder)
-	);
-	return rows[index];
+export function treeRoot(): HTMLElement | null {
+	return document.querySelector<HTMLElement>(TREE.root);
 }
 
-export function visibleTreeRoot(): HTMLElement | null {
-	for (const root of document.querySelectorAll<HTMLElement>(TREE.root)) {
-		if (root.checkVisibility()) {
-			return root;
-		}
-	}
-
-	return document.querySelector<HTMLElement>(TREE.root);
+export function sectionHeader(index: number): HTMLElement | undefined {
+	return (
+		treeRoot()?.querySelectorAll<HTMLElement>(TREE.section)[index] ?? undefined
+	);
 }

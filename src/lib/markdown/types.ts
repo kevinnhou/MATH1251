@@ -37,6 +37,6 @@ export function literalInlineFragment(
 	};
 }
 
-export function escapeHtml(value: string): string {
+function escapeHtml(value: string): string {
 	return value.replace(HTML_ESCAPE, (char) => HTML_ESCAPES[char] ?? char);
 }

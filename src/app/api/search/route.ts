@@ -1,5 +1,5 @@
 import { createFromSource } from "fumadocs-core/search/server";
-import { compileCorpus } from "@/lib/site/corpus";
+import { getCorpus } from "@/lib/site/corpus";
 import { source } from "@/lib/site/source";
 import { isTerminalSearchRequest } from "@/lib/terminal/search";
 import {
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 	});
 	return Response.json(
 		projectSearchHits(results, {
-			catalog: compileCorpus().catalog,
+			catalog: getCorpus().catalog,
 			query,
 		})
 	);

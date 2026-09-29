@@ -1,5 +1,29 @@
+import type { MarkdownFragment } from "@/lib/markdown/types";
 import { literalInlineFragment } from "@/lib/markdown/types";
-import type { CatalogPage, CurrentPages, PageCatalog } from "./types";
+import { homeRoute } from "@/lib/site/config";
+import type { GraphModule } from "./strands";
+
+export interface CatalogPage {
+	aliases: string[];
+	breadcrumbs: string[];
+	description?: MarkdownFragment<"inline">;
+	kindView: boolean;
+	markdownUrl: string;
+	parentUrl: string | null;
+	strand?: GraphModule;
+	title: MarkdownFragment<"inline">;
+	url: string;
+}
+
+export interface PageCatalog {
+	pages: CatalogPage[];
+}
+
+export interface CurrentPages {
+	inCatalog: boolean;
+	route: CatalogPage;
+	source: CatalogPage;
+}
 
 const TRAILING_SLASHES = /\/+$/;
 
@@ -13,6 +37,10 @@ export function parentPath(url: string): string | null {
 	return trimmed.slice(0, slash);
 }
 
+export function withoutHash(url: string): string {
+	return url.split("#")[0] ?? url;
+}
+
 export function findPageByUrl(
 	catalog: PageCatalog,
 	url: string
@@ -21,8 +49,8 @@ export function findPageByUrl(
 	return catalog.pages.find((page) => page.url === normalised);
 }
 
-export function placeholderPage(url: string): CatalogPage {
-	const normalised = normalisePath(url.split("#")[0] ?? url);
+function placeholderPage(url: string): CatalogPage {
+	const normalised = normalisePath(withoutHash(url));
 	return {
 		aliases: [],
 		breadcrumbs: normalised.split("/").filter(Boolean),
@@ -38,7 +66,7 @@ export function currentPagesFromUrl(
 	catalog: PageCatalog,
 	url: string
 ): CurrentPages {
-	const hashless = url.split("#")[0] ?? url;
+	const hashless = withoutHash(url);
 	const route = findPageByUrl(catalog, hashless);
 	if (!route) {
 		const placeholder = placeholderPage(hashless);
@@ -74,8 +102,8 @@ export function normalisePath(url: string): string {
 	const withoutDot = trimmed.startsWith("./") ? trimmed.slice(2) : trimmed;
 	const withSlash = withoutDot.startsWith("/") ? withoutDot : `/${withoutDot}`;
 	if (withSlash === "/") {
-		return "/core";
+		return homeRoute;
 	}
 
-	return withSlash.replace(TRAILING_SLASHES, "") || "/core";
+	return withSlash.replace(TRAILING_SLASHES, "") || homeRoute;
 }

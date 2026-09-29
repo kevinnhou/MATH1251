@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { renderMarkdownInline } from "@/lib/markdown";
+import { renderMarkdownInline } from "@/lib/markdown/render";
 
 export function MarkdownLabel({
 	className,

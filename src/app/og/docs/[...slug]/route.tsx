@@ -1,12 +1,7 @@
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
 import { OgImage, toOgImageProps } from "@/lib/og";
-import { compilePageIndex } from "@/lib/site/corpus";
-import { resolveDocsPage } from "@/lib/site/docs-page";
-import {
-	appendDocsRouteSuffix,
-	getPrerenderedDocsSlugs,
-} from "@/lib/site/docs-routes";
+import { docsStaticParams, resolveDocsPage } from "@/lib/site/corpus";
 
 export const revalidate = false;
 export const dynamicParams = true;
@@ -25,25 +20,12 @@ export async function GET(
 		notFound();
 	}
 
-	return new ImageResponse(
-		<OgImage
-			{...toOgImageProps({
-				chip: resolved.kind === "kind-view" ? resolved.view.chip : undefined,
-				envs: resolved.source.envs,
-				page: resolved.source.page,
-				viewKind:
-					resolved.kind === "kind-view" ? resolved.view.kind : undefined,
-			})}
-		/>,
-		{
-			height: 630,
-			width: 1200,
-		}
-	);
+	return new ImageResponse(<OgImage {...toOgImageProps(resolved)} />, {
+		height: 630,
+		width: 1200,
+	});
 }
 
 export function generateStaticParams() {
-	return appendDocsRouteSuffix(getPrerenderedDocsSlugs(compilePageIndex()), [
-		"image.png",
-	]).map((slug) => ({ slug }));
+	return docsStaticParams("image.png");
 }

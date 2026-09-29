@@ -4,23 +4,29 @@
 ## Layout
 
 ```
-src/lib/terminal/          terminal logic
-  commands.ts              commands, completion
-  dirs.ts                  directories, working directory, path resolution
+src/lib/terminal/          terminal logic (pure, no React)
+  state.ts                 the reducer: every state transition
+  commands.ts              command registry, completion
+  dirs.ts                  directories and path resolution
+  location.ts              working directory and tree view transitions
   graph-command.ts         the `graph` command
   graph-output.ts          graph node > inspect output
   parse.ts                 tokenising, applying completions
   resolve.ts               page lookup and ranking for arguments
-  registry.ts              command registry (names, fallback)
-  mode.ts                  surface state machine
-  history.ts               history cursor and localStorage
+  mode.ts                  surface helpers (draft, output, dismiss)
+  history.ts               history cursor and sessionStorage
   output.ts                output constructors
   search.ts                client search request and hit grouping
   search-server.ts         search results > terminal hits (API route)
-  catalog.ts, pages.ts     page catalog built from the corpus
   types.ts
 
+src/lib/course/catalog.ts  page catalog types and URL lookup
+src/lib/site/corpus.ts     builds the catalog from the corpus
+
 src/components/terminal/   terminal UI
+  provider.tsx             owns the state; contexts, window listeners
+  keys.ts                  prompt and window keys > actions
+  run.ts                   runs a line: history, abort, result
 
 src/components/sidebar/    terminal screen
 
@@ -52,15 +58,37 @@ For `md` and the assistants, `.` means the current page. Page arguments
 resolve by URL, title or alias (`resolve.ts`); ambiguous matches print a pick
 list. `open` tries the working directory first.
 
-Each command is a `CommandDescriptor` in the registry: `names`, `execute`,
-optional `complete` and `usage`. The search descriptor has no names and is
-the registry's fallback. `execute` returns a `CommandResult` (output, plus
-optional `navigate`, `closeDrawer`, `cwd`, `view` and `announce`) or a promise of one; async commands
-show their `loading` message first and are cancelled by the next command.
+Each command is a `CommandDescriptor`: `names`, `execute`, optional
+`complete` and `usage`. The registry is built once when `commands.ts` loads.
+The search descriptor has no names and is the registry's fallback, so every
+non-blank line has a command. `execute` returns a `CommandResult` (output,
+plus optional `navigate`, `closeDrawer`, `cwd`, `view` and `announce`) or a
+promise of one; async commands show their `loading` message first, and the
+next command aborts them. A result that arrives after its signal was aborted
+is dropped, so commands need not check for aborts themselves. `cwd` and
+`view` patch the location: an omitted field is left alone
+(`applyCommandLocation`).
 
 ## State
 
-`TerminalSurface` (`mode.ts`) is the single source of truth:
+All terminal state is one `TerminalState`, changed only by
+`terminalReducer` (`state.ts`) through `useReducer` in the provider:
+
+| Field | Holds |
+|---|---|
+| `surface` | `TerminalSurface` (`mode.ts`): what the prompt and output pane show |
+| `location` | `TerminalLocation` (see [Directories](#directories)): what the tree shows |
+| `history` | entries and the ↑/↓ cursor |
+| `cycle` | the completion list frozen while Tab/↑/↓ cycle it, and the selected index |
+| `pendingNavigation` | where the shown command navigated to |
+| `route` | the route the state last followed |
+| `hadOutput` | whether output has ever shown (`data-terminal-had-output`) |
+
+The reducer is pure: side effects (focus, `router.push`, aborts, the live
+region) stay in the provider, `keys.ts` and `run.ts`. Key handlers read the
+state snapshot to decide (for example whether Esc is consumed) and dispatch
+actions for every change. Window listeners subscribe once and read live
+state through `useEffectEvent`, so nothing mirrors state into refs.
 
 | mode | means | sidebar shows |
 |---|---|---|
@@ -68,15 +96,19 @@ show their `loading` message first and are cancelled by the next command.
 | `edit` | reader is typing; completions may be open | tree |
 | `output` | a command printed something | output |
 
-`setDraft`, `showOutput`, `leaveOutput` and `dismissLayer` are the only
-transitions. Escape peels one layer at a time: completions, then output,
-then edit mode (the draft text stays), then focus.
+The reducer builds surfaces with `draftSurface`, `showOutput`, `leaveOutput`
+and `dismissLayer`. Escape peels one layer at a time: completions, then
+output, then edit mode (the draft text stays), then focus.
+
+Editing the draft (typing, pasting, walking history) drops `cycle`, so the
+next Tab completes the new text.
 
 Navigating clears the surface, unless the navigation came from the command
-being shown (`retainUrlRef`), so `open` can print its result on the new page.
+being shown (`pendingNavigation`), so `open` can print its result on the new
+page.
 
-History keeps the last 50 commands in `localStorage`
-(`terminal-history`). ↑/↓ on an empty prompt walk it; with text,
+History keeps the last 50 commands in `sessionStorage`
+(`math1251-terminal-history`), so it lasts as long as the tab. ↑/↓ on an empty prompt walk it; with text,
 they cycle completions (at most 8).
 
 ## Directories
@@ -91,12 +123,14 @@ pages are not directories.
 - `cwd`: the working directory. The tree shows it and the prompt shows its
   name (`[eigenvalues/ …]`). It starts at the current page's root.
 - `view`: what the tree shows instead, a `TreeView`:
-  - `list`: a directory from `ls`. Cleared on navigation.
-  - `search`: the pages a search matched. Kept across navigation so the
-    reader can step through results.
+  - `list`: a directory from `ls`. Cleared whenever `cwd` changes or the
+    route does.
+  - `search`: the pages a search matched. Global, so it is kept across
+    navigation and `switch` while the reader steps through results.
 
   Either is cleared by focusing the prompt, Esc (once nothing else is left
-  to dismiss), `clear`, `cd` or `ls`.
+  to dismiss), `clear`, `cd` or `ls`. `moveTo` in `location.ts` is the one rule
+  for what survives a move, shared by commands and route changes.
 
 Roots are separate trees. `cd` resolves paths (`../vector-spaces`, slugs or
 titles) within the current root and stops at its top; other roots are only
@@ -130,12 +164,12 @@ so typing re-renders only the prompt:
 
 | Hook | Changes | Holds | Used by |
 |---|---|---|---|
-| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
+| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `catalog`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
 | `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `view` | sidebar, panes, tree, prompt, output pane |
 | `useTerminal()` | every keystroke | everything above, plus surface, completions, history focus | `TerminalPrompt` only |
 
 Keep new consumers on the narrowest hook. Subscribing the sidebar to
-`useTerminal()` re-renders both page trees on every keystroke.
+`useTerminal()` re-renders the page tree on every keystroke.
 
 ## Sidebar
 
@@ -164,7 +198,13 @@ holding the current page, folds to just the active chain
 (`[data-tree-pinned]`). One `useRailMarks` pass per tree positions the
 current-page bar on every rail.
 
-The desktop aside and the mobile drawer each render their own tree.
+`SidebarPanes` appears in both the desktop aside and the mobile drawer, but
+Fumadocs mounts only the shell for the current `mode`, so there is one tree
+and one output pane at a time.
+
+Rows that the digit hotkeys target carry `[data-tree-section]`, set at
+render: in a directory listing, its subdirectories (from the catalog), or
+every entry when it has none; in a search, the first result of each group.
 
 ## Keys
 
@@ -191,9 +231,9 @@ page scrolling.
 
 ## Performance
 
-- Two window `keydown` listeners (terminal, sidebar), each subscribed once
-  and reading live state through refs. Non-matching keys return after a few
-  comparisons.
+- Two window `keydown` listeners (terminal, sidebar), each subscribed once;
+  the terminal's reads live state through `useEffectEvent`. Non-matching
+  keys return after a few comparisons.
 - Section hotkeys only touch the DOM on a digit press.
 - The directory index is built once per catalog (`WeakMap`); the tree's
   scoped nodes are memoised on root and directory.
@@ -207,8 +247,9 @@ page scrolling.
 ## Adding a command
 
 1. Write a `CommandDescriptor` (see `command()` in `commands.ts`).
-2. Add it to `coreDescriptors()`, or `registerCommand()` at runtime; the
-   registry throws on duplicate names.
+2. Add it to `coreDescriptors()`, which is the whole registry (`help` lists
+   it too); `createRegistry` throws on duplicate names or a missing search
+   fallback.
 3. Return output through the constructors in `output.ts`. A new output
    kind needs a type in `types.ts`, a case in `OutputBody`, and a line in
    `announce()`.

@@ -1,4 +1,4 @@
-export const CACHE_LIMIT = 512;
+const CACHE_LIMIT = 512;
 
 export function remember<T>(
 	cache: Map<string, T>,

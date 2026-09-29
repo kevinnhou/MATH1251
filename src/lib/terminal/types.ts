@@ -1,40 +1,18 @@
-import type { GraphRuntime } from "@/lib/graph/runtime";
 import type {
-	InlineLabel,
-	MarkdownFragment,
-	RenderedMarkdown,
-} from "@/lib/markdown/types";
-import type { GraphModule } from "@/lib/site/strands";
+	CatalogPage,
+	CurrentPages,
+	PageCatalog,
+} from "@/lib/course/catalog";
+import type { GraphRuntime } from "@/lib/graph/runtime";
+import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 
 export const TERMINAL_HISTORY_LIMIT = 50;
-export const TERMINAL_HISTORY_KEY = "terminal-history";
+export const TERMINAL_HISTORY_KEY = "math1251-terminal-history";
 export const TERMINAL_COMPLETION_LIMIT = 8;
 
 export type TerminalMode = "browse" | "edit" | "output";
 
 export type TerminalPane = "tree" | "output";
-
-export interface CatalogPage {
-	aliases: string[];
-	breadcrumbs: string[];
-	description?: MarkdownFragment<"inline">;
-	kindView: boolean;
-	markdownUrl: string;
-	parentUrl: string | null;
-	strand?: GraphModule;
-	title: MarkdownFragment<"inline">;
-	url: string;
-}
-
-export interface PageCatalog {
-	pages: CatalogPage[];
-}
-
-export interface CurrentPages {
-	inCatalog: boolean;
-	route: CatalogPage;
-	source: CatalogPage;
-}
 
 export interface Token {
 	end: number;
@@ -123,11 +101,6 @@ export type TerminalOutput =
 			type?: string;
 	  };
 
-export interface TerminalRecord {
-	echo: string;
-	output: TerminalOutput;
-}
-
 export interface CommandRuntime {
 	fetchMarkdown: (url: string, signal: AbortSignal) => Promise<string>;
 	openExternal: (url: string) => boolean;
@@ -143,12 +116,7 @@ export interface CompleteContext {
 	parsed: ParsedLine;
 }
 
-export interface ExecuteContext {
-	catalog: PageCatalog;
-	current: CurrentPages;
-	cwd: string;
-	graph: GraphRuntime;
-	parsed: ParsedLine;
+export interface ExecuteContext extends CompleteContext {
 	runtime: CommandRuntime;
 	signal: AbortSignal;
 }
@@ -180,7 +148,6 @@ export interface CommandDescriptor {
 	advertised: boolean;
 	complete?: (ctx: CompleteContext) => Completion[];
 	execute: (ctx: ExecuteContext) => Promise<CommandResult> | CommandResult;
-	id: string;
 	loading?: string;
 	names: readonly string[];
 	usage: string;

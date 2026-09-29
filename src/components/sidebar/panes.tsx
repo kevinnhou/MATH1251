@@ -5,17 +5,12 @@ import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
 import { TerminalOutputPane } from "@/components/terminal/output";
 import { useTerminalScreen } from "@/components/terminal/provider";
+import type { TerminalPane } from "@/lib/terminal/types";
 import { SearchPreview } from "./search-preview";
 import { SidebarSearchTree } from "./search-tree";
 import { SidebarLinkItem, SidebarPageTree, SidebarTreeViewport } from "./tree";
 
-export function SidebarPanes({
-	active,
-	banner,
-}: {
-	active: boolean;
-	banner?: ReactNode;
-}) {
+export function SidebarPanes({ banner }: { banner?: ReactNode }) {
 	const {
 		menuItems,
 		props: { tabMode, tabs },
@@ -23,8 +18,6 @@ export function SidebarPanes({
 	const { cwd, hadOutput, pane, view } = useTerminalScreen();
 	const search = view?.kind === "search" ? view : null;
 	const dir = view?.kind === "list" ? view.dir : cwd;
-	const treeHidden = pane === "output";
-	const outputHidden = pane === "tree";
 
 	return (
 		<div
@@ -32,12 +25,7 @@ export function SidebarPanes({
 			data-terminal-had-output={hadOutput || undefined}
 			data-terminal-pane-target={pane}
 		>
-			<div
-				aria-hidden={treeHidden}
-				className="absolute inset-0 flex flex-col"
-				data-terminal-pane="tree"
-				inert={treeHidden || undefined}
-			>
+			<Pane name="tree" target={pane}>
 				<div
 					className="flex flex-col gap-3 p-4 pb-2 empty:hidden"
 					data-terminal-cascade="1"
@@ -78,15 +66,33 @@ export function SidebarPanes({
 						<SearchPreview key={search.query} results={search.results} />
 					) : null}
 				</div>
-			</div>
-			<div
-				aria-hidden={outputHidden}
-				className="absolute inset-0 flex flex-col"
-				data-terminal-pane="output"
-				inert={outputHidden || undefined}
-			>
-				<TerminalOutputPane captureRef={active} />
-			</div>
+			</Pane>
+			<Pane name="output" target={pane}>
+				<TerminalOutputPane />
+			</Pane>
+		</div>
+	);
+}
+
+function Pane({
+	children,
+	name,
+	target,
+}: {
+	children: ReactNode;
+	name: TerminalPane;
+	target: TerminalPane;
+}) {
+	const hidden = name !== target;
+
+	return (
+		<div
+			aria-hidden={hidden}
+			className="absolute inset-0 flex flex-col"
+			data-terminal-pane={name}
+			inert={hidden || undefined}
+		>
+			{children}
 		</div>
 	);
 }

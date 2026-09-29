@@ -8,53 +8,45 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useEffectEvent,
 	useId,
 	useMemo,
+	useReducer,
 	useRef,
 	useState,
 } from "react";
 import { useGraph } from "@/components/graph/provider";
-import {
-	type GraphRuntime,
-	unavailableGraphRuntime,
-} from "@/lib/graph/runtime";
-import { completeLine, coreDescriptors } from "@/lib/terminal/commands";
-import { clearView, followRoute, initialLocation } from "@/lib/terminal/dirs";
-import { emptyHistory, loadHistory } from "@/lib/terminal/history";
-import {
-	emptySurface,
-	leaveOutput,
-	paneTarget,
-	setDraft,
-	showOutput,
-	type TerminalSurface,
-} from "@/lib/terminal/mode";
-import { announce } from "@/lib/terminal/output";
-import { currentPagesFromUrl } from "@/lib/terminal/pages";
+import type { PageCatalog } from "@/lib/course/catalog";
+import { currentPagesFromUrl } from "@/lib/course/catalog";
+import { homeRoute } from "@/lib/site/config";
+import { completeLine } from "@/lib/terminal/commands";
+import { loadHistory } from "@/lib/terminal/history";
+import { paneTarget, type TerminalSurface } from "@/lib/terminal/mode";
+import { announce, plural } from "@/lib/terminal/output";
 import { parseLine } from "@/lib/terminal/parse";
-import { createRegistry } from "@/lib/terminal/registry";
+import {
+	initialTerminalState,
+	selectedCompletion,
+	terminalReducer,
+} from "@/lib/terminal/state";
 import type {
 	Completion,
-	PageCatalog,
 	TerminalOutput,
 	TerminalPane,
 	TreeView,
 } from "@/lib/terminal/types";
-import {
-	executeTerminalLine,
-	handlePromptKey,
-	handleWindowKey,
-	handleWindowPaste,
-} from "./handlers";
 import { SearchHighlight } from "./highlight";
+import { handlePromptKey, handleWindowKey, handleWindowPaste } from "./keys";
+import { runTerminalLine } from "./run";
 
-export interface SidebarControls {
+interface SidebarControls {
 	closeDrawer: () => void;
 	reveal: () => void;
 }
 
-export interface TerminalApi {
+interface TerminalApi {
 	bindSidebar: (controls: SidebarControls) => () => void;
+	catalog: PageCatalog;
 	changeDirectory: (url: string) => void;
 	clearInspectOutput: () => void;
 	focusPrompt: (options?: { expand?: boolean }) => void;
@@ -64,7 +56,7 @@ export interface TerminalApi {
 	showTree: () => void;
 }
 
-export interface TerminalScreen {
+interface TerminalScreen {
 	cwd: string;
 	echo: string;
 	hadOutput: boolean;
@@ -73,14 +65,12 @@ export interface TerminalScreen {
 	view: TreeView | null;
 }
 
-export interface TerminalViewValue {
+interface TerminalViewValue {
 	completionListId: string;
 	completions: Completion[];
-	current: ReturnType<typeof currentPagesFromUrl>;
 	focusEpoch: number;
 	focusedEpochRef: RefObject<number>;
 	hintId: string;
-	liveMessage: string;
 	onPromptKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 	selectedCompletion: number;
 	setInput: (nextInput: string) => void;
@@ -127,133 +117,90 @@ export function TerminalProvider({
 	children: ReactNode;
 }) {
 	const router = useRouter();
-	const pathname = usePathname();
-	const routeUrl = pathname || "/core";
+	const routeUrl = usePathname() || homeRoute;
+	const graph = useGraph();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const outputRef = useRef<HTMLDivElement>(null);
-	const [registry] = useState(() => createRegistry(coreDescriptors()));
-	const registryRef = useRef(registry);
-	const generationRef = useRef(0);
 	const abortRef = useRef<AbortController | null>(null);
-	const retainUrlRef = useRef<string | null>(null);
-	const pathRef = useRef(routeUrl);
-	const frozenCompletions = useRef<Completion[] | null>(null);
-	const surfaceRef = useRef(emptySurface());
 	const focusedEpochRef = useRef(0);
 	const sidebarRef = useRef<SidebarControls | null>(null);
-	const graph = useGraph();
-	const graphRef = useRef<GraphRuntime>(unavailableGraphRuntime(routeUrl));
 	const hintId = useId();
 	const completionListId = useId();
-	const [surface, setSurface] = useState(emptySurface);
-	const [location, setLocation] = useState(() => initialLocation(routeUrl));
-	const [history, setHistory] = useState(emptyHistory);
-	const [selectedCompletion, setSelectedCompletion] = useState(0);
+	const [state, dispatch] = useReducer(
+		terminalReducer,
+		routeUrl,
+		initialTerminalState
+	);
 	const [focusEpoch, setFocusEpoch] = useState(0);
-	const [hadOutput, setHadOutput] = useState(false);
 	const [liveMessage, setLiveMessage] = useState("");
+	const { location, surface } = state;
 	const current = useMemo(
 		() => currentPagesFromUrl(catalog, routeUrl),
 		[catalog, routeUrl]
 	);
-	surfaceRef.current = surface;
-	const locationRef = useRef(location);
-	locationRef.current = location;
-	graphRef.current = graph;
-
-	useEffect(() => {
-		setHistory((currentHistory) => ({
-			...currentHistory,
-			entries: loadHistory(),
-		}));
-	}, []);
-
-	useEffect(() => {
-		if (pathRef.current === routeUrl) {
-			return;
-		}
-
-		pathRef.current = routeUrl;
-		setLocation((currentLocation) => followRoute(currentLocation, routeUrl));
-		if (retainUrlRef.current === routeUrl) {
-			retainUrlRef.current = null;
-			return;
-		}
-
-		generationRef.current += 1;
-		abortRef.current?.abort();
-		frozenCompletions.current = null;
-		setSurface(emptySurface());
-	}, [routeUrl]);
-
-	useEffect(
-		() => () => {
-			generationRef.current += 1;
-			abortRef.current?.abort();
-		},
-		[]
-	);
-
-	useEffect(() => {
-		if (surface.mode === "output") {
-			setHadOutput(true);
-		}
-	}, [surface.mode]);
-
 	const parsed = useMemo(() => parseLine(surface.input), [surface.input]);
 	const completions = useMemo(() => {
 		if (!surface.completionsOpen) {
 			return [];
 		}
 
-		if (frozenCompletions.current) {
-			return frozenCompletions.current;
-		}
-
-		return completeLine(registryRef.current, {
-			catalog,
-			current,
-			cwd: location.cwd,
-			graph: graphRef.current,
-			parsed,
-		});
-	}, [catalog, current, location.cwd, parsed, surface.completionsOpen]);
+		return (
+			state.cycle?.list ??
+			completeLine({ catalog, current, cwd: location.cwd, graph, parsed })
+		);
+	}, [
+		catalog,
+		current,
+		graph,
+		location.cwd,
+		parsed,
+		state.cycle,
+		surface.completionsOpen,
+	]);
 
 	useEffect(() => {
-		if (surface.mode === "output" || !surface.completionsOpen) {
-			return;
-		}
+		dispatch({ entries: loadHistory(), type: "history-loaded" });
+	}, []);
 
-		if (completions.length === 0) {
-			return;
+	const onRoute = useEffectEvent((url: string) => {
+		if (url !== state.route && state.pendingNavigation !== url) {
+			abortRef.current?.abort();
 		}
+		dispatch({ type: "route", url });
+	});
+	useEffect(() => onRoute(routeUrl), [routeUrl]);
 
-		setLiveMessage(
-			`${completions.length} completion${completions.length === 1 ? "" : "s"}`
-		);
+	useEffect(() => () => abortRef.current?.abort(), []);
+
+	useEffect(() => {
+		if (
+			surface.mode !== "output" &&
+			surface.completionsOpen &&
+			completions.length > 0
+		) {
+			setLiveMessage(plural(completions.length, "completion"));
+		}
 	}, [completions, surface.completionsOpen, surface.mode]);
 
 	const publishOutput = useCallback((output: TerminalOutput, echo?: string) => {
-		setSurface(showOutput(emptySurface(), output, echo ?? ""));
-		setLiveMessage(announce(output, echo));
+		dispatch({ echo, output, type: "show" });
+		setLiveMessage(announce(output));
 	}, []);
 
 	const clearInspectOutput = useCallback(() => {
-		setSurface((currentSurface) => {
-			if (currentSurface.output?.kind !== "inspect") {
-				return currentSurface;
-			}
-
-			return emptySurface();
-		});
+		dispatch({ type: "clear-inspect" });
 	}, []);
 
 	const showTree = useCallback(() => {
-		setSurface((currentSurface) =>
-			currentSurface.mode === "output"
-				? leaveOutput(currentSurface)
-				: currentSurface
-		);
+		dispatch({ type: "show-tree" });
+	}, []);
+
+	const changeDirectory = useCallback((url: string) => {
+		dispatch({ type: "change-directory", url });
+	}, []);
+
+	const setInput = useCallback((text: string) => {
+		dispatch({ text, type: "input" });
 	}, []);
 
 	const bindSidebar = useCallback((controls: SidebarControls) => {
@@ -265,125 +212,50 @@ export function TerminalProvider({
 		};
 	}, []);
 
-	const setInput = useCallback((nextInput: string) => {
-		frozenCompletions.current = null;
-		setSelectedCompletion(0);
-		setHistory((currentHistory) => ({ ...currentHistory, cursor: null }));
-		setSurface((currentSurface) => setDraft(currentSurface, nextInput));
-	}, []);
-
-	const changeDirectory = useCallback((url: string) => {
-		setLocation({ cwd: url, view: null });
-	}, []);
-
 	const focusPrompt = useCallback((options?: { expand?: boolean }) => {
-		setLocation(clearView);
+		dispatch({ type: "focus" });
 		if (options?.expand !== false) {
 			sidebarRef.current?.reveal();
 			setFocusEpoch((epoch) => epoch + 1);
 			requestAnimationFrame(() => inputRef.current?.focus());
 		}
-
-		setSurface((currentSurface) => {
-			if (currentSurface.mode !== "output") {
-				return currentSurface;
-			}
-
-			return leaveOutput(currentSurface, currentSurface.input);
-		});
 		queueMicrotask(() => inputRef.current?.focus());
 	}, []);
 
-	const runLine = useCallback(
-		async (raw?: string) => {
-			frozenCompletions.current = null;
-			await executeTerminalLine(raw ?? surface.input, {
-				abortRef,
-				catalog,
-				closeDrawer: () => {
-					sidebarRef.current?.closeDrawer();
-					inputRef.current?.blur();
-				},
-				current,
-				cwd: location.cwd,
-				generationRef,
-				graph: graphRef.current,
-				historyEntries: history.entries,
-				publishOutput,
-				registry: registryRef.current,
-				retainUrlRef,
-				routerPush: (url) => {
-					router.push(url);
-				},
-				setHistory,
-				setLiveMessage,
-				setLocation,
-				setSurface,
-			});
-		},
-		[
+	const runLine = (raw?: string) =>
+		runTerminalLine(raw ?? surface.input, {
+			abortRef,
+			announce: setLiveMessage,
 			catalog,
+			closeDrawer: () => {
+				sidebarRef.current?.closeDrawer();
+				inputRef.current?.blur();
+			},
 			current,
-			history.entries,
-			location.cwd,
+			cwd: location.cwd,
+			dispatch,
+			graph,
+			historyEntries: state.history.entries,
+			navigate: (url) => router.push(url),
 			publishOutput,
-			router,
-			surface.input,
-		]
+		});
+
+	const windowContext = () => ({
+		dispatch,
+		focusPrompt,
+		inputRef,
+		outputRoot: outputRef.current,
+		state,
+	});
+	const onWindowKey = useEffectEvent((event: KeyboardEvent) =>
+		handleWindowKey(event, windowContext())
 	);
-
-	const onPromptKeyDown = useCallback(
-		(event: React.KeyboardEvent<HTMLInputElement>) => {
-			handlePromptKey({
-				completions,
-				event,
-				frozenCompletions,
-				history,
-				inputRef,
-				parsed,
-				runLine,
-				selectedCompletion,
-				setHistory,
-				setSelectedCompletion,
-				setSurface,
-				surface,
-			});
-		},
-		[completions, history, parsed, runLine, selectedCompletion, surface]
+	const onWindowPaste = useEffectEvent((event: ClipboardEvent) =>
+		handleWindowPaste(event, windowContext())
 	);
-
-	const focusPromptRef = useRef(focusPrompt);
-	const setInputRef = useRef(setInput);
-	focusPromptRef.current = focusPrompt;
-	setInputRef.current = setInput;
-
 	useEffect(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			handleWindowKey({
-				event,
-				focusPrompt: focusPromptRef.current,
-				inputRef,
-				location: locationRef.current,
-				outputRoot: outputRef.current,
-				setHistory,
-				setInput: setInputRef.current,
-				setLocation,
-				setSelectedCompletion,
-				setSurface,
-				surface: surfaceRef.current,
-			});
-		};
-		const onPaste = (event: ClipboardEvent) => {
-			handleWindowPaste({
-				event,
-				focusPrompt: focusPromptRef.current,
-				inputRef,
-				outputRoot: outputRef.current,
-				setInput: setInputRef.current,
-				surface: surfaceRef.current,
-			});
-		};
-
+		const onKeyDown = (event: KeyboardEvent) => onWindowKey(event);
+		const onPaste = (event: ClipboardEvent) => onWindowPaste(event);
 		window.addEventListener("keydown", onKeyDown);
 		window.addEventListener("paste", onPaste);
 		return () => {
@@ -395,6 +267,7 @@ export function TerminalProvider({
 	const api = useMemo(
 		(): TerminalApi => ({
 			bindSidebar,
+			catalog,
 			changeDirectory,
 			clearInspectOutput,
 			focusPrompt,
@@ -405,6 +278,7 @@ export function TerminalProvider({
 		}),
 		[
 			bindSidebar,
+			catalog,
 			changeDirectory,
 			clearInspectOutput,
 			focusPrompt,
@@ -418,41 +292,33 @@ export function TerminalProvider({
 		(): TerminalScreen => ({
 			cwd: location.cwd,
 			echo: surface.echo,
-			hadOutput,
+			hadOutput: state.hadOutput,
 			output: surface.output,
 			pane,
 			view: location.view,
 		}),
-		[hadOutput, location, pane, surface.echo, surface.output]
+		[location, pane, state.hadOutput, surface.echo, surface.output]
 	);
 
-	const view = useMemo(
-		(): TerminalViewValue => ({
-			completionListId,
-			completions,
-			current,
-			focusEpoch,
-			focusedEpochRef,
-			hintId,
-			liveMessage,
-			onPromptKeyDown,
-			selectedCompletion,
-			setInput,
-			surface,
-		}),
-		[
-			completionListId,
-			completions,
-			current,
-			focusEpoch,
-			hintId,
-			liveMessage,
-			onPromptKeyDown,
-			selectedCompletion,
-			setInput,
-			surface,
-		]
-	);
+	const view: TerminalViewValue = {
+		completionListId,
+		completions,
+		focusEpoch,
+		focusedEpochRef,
+		hintId,
+		onPromptKeyDown: (event) =>
+			handlePromptKey(event, {
+				completions,
+				dispatch,
+				inputRef,
+				parsed,
+				runLine,
+				state,
+			}),
+		selectedCompletion: selectedCompletion(state),
+		setInput,
+		surface,
+	};
 
 	return (
 		<TerminalApiContext.Provider value={api}>

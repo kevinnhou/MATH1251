@@ -1,53 +1,27 @@
 import { toAbsoluteUrl } from "@/lib/site/url";
-import {
-	type ExampleDifficulty,
-	getKindLabel,
-	type MathEnvKind,
-} from "./kinds";
+import type { EnvView } from "./env-meta";
+import { getKindLabel } from "./kinds";
 import type { ResolvedRef } from "./tenet";
-
-export { toAbsoluteUrl } from "@/lib/site/url";
 
 export const COURSE = "MATH1251 Mathematics 1B (UNSW Sydney)";
 
-export type EnvHeadingLevel = 1 | 2 | 3;
-export type EnvProvenance = "excerpt" | "none";
-export type EnvRelatedMode = "full" | "outgoing" | "none";
+type EnvHeadingLevel = 1 | 2 | 3;
+type EnvProvenance = "excerpt" | "none";
+type EnvRelatedMode = "full" | "outgoing" | "none";
 
-export interface EnvMarkdownOptions {
-	headingLevel?: EnvHeadingLevel;
+interface EnvRelatedOptions {
 	maxCitedBy?: number;
+	mode?: EnvRelatedMode;
+	origin?: string;
+}
+
+interface EnvMarkdownOptions extends Omit<EnvRelatedOptions, "mode"> {
+	headingLevel?: EnvHeadingLevel;
 	provenance?: EnvProvenance;
 	related?: EnvRelatedMode;
 }
 
-export interface EnvExportInput {
-	body?: string;
-	citedBy?: ResolvedRef[];
-	difficulty?: ExampleDifficulty;
-	id: string;
-	isRecall?: boolean;
-	kind: MathEnvKind;
-	origin: string;
-	originalHref?: string;
-	pageTitle: string;
-	pageUrl: string;
-	relatedSee?: ResolvedRef[];
-	relatedUses?: ResolvedRef[];
-	statement?: string;
-	title?: string;
-}
-
-export type EnvRelatedInput = Pick<
-	EnvExportInput,
-	| "citedBy"
-	| "isRecall"
-	| "kind"
-	| "origin"
-	| "originalHref"
-	| "relatedSee"
-	| "relatedUses"
->;
+type ExportableEnv = EnvView & { id: string };
 
 export interface RelatedLink {
 	href: string;
@@ -65,9 +39,10 @@ const DEFAULT_OPTIONS = {
 >;
 
 export function formatEnvMarkdown(
-	input: EnvExportInput,
+	input: ExportableEnv,
 	options: EnvMarkdownOptions = {}
 ): string {
+	const origin = options.origin ?? "";
 	const headingLevel = options.headingLevel ?? DEFAULT_OPTIONS.headingLevel;
 	const provenance = options.provenance ?? DEFAULT_OPTIONS.provenance;
 	const relatedMode = options.related ?? DEFAULT_OPTIONS.related;
@@ -75,7 +50,7 @@ export function formatEnvMarkdown(
 	const lines = [formatHeading(input, headingLevel)];
 
 	if (provenance === "excerpt") {
-		const source = toAbsoluteUrl(`${input.pageUrl}#${input.id}`, input.origin);
+		const source = toAbsoluteUrl(`${input.pageUrl}#${input.id}`, origin);
 		lines.push(
 			"",
 			`Excerpt from ${COURSE}: ${input.pageTitle}.`,
@@ -108,7 +83,11 @@ export function formatEnvMarkdown(
 		lines.push(input.body.trimEnd());
 	}
 
-	const related = formatEnvRelated(input, relatedMode, options.maxCitedBy);
+	const related = formatEnvRelated(input, {
+		maxCitedBy: options.maxCitedBy,
+		mode: relatedMode,
+		origin,
+	});
 	if (related.length > 0) {
 		lines.push("", `${hashes(sectionLevel)} Related`, "", ...related);
 	}
@@ -117,9 +96,8 @@ export function formatEnvMarkdown(
 }
 
 export function formatEnvRelated(
-	input: EnvRelatedInput,
-	mode: EnvRelatedMode = "full",
-	maxCitedBy?: number
+	input: EnvView,
+	{ maxCitedBy, mode = "full", origin = "" }: EnvRelatedOptions = {}
 ): string[] {
 	if (mode === "none") {
 		return [];
@@ -130,7 +108,7 @@ export function formatEnvRelated(
 	const usesLabel = input.kind === "proof" ? "Proves" : "Uses";
 
 	if (input.isRecall && input.originalHref !== undefined) {
-		const href = toAbsoluteUrl(input.originalHref, input.origin);
+		const href = toAbsoluteUrl(input.originalHref, origin);
 		seen.add(href);
 		items.push(
 			formatRefLink({
@@ -141,23 +119,23 @@ export function formatEnvRelated(
 		);
 	}
 
-	for (const ref of input.relatedUses ?? []) {
-		addRelatedRef(items, seen, usesLabel, ref, input.origin);
+	for (const ref of input.relatedUses) {
+		addRelatedRef(items, seen, usesLabel, ref, origin);
 	}
 
-	for (const ref of input.relatedSee ?? []) {
-		addRelatedRef(items, seen, "See also", ref, input.origin);
+	for (const ref of input.relatedSee) {
+		addRelatedRef(items, seen, "See also", ref, origin);
 	}
 
 	if (mode !== "full") {
 		return items;
 	}
 
-	const citedBy = input.citedBy ?? [];
+	const { citedBy } = input;
 	const citedByRefs =
 		maxCitedBy === undefined ? citedBy : citedBy.slice(0, maxCitedBy);
 	for (const ref of citedByRefs) {
-		addRelatedRef(items, seen, "Cited by", ref, input.origin);
+		addRelatedRef(items, seen, "Cited by", ref, origin);
 	}
 
 	if (maxCitedBy !== undefined && citedBy.length > maxCitedBy) {
@@ -180,7 +158,7 @@ export function formatRefLink(link: RelatedLink & { origin?: string }): string {
 	return `- ${link.label} (${link.kind}): [${title}](${href})`;
 }
 
-function formatHeading(input: EnvExportInput, level: EnvHeadingLevel): string {
+function formatHeading(input: EnvView, level: EnvHeadingLevel): string {
 	const prefix = hashes(level);
 	if (input.isRecall) {
 		return input.title === undefined
@@ -202,7 +180,7 @@ function formatHeading(input: EnvExportInput, level: EnvHeadingLevel): string {
 }
 
 function bodySectionHeading(
-	input: EnvExportInput,
+	input: EnvView,
 	sectionLevel: 2 | 3 | 4
 ): string | undefined {
 	if (input.kind === "proof") {

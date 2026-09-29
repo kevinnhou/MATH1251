@@ -1,5 +1,4 @@
 import type { GraphAction } from "./actions";
-import { nodePlainTitle } from "./node-summary";
 import { locateNodes, projectGraph } from "./project";
 import {
 	createLocalGraphQuery,
@@ -23,10 +22,14 @@ export interface GraphSession {
 	selectedId: string | null;
 }
 
-export interface GraphActionContext {
+export type GraphTargetResolver = (
+	raw: string
+) => GraphNode | GraphNode[] | undefined;
+
+interface GraphActionContext {
 	document: GraphDocument;
 	homeId: string;
-	resolveTarget: (raw: string) => GraphNode | GraphNode[] | undefined;
+	resolveTarget?: GraphTargetResolver;
 }
 
 export type GraphEffect =
@@ -105,23 +108,14 @@ export function applyGraphAction(
 	}
 }
 
-export function commitGraphAction(
-	session: GraphSession,
-	action: GraphAction,
-	ctx: GraphActionContext,
-	setSession: (session: GraphSession) => void
-): GraphActionResult {
-	const result = applyGraphAction(session, action, ctx);
-	setSession(result.session);
-	return result;
-}
-
 function focusNode(
 	session: GraphSession,
 	target: string,
 	ctx: GraphActionContext
 ): GraphActionResult {
-	const resolved = ctx.resolveTarget(target);
+	const resolved = ctx.resolveTarget
+		? ctx.resolveTarget(target)
+		: ctx.document.nodes.find((node) => node.id === target);
 	if (Array.isArray(resolved)) {
 		return {
 			effect: { kind: "matches", nodes: resolved, query: target },
@@ -143,7 +137,7 @@ function focusNode(
 		return {
 			effect: {
 				kind: "error",
-				message: `graph focus: ${nodePlainTitle(resolved)} is outside the current strand.`,
+				message: `graph focus: ${resolved.title.plain} is outside the current strand.`,
 			},
 			session,
 		};
@@ -239,7 +233,7 @@ function commitQuery(
 	);
 }
 
-export function statusText(
+function statusText(
 	session: GraphSession,
 	document: GraphDocument,
 	homeId: string

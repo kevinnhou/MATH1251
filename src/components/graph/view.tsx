@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "fumadocs-core/framework";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef } from "react";
 import { useGraph } from "@/components/graph/provider";
 import { useTerminalApi } from "@/components/terminal/provider";
 import type { GraphAction } from "@/lib/graph/actions";
@@ -17,12 +17,7 @@ import {
 	locateNodes,
 	projectGraph,
 } from "@/lib/graph/project";
-import {
-	commitGraphAction,
-	type GraphActionResult,
-	type GraphSession,
-} from "@/lib/graph/session";
-import type { GraphDocument } from "@/lib/graph/types";
+import type { ReadyGraph } from "@/lib/graph/runtime";
 import { inspectNodeOutput } from "@/lib/terminal/graph-output";
 import { GraphCanvas } from "./canvas";
 import { GraphChrome } from "./chrome";
@@ -61,33 +56,17 @@ export function GraphHost({ pageUrl }: { pageUrl: string }) {
 		);
 	}
 
-	return (
-		<GraphView
-			currentPageUrl={pageUrl}
-			graphDocument={graph.document}
-			homeId={graph.homeId}
-			narrow={graph.narrow}
-			onSessionChange={graph.setSession}
-			session={graph.session}
-		/>
-	);
+	return <GraphView currentPageUrl={pageUrl} graph={graph} />;
 }
 
 function GraphView({
 	currentPageUrl,
-	graphDocument,
-	homeId,
-	narrow,
-	onSessionChange,
-	session,
+	graph,
 }: {
 	currentPageUrl: string;
-	graphDocument: GraphDocument;
-	homeId: string;
-	narrow: boolean;
-	onSessionChange: (session: GraphSession) => void;
-	session: GraphSession;
+	graph: ReadyGraph;
 }) {
+	const { document: graphDocument, homeId, narrow, session } = graph;
 	const router = useRouter();
 	const { clearInspectOutput, publishOutput } = useTerminalApi();
 	const { query } = session;
@@ -125,41 +104,15 @@ function GraphView({
 	const empty = projection.nodes.length === 0;
 	const variant = session.expanded ? "global" : "local";
 
-	const sessionRef = useRef(session);
-	sessionRef.current = session;
-	const narrowRef = useRef(narrow);
-	narrowRef.current = narrow;
-
-	function dispatch(
-		action: GraphAction,
-		source: InspectSource = "canvas"
-	): GraphActionResult {
-		const result = commitGraphAction(
-			sessionRef.current,
-			action,
-			{
-				document: graphDocument,
-				homeId,
-				resolveTarget: (raw) =>
-					graphDocument.nodes.find((node) => node.id === raw),
-			},
-			onSessionChange
-		);
-		const decision = inspectPolicy(result, {
-			homeId,
-			narrow: narrowRef.current,
-			source,
-		});
+	function dispatch(action: GraphAction, source: InspectSource = "canvas") {
+		const result = graph.dispatch(action);
+		const decision = inspectPolicy(result, { homeId, narrow, source });
 		if (decision === "publish" && result.effect.kind === "inspect") {
 			publishOutput(inspectNodeOutput(result.effect.node));
 		} else if (decision === "clear") {
 			clearInspectOutput();
 		}
-		return result;
 	}
-
-	const dispatchRef = useRef(dispatch);
-	dispatchRef.current = dispatch;
 
 	useEffect(() => {
 		if (narrow) {
@@ -187,36 +140,34 @@ function GraphView({
 		return () => window.removeEventListener("pointerdown", onPointerDown, true);
 	}, []);
 
+	const onEscape = useEffectEvent((event: KeyboardEvent) => {
+		if (event.key !== "Escape" || event.defaultPrevented) {
+			return;
+		}
+
+		if (
+			!graphOwnsEscape({
+				active: document.activeElement,
+				engaged: engagedRef.current,
+				root: rootRef.current,
+			})
+		) {
+			return;
+		}
+
+		event.preventDefault();
+		dispatch(nextGraphEscapeAction(session, homeId), "escape");
+	});
+
 	useEffect(() => {
 		if (variant !== "global") {
 			return;
 		}
 
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== "Escape" || event.defaultPrevented) {
-				return;
-			}
-
-			if (
-				!graphOwnsEscape({
-					active: document.activeElement,
-					engaged: engagedRef.current,
-					root: rootRef.current,
-				})
-			) {
-				return;
-			}
-
-			event.preventDefault();
-			dispatchRef.current(
-				nextGraphEscapeAction(sessionRef.current, homeId),
-				"escape"
-			);
-		};
-
+		const onKeyDown = (event: KeyboardEvent) => onEscape(event);
 		window.addEventListener("keydown", onKeyDown, true);
 		return () => window.removeEventListener("keydown", onKeyDown, true);
-	}, [homeId, variant]);
+	}, [variant]);
 
 	const statusMessage = graphStatusMessage(empty, isolatedFocus);
 

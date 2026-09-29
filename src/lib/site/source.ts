@@ -2,11 +2,11 @@ import corpusMeta from "collections/corpus-meta";
 import { loader, type VirtualFile } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { cache } from "react";
+import { type GraphModule, getStrand } from "@/lib/course/strands";
 import { getKindViewSlug, type MathEnvKind } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import { docsContentRoute, docsImageRoute, docsRoute } from "./config";
 import type { CorpusMetaPage, DocsMeta } from "./corpus-meta/types";
-import { type GraphModule, getStrand } from "./strands";
 
 type PageData = CorpusMetaPage["frontmatter"] &
 	Pick<CorpusMetaPage, "envs" | "extractedReferences" | "structuredData">;

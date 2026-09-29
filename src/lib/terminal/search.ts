@@ -1,5 +1,7 @@
-import { findPageByUrl } from "./pages";
-import type { PageCatalog, SearchHit, SearchResult } from "./types";
+import type { PageCatalog } from "@/lib/course/catalog";
+import { findPageByUrl, withoutHash } from "@/lib/course/catalog";
+import { isRecord } from "@/lib/result";
+import type { SearchHit, SearchResult } from "./types";
 
 export const SEARCH_LIMIT = 24;
 
@@ -37,7 +39,7 @@ export interface SearchHitGroup {
 export function groupSearchHits(hits: SearchHit[]): SearchHitGroup[] {
 	const groups: SearchHitGroup[] = [];
 	for (const hit of hits) {
-		const path = hit.path.split("#")[0] ?? hit.path;
+		const path = withoutHash(hit.path);
 		const current = groups.at(-1);
 		if (current?.path === path) {
 			current.hits.push(hit);
@@ -56,10 +58,17 @@ export function searchResults(
 ): SearchResult[] {
 	const results = new Map<string, SearchHit[]>();
 	for (const hit of hits) {
-		const page = findPageByUrl(catalog, hit.url.split("#")[0] ?? hit.url);
+		const page = findPageByUrl(catalog, withoutHash(hit.url));
 		const url = page?.kindView ? page.parentUrl : page?.url;
-		if (url) {
-			results.set(url, [...(results.get(url) ?? []), hit]);
+		if (!url) {
+			continue;
+		}
+
+		const pageHits = results.get(url);
+		if (pageHits) {
+			pageHits.push(hit);
+		} else {
+			results.set(url, [hit]);
 		}
 	}
 
@@ -90,8 +99,4 @@ function isRendered(value: unknown, mode: "inline" | "block"): boolean {
 		typeof value.html === "string" &&
 		typeof value.plain === "string"
 	);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
 }

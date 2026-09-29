@@ -6,14 +6,12 @@
 	--graph-module-algebra: #ffadad;
 	--graph-module-calculus: #a8c7e8;
 	--graph-module-core: #74828a;
-	--graph-node-default: #74828a;
 }
 
 .dark {
 	--graph-module-algebra: #af7178;
 	--graph-module-calculus: #7a93ab;
 	--graph-module-core: #74828a;
-	--graph-node-default: #74828a;
 }
 
 * {

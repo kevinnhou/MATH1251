@@ -10,7 +10,6 @@ import {
 } from "@/components/markdown/html";
 import { copyText } from "@/lib/client/actions";
 import { cn } from "@/lib/cn";
-import { commitGraphAction } from "@/lib/graph/session";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import { plainInlineLabel } from "@/lib/markdown/types";
 import { groupSearchHits } from "@/lib/terminal/search";
@@ -22,11 +21,7 @@ import type {
 } from "@/lib/terminal/types";
 import { useTerminalApi, useTerminalScreen } from "./provider";
 
-export function TerminalOutputPane({
-	captureRef = true,
-}: {
-	captureRef?: boolean;
-}) {
+export function TerminalOutputPane() {
 	const { outputRef } = useTerminalApi();
 	const { echo, output } = useTerminalScreen();
 	if (!output) {
@@ -37,7 +32,7 @@ export function TerminalOutputPane({
 		<div
 			aria-live="off"
 			className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-4 font-mono text-[12px] text-fd-foreground"
-			ref={captureRef ? outputRef : undefined}
+			ref={outputRef}
 			role="log"
 		>
 			{echo ? <p className="text-fd-muted-foreground">{echo}</p> : null}
@@ -132,21 +127,9 @@ function InspectActions({
 		graph.status === "ready" && graph.session.query.focus.id !== nodeId;
 
 	function focusNode() {
-		if (graph.status !== "ready") {
-			return;
+		if (graph.status === "ready") {
+			graph.dispatch({ target: nodeId, type: "focus" });
 		}
-
-		commitGraphAction(
-			graph.session,
-			{ target: nodeId, type: "focus" },
-			{
-				document: graph.document,
-				homeId: graph.homeId,
-				resolveTarget: (raw) =>
-					graph.document.nodes.find((node) => node.id === raw),
-			},
-			graph.setSession
-		);
 	}
 
 	if (!(canFocus || actionUrl)) {

@@ -22,7 +22,7 @@ export function TreeSeparator({ className, ...props }: ComponentProps<"p">) {
 type TreeRowProps = { header?: boolean } & (
 	| ComponentProps<typeof SidebarItem>
 	| ({ as: "button" } & ComponentProps<"button">)
-	| ({ as: "label" } & ComponentProps<"div">)
+	| ({ as: "div" } & ComponentProps<"div">)
 );
 
 export function TreeRow({ className, header = false, ...props }: TreeRowProps) {
@@ -37,7 +37,7 @@ export function TreeRow({ className, header = false, ...props }: TreeRowProps) {
 		return <SidebarItem className={rowClassName} data-tree-row="" {...props} />;
 	}
 
-	if (props.as === "label") {
+	if (props.as === "div") {
 		const { as: _as, ...rest } = props;
 		return <div className={rowClassName} {...rest} />;
 	}

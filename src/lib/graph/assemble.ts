@@ -1,4 +1,4 @@
-import type { MarkdownFragment } from "@/lib/markdown/types";
+import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { graphMaterialisation } from "@/lib/math-env/kinds";
 import type { RecallOccurrence } from "@/lib/math-env/page-envs";
 import {
@@ -30,11 +30,11 @@ export interface GraphDocumentPage {
 	module: GraphModule | undefined;
 	page: {
 		data: {
-			description?: MarkdownFragment<"inline">;
+			description?: string;
 			extractedReferences?: ReadonlyArray<{ href: string }>;
 			ideas: string[];
 			tags: string[];
-			title: MarkdownFragment<"inline">;
+			title: string;
 		};
 		path: string;
 		url: string;
@@ -56,12 +56,14 @@ export function assembleGraphDocument(
 		}
 
 		const node: PageNode = {
-			description: page.data.description,
+			description: page.data.description
+				? compileMarkdownFragment(page.data.description, "inline")
+				: undefined,
 			id: page.url,
 			ideas: page.data.ideas,
 			module,
 			tags: page.data.tags,
-			title: page.data.title,
+			title: compileMarkdownFragment(page.data.title, "inline"),
 			type: "page",
 		};
 

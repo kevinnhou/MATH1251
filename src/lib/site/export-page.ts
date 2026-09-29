@@ -1,122 +1,61 @@
+import { type GraphModule, STRAND_LABELS } from "@/lib/course/strands";
 import { formatPageRelated, selectPageRelated } from "@/lib/graph/related";
-import type { GraphDocument } from "@/lib/graph/types";
 import {
-	COURSE,
-	type EnvExportInput,
-	formatEnvMarkdown,
-	type MathEnvKind,
-	type PageEnvs,
-	type TenetIndex,
-} from "@/lib/math-env";
-import {
-	indexPageEnvs,
+	type EnvView,
+	type PageEnvContext,
+	pageEnvContext,
 	resolveEnv,
 	resolveRecall,
 } from "@/lib/math-env/env-meta";
-import type { ResolvedDocs } from "./build-corpus";
-import { type GraphModule, STRAND_LABELS } from "./strands";
+import { COURSE, formatEnvMarkdown } from "@/lib/math-env/export-markdown";
+import type { KindView } from "@/lib/math-env/kind-view";
+import type { PageEnvs } from "@/lib/math-env/page-envs";
+import type { TenetIndex } from "@/lib/math-env/tenet";
+import type { Corpus, ResolvedDocs } from "./corpus";
+import type { SourcePage } from "./source";
 
-export interface NotesExportInput {
-	envs: PageEnvs;
-	graph: GraphDocument;
-	module?: GraphModule;
-	pageTitle: string;
-	pageUrl: string;
-	tenets: TenetIndex;
-}
+type ExportCorpus = Pick<Corpus, "graph" | "tenets">;
 
-export interface KindViewExportInput {
-	envs: PageEnvs;
-	kind: MathEnvKind;
-	module?: GraphModule;
-	parentTitle: string;
-	parentUrl: string;
-	tenets: TenetIndex;
-	viewTitle: string;
-	viewUrl: string;
-}
+const CARD = { provenance: "none", related: "outgoing" } as const;
 
-export function markdownForResolved(
+export function docsMarkdown(
 	resolved: ResolvedDocs,
-	graph: GraphDocument,
-	tenets: TenetIndex
+	corpus: ExportCorpus
 ): string {
-	const { envs, module, page } = resolved.source;
-	if (resolved.kind === "kind-view") {
-		return assembleKindViewMarkdown({
-			envs,
-			kind: resolved.view.kind,
-			module,
-			parentTitle: page.data.title,
-			parentUrl: page.url,
-			tenets,
-			viewTitle: resolved.view.title,
-			viewUrl: resolved.view.url,
-		});
-	}
-
-	return assembleNotesMarkdown({
-		envs,
-		graph,
-		module,
-		pageTitle: page.data.title,
-		pageUrl: page.url,
-		tenets,
-	});
+	return resolved.kind === "kind-view"
+		? kindViewMarkdown(resolved.source, resolved.view, corpus.tenets)
+		: notesMarkdown(resolved.source, corpus);
 }
 
-export function assembleNotesMarkdown(input: NotesExportInput): string {
-	const { entriesById } = indexPageEnvs(input.envs);
-	const meta = {
-		entriesById,
-		pageTitle: input.pageTitle,
-		pageUrl: input.pageUrl,
-		tenetIndex: input.tenets,
-	};
-	const parts = [
-		...documentChrome({
-			module: input.module,
-			title: input.pageTitle,
-			url: input.pageUrl,
-		}),
-	];
-	const body: string[] = [];
-
-	for (const segment of input.envs.segments) {
+export function notesMarkdown(
+	{ envs, module, page }: SourcePage,
+	corpus: ExportCorpus
+): string {
+	const context = envContext(page, envs, corpus.tenets);
+	const parts = documentChrome({
+		module,
+		title: page.data.title,
+		url: page.url,
+	});
+	const body = envs.segments.flatMap((segment) => {
 		if (segment.type === "prose") {
-			body.push(segment.markdown.trimEnd());
-			continue;
+			return [segment.markdown.trimEnd()];
 		}
 
-		if (segment.type === "recall") {
-			const card = formatRecallCard(segment.id, input);
-			if (card !== undefined) {
-				body.push(card.trimEnd());
-			}
-			continue;
-		}
-
-		const occurrence = entriesById.get(segment.id);
-		if (occurrence === undefined) {
-			continue;
-		}
-
-		body.push(
-			formatEnvMarkdown(toEnvInput(occurrence.kind, occurrence.id, meta), {
-				headingLevel: 3,
-				provenance: "none",
-				related: "outgoing",
-			}).trimEnd()
-		);
-	}
+		const env =
+			segment.type === "recall"
+				? recallEnv(segment.id, envs, context, corpus.tenets)
+				: occurrenceEnv(segment.id, context);
+		return env === undefined
+			? []
+			: [formatEnvMarkdown(env, { ...CARD, headingLevel: 3 }).trimEnd()];
+	});
 
 	if (body.length > 0) {
 		parts.push("", ...joinBlocks(body));
 	}
 
-	const related = formatPageRelated(
-		selectPageRelated(input.graph, input.pageUrl)
-	);
+	const related = formatPageRelated(selectPageRelated(corpus.graph, page.url));
 	if (related.length > 0) {
 		parts.push("", "## Related", "", ...related);
 	}
@@ -124,37 +63,26 @@ export function assembleNotesMarkdown(input: NotesExportInput): string {
 	return `${parts.join("\n").trim()}\n`;
 }
 
-export function assembleKindViewMarkdown(input: KindViewExportInput): string {
-	const { entriesById } = indexPageEnvs(input.envs);
-	const meta = {
-		entriesById,
-		pageTitle: input.parentTitle,
-		pageUrl: input.parentUrl,
-		tenetIndex: input.tenets,
-	};
-	const parts = [
-		...documentChrome({
-			module: input.module,
-			notes: { href: input.parentUrl, title: input.parentTitle },
-			title: input.viewTitle,
-			url: input.viewUrl,
-		}),
-	];
-	const cards: string[] = [];
-
-	for (const entry of input.envs.entries) {
-		if (entry.kind !== input.kind) {
-			continue;
-		}
-
-		cards.push(
-			formatEnvMarkdown(toEnvInput(entry.kind, entry.id, meta), {
+function kindViewMarkdown(
+	{ envs, module, page }: SourcePage,
+	view: KindView,
+	tenets: TenetIndex
+): string {
+	const context = envContext(page, envs, tenets);
+	const parts = documentChrome({
+		module,
+		notes: { href: page.url, title: page.data.title },
+		title: view.title,
+		url: view.url,
+	});
+	const cards = envs.entries
+		.filter((entry) => entry.kind === view.kind)
+		.map((entry) =>
+			formatEnvMarkdown(resolveEnv(entry.id, entry.kind, context), {
+				...CARD,
 				headingLevel: 2,
-				provenance: "none",
-				related: "outgoing",
 			}).trimEnd()
 		);
-	}
 
 	if (cards.length > 0) {
 		parts.push("", ...joinBlocks(cards));
@@ -163,79 +91,38 @@ export function assembleKindViewMarkdown(input: KindViewExportInput): string {
 	return `${parts.join("\n").trim()}\n`;
 }
 
-function formatRecallCard(
-	id: string,
-	input: NotesExportInput
-): string | undefined {
-	const recall = input.envs.recalls.find((item) => item.id === id);
-	if (recall === undefined) {
-		return;
-	}
-
-	const resolved = resolveRecall(recall.of, {
-		id: recall.id,
-		pageUrl: input.pageUrl,
-		tenetIndex: input.tenets,
-	});
-	if (resolved === undefined) {
-		return;
-	}
-
-	const envInput: EnvExportInput = {
-		citedBy: resolved.citedBy,
-		id: recall.id,
-		isRecall: true,
-		kind: resolved.kind,
-		origin: "",
-		originalHref: resolved.originalHref,
-		pageTitle: input.pageTitle,
-		pageUrl: input.pageUrl,
-		relatedSee: resolved.relatedSee,
-		relatedUses: resolved.relatedUses,
-		...(resolved.statement === undefined
-			? {}
-			: { statement: resolved.statement.source }),
-		title: resolved.title.source,
-	};
-
-	return formatEnvMarkdown(envInput, {
-		headingLevel: 3,
-		provenance: "none",
-		related: "outgoing",
+function envContext(
+	page: SourcePage["page"],
+	envs: PageEnvs,
+	tenets: TenetIndex
+): PageEnvContext {
+	return pageEnvContext({
+		envs,
+		pageTitle: page.data.title,
+		pageUrl: page.url,
+		tenetIndex: tenets,
 	});
 }
 
-function toEnvInput(
-	kind: MathEnvKind,
+function occurrenceEnv(
 	id: string,
-	meta: {
-		entriesById: ReturnType<typeof indexPageEnvs>["entriesById"];
-		pageTitle: string;
-		pageUrl: string;
-		tenetIndex: TenetIndex;
-	}
-): EnvExportInput {
-	const resolved = resolveEnv(id, kind, meta);
-	return {
-		citedBy: resolved.citedBy,
-		id,
-		kind,
-		origin: "",
-		pageTitle: meta.pageTitle,
-		pageUrl: meta.pageUrl,
-		relatedSee: resolved.relatedSee,
-		relatedUses: resolved.relatedUses,
-		...(resolved.body === undefined ? {} : { body: resolved.body }),
-		...(resolved.difficulty === undefined
-			? {}
-			: { difficulty: resolved.difficulty }),
-		...(resolved.statement === undefined
-			? {}
-			: { statement: resolved.statement.source }),
-		...(resolved.exportTitle === undefined
-			? {}
-			: { title: resolved.exportTitle }),
-	};
+	context: PageEnvContext
+): (EnvView & { id: string }) | undefined {
+	const occurrence = context.entriesById.get(id);
+	return occurrence && resolveEnv(occurrence.id, occurrence.kind, context);
+}
+
+function recallEnv(
+	id: string,
+	envs: PageEnvs,
+	context: PageEnvContext,
+	tenets: TenetIndex
+): (EnvView & { id: string }) | undefined {
+	const recall = envs.recalls.find((item) => item.id === id);
+	return (
+		recall &&
+		resolveRecall(recall.of, recall.id, { ...context, tenetIndex: tenets })?.env
+	);
 }
 
 function documentChrome(options: {

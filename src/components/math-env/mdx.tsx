@@ -1,7 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import {
-	indexPageEnvs,
+	pageEnvContext,
 	resolveEnv,
 	resolveRecall,
 } from "@/lib/math-env/env-meta";
@@ -30,13 +30,12 @@ export type MathEnvMdxOptions = KindViewRenderOptions & {
 export function getMathEnvMdxComponents(
 	options: MathEnvMdxOptions = {}
 ): MDXComponents {
-	const { entriesById } = indexPageEnvs(options.pageEnvs);
-	const metaOptions = {
-		entriesById,
+	const context = pageEnvContext({
+		envs: options.pageEnvs,
 		pageTitle: options.pageTitle,
 		pageUrl: options.pageUrl,
 		tenetIndex: options.tenetIndex,
-	};
+	});
 	const kindViewHref = (kind: MathEnvKind) =>
 		options.viewKind === undefined && options.pageUrl
 			? getKindViewUrl(options.pageUrl, kind)
@@ -60,34 +59,13 @@ export function getMathEnvMdxComponents(
 				return null;
 			}
 
-			const index = options.tenetIndex;
-			if (index === undefined) {
+			const { tenetIndex } = context;
+			if (tenetIndex === undefined) {
 				return null;
 			}
 
-			const resolved = resolveRecall(of, {
-				id,
-				pageUrl: options.pageUrl,
-				tenetIndex: index,
-			});
-			if (resolved === undefined) {
-				return null;
-			}
-
-			return (
-				<Recall
-					citedBy={resolved.citedBy}
-					id={id}
-					kind={resolved.kind}
-					moreHref={options.pageUrl}
-					pageTitle={options.pageTitle}
-					relatedSee={resolved.relatedSee}
-					relatedUses={resolved.relatedUses}
-					statement={resolved.statement}
-					tenetHref={resolved.originalHref}
-					title={resolved.title}
-				/>
-			);
+			const recall = resolveRecall(of, id, { ...context, tenetIndex });
+			return recall ? <Recall recall={recall} /> : null;
 		},
 		Statement,
 	};
@@ -98,7 +76,7 @@ export function getMathEnvMdxComponents(
 			id?: string;
 		}) => (
 			<Env
-				{...resolveEnv(props.id, kind, metaOptions)}
+				env={resolveEnv(props.id, kind, context)}
 				markHref={kindViewHref(kind)}
 				markLinkLabel={kindViewLinkLabel(kind)}
 			>

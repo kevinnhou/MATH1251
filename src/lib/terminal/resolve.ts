@@ -1,5 +1,6 @@
-import { findPageByUrl, normalisePath } from "./pages";
-import type { CatalogPage, PageCatalog, ResolveOutcome } from "./types";
+import type { CatalogPage, PageCatalog } from "@/lib/course/catalog";
+import { findPageByUrl, normalisePath } from "@/lib/course/catalog";
+import type { ResolveOutcome } from "./types";
 
 const LEADING_SLASH = /^\//;
 const PROTOCOL = /^[a-z][a-z0-9+.-]*:/i;

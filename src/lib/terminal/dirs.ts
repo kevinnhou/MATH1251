@@ -1,9 +1,5 @@
-import type {
-	CatalogPage,
-	CommandResult,
-	PageCatalog,
-	TerminalLocation,
-} from "./types";
+import type { CatalogPage, PageCatalog } from "@/lib/course/catalog";
+import { parentPath } from "@/lib/course/catalog";
 
 export interface Directory {
 	name: string;
@@ -19,18 +15,24 @@ export type DirectoryOutcome =
 	| { kind: "other-root"; root: Directory }
 	| { kind: "above-root" };
 
+interface DirectoryIndex {
+	byUrl: Map<string, Directory>;
+	children: Map<string, Directory[]>;
+}
+
 const LEADING_SLASH = /^\//;
+const TOP = "";
 
-const directoriesByCatalog = new WeakMap<PageCatalog, Map<string, Directory>>();
+const indexByCatalog = new WeakMap<PageCatalog, DirectoryIndex>();
 
-function directories(catalog: PageCatalog): Map<string, Directory> {
-	const cached = directoriesByCatalog.get(catalog);
+function directoryIndex(catalog: PageCatalog): DirectoryIndex {
+	const cached = indexByCatalog.get(catalog);
 	if (cached) {
 		return cached;
 	}
 
 	const pages = new Map(catalog.pages.map((page) => [page.url, page]));
-	const dirs = new Map<string, Directory>();
+	const index: DirectoryIndex = { byUrl: new Map(), children: new Map() };
 	for (const page of catalog.pages) {
 		if (page.kindView) {
 			continue;
@@ -39,19 +41,28 @@ function directories(catalog: PageCatalog): Map<string, Directory> {
 		const segments = page.url.split("/").filter(Boolean);
 		for (let depth = 1; depth < segments.length; depth += 1) {
 			const url = `/${segments.slice(0, depth).join("/")}`;
-			if (!dirs.has(url)) {
-				dirs.set(url, {
-					name: segments[depth - 1] ?? url,
-					page: pages.get(url),
-					parent: parentDirectory(url),
-					url,
-				});
+			if (index.byUrl.has(url)) {
+				continue;
 			}
+
+			const dir: Directory = {
+				name: segments[depth - 1] ?? url,
+				page: pages.get(url),
+				parent: parentPath(url),
+				url,
+			};
+			const siblings = index.children.get(dir.parent ?? TOP);
+			if (siblings) {
+				siblings.push(dir);
+			} else {
+				index.children.set(dir.parent ?? TOP, [dir]);
+			}
+			index.byUrl.set(url, dir);
 		}
 	}
 
-	directoriesByCatalog.set(catalog, dirs);
-	return dirs;
+	indexByCatalog.set(catalog, index);
+	return index;
 }
 
 export function rootOf(url: string): string {
@@ -59,23 +70,26 @@ export function rootOf(url: string): string {
 	return first ? `/${first}` : "/";
 }
 
-function isWithin(url: string, dir: string): boolean {
-	return url === dir || url.startsWith(`${dir}/`);
-}
-
 export function displayPath(url: string): string {
 	return url.replace(LEADING_SLASH, "");
-}
-
-export function roots(catalog: PageCatalog): Directory[] {
-	return [...directories(catalog).values()].filter((dir) => !dir.parent);
 }
 
 export function childDirectories(
 	catalog: PageCatalog,
 	url: string
 ): Directory[] {
-	return [...directories(catalog).values()].filter((dir) => dir.parent === url);
+	return directoryIndex(catalog).children.get(url) ?? [];
+}
+
+export function roots(catalog: PageCatalog): Directory[] {
+	return childDirectories(catalog, TOP);
+}
+
+export function resolveRoot(
+	catalog: PageCatalog,
+	input: string
+): Directory | undefined {
+	return findChild(catalog, TOP, input.trim().replace(LEADING_SLASH, ""));
 }
 
 export function resolveDirectory(
@@ -83,15 +97,15 @@ export function resolveDirectory(
 	cwd: string,
 	input: string
 ): DirectoryOutcome {
-	const dirs = directories(catalog);
+	const { byUrl } = directoryIndex(catalog);
 	const trimmed = input.trim();
 	const root = rootOf(cwd);
 	if (trimmed === "" || trimmed === "~") {
-		const dir = dirs.get(root);
+		const dir = byUrl.get(root);
 		return dir ? { dir, kind: "dir" } : { kind: "none" };
 	}
 
-	let url = trimmed.startsWith("/") ? "" : cwd;
+	let url = trimmed.startsWith("/") ? TOP : cwd;
 	for (const segment of trimmed.split("/")) {
 		if (segment === "" || segment === ".") {
 			continue;
@@ -105,24 +119,16 @@ export function resolveDirectory(
 		url = next;
 	}
 
-	const dir = dirs.get(url);
+	const dir = byUrl.get(url);
 	if (!dir) {
 		return { kind: "none" };
 	}
 
 	if (rootOf(dir.url) !== root) {
-		return { kind: "other-root", root: dirs.get(rootOf(dir.url)) ?? dir };
+		return { kind: "other-root", root: byUrl.get(rootOf(dir.url)) ?? dir };
 	}
 
 	return { dir, kind: "dir" };
-}
-
-export function resolveRoot(
-	catalog: PageCatalog,
-	input: string
-): Directory | undefined {
-	const needle = input.trim().replace(LEADING_SLASH, "").toLowerCase();
-	return roots(catalog).find((dir) => matches(dir, needle));
 }
 
 function step(
@@ -131,10 +137,12 @@ function step(
 	segment: string
 ): string | DirectoryOutcome {
 	if (segment === "..") {
-		return directories(catalog).get(url)?.parent ?? { kind: "above-root" };
+		return (
+			directoryIndex(catalog).byUrl.get(url)?.parent ?? { kind: "above-root" }
+		);
 	}
 
-	const child = matchChild(catalog, url, segment);
+	const child = findChild(catalog, url, segment);
 	if (child) {
 		return child.url;
 	}
@@ -146,56 +154,15 @@ function step(
 	return page ? { kind: "page", page } : { kind: "none" };
 }
 
-function matchChild(
+function findChild(
 	catalog: PageCatalog,
-	url: string,
-	segment: string
+	parent: string,
+	name: string
 ): Directory | undefined {
-	const needle = segment.toLowerCase();
-	const candidates =
-		url === "" ? roots(catalog) : childDirectories(catalog, url);
-	return candidates.find((dir) => matches(dir, needle));
-}
-
-function matches(dir: Directory, needle: string): boolean {
-	return (
-		dir.name.toLowerCase() === needle ||
-		dir.page?.title.plain.toLowerCase() === needle
+	const needle = name.toLowerCase();
+	return childDirectories(catalog, parent).find(
+		(dir) =>
+			dir.name.toLowerCase() === needle ||
+			dir.page?.title.plain.toLowerCase() === needle
 	);
-}
-
-export function parentDirectory(url: string): string | null {
-	return rootOf(url) === url ? null : url.slice(0, url.lastIndexOf("/"));
-}
-
-export function initialLocation(route: string): TerminalLocation {
-	return { cwd: rootOf(route), view: null };
-}
-
-export function applyCommandLocation(
-	location: TerminalLocation,
-	{ cwd, view }: Pick<CommandResult, "cwd" | "view">
-): TerminalLocation {
-	if (cwd === undefined && view === undefined) {
-		return location;
-	}
-
-	return { cwd: cwd ?? location.cwd, view: view ?? null };
-}
-
-export function followRoute(
-	location: TerminalLocation,
-	route: string
-): TerminalLocation {
-	const cwd = isWithin(route, location.cwd) ? location.cwd : rootOf(route);
-	const view = location.view?.kind === "search" ? location.view : null;
-	if (cwd === location.cwd && view === location.view) {
-		return location;
-	}
-
-	return { cwd, view };
-}
-
-export function clearView(location: TerminalLocation): TerminalLocation {
-	return location.view === null ? location : { ...location, view: null };
 }

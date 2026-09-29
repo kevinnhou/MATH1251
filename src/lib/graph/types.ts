@@ -1,13 +1,13 @@
+import type { GraphModule } from "@/lib/course/strands";
 import type { MarkdownFragment, RenderedMarkdown } from "@/lib/markdown/types";
-import type { MathEnvKind } from "@/lib/math-env/kinds";
-import type { GraphModule } from "@/lib/site/strands";
+import { getMathEnvConfig, type MathEnvKind } from "@/lib/math-env/kinds";
 
 export {
 	GRAPH_MODULES,
 	type GraphModule,
 	isGraphModule,
 	STRAND_LABELS as GRAPH_MODULE_LABELS,
-} from "@/lib/site/strands";
+} from "@/lib/course/strands";
 
 export const GRAPH_STRAND_ARGS = [
 	"all",
@@ -119,4 +119,14 @@ export function graphEdgeId(
 	target: string
 ): string {
 	return `${kind}\0${source}\0${target}`;
+}
+
+/** "DEF / definition" for an environment, "page" for a page. */
+export function nodeKindLabel(node: GraphNode): string {
+	if (isPageNode(node)) {
+		return node.type;
+	}
+
+	const { code, word } = getMathEnvConfig(node.kind);
+	return `${code} / ${word}`;
 }

@@ -4,19 +4,31 @@ import { usePathname } from "fumadocs-core/framework";
 import {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
+import type { PageCatalog } from "@/lib/course/catalog";
+import { currentPagesFromUrl } from "@/lib/course/catalog";
+import type { GraphAction } from "@/lib/graph/actions";
 import { useGraphDocument } from "@/lib/graph/client";
+import type { GraphRuntime } from "@/lib/graph/runtime";
 import {
-	type GraphRuntime,
-	unavailableGraphRuntime,
-} from "@/lib/graph/runtime";
-import { createGraphSession } from "@/lib/graph/session";
-import { currentPagesFromUrl } from "@/lib/terminal/pages";
-import type { PageCatalog } from "@/lib/terminal/types";
+	applyGraphAction,
+	createGraphSession,
+	type GraphActionResult,
+	type GraphSession,
+	type GraphTargetResolver,
+} from "@/lib/graph/session";
+import { homeRoute } from "@/lib/site/config";
+
+interface StoredSession {
+	homeId: string;
+	session: GraphSession;
+}
 
 const GraphContext = createContext<GraphRuntime | null>(null);
 
@@ -36,8 +48,7 @@ export function GraphProvider({
 	catalog: PageCatalog;
 	children: ReactNode;
 }) {
-	const pathname = usePathname();
-	const routeUrl = pathname || "/core";
+	const routeUrl = usePathname() || homeRoute;
 	const current = useMemo(
 		() => currentPagesFromUrl(catalog, routeUrl),
 		[catalog, routeUrl]
@@ -45,12 +56,19 @@ export function GraphProvider({
 	const homeId = current.source.url;
 	const canvasAvailable = current.inCatalog && !current.route.kindView;
 	const load = useGraphDocument();
-	const [session, setSession] = useState(() => createGraphSession(homeId));
 	const [narrow, setNarrow] = useState(false);
+	const [stored, setStored] = useState<StoredSession>(() => ({
+		homeId,
+		session: createGraphSession(homeId),
+	}));
+	const pending = useRef<{ base: StoredSession; next: StoredSession } | null>(
+		null
+	);
 
-	useEffect(() => {
-		setSession(createGraphSession(homeId));
-	}, [homeId]);
+	if (stored.homeId !== homeId) {
+		setStored({ homeId, session: createGraphSession(homeId) });
+	}
+	const { session } = stored;
 
 	useEffect(() => {
 		const media = window.matchMedia("(max-width: 767px)");
@@ -60,34 +78,51 @@ export function GraphProvider({
 		return () => media.removeEventListener("change", update);
 	}, []);
 
+	const document = load.status === "ready" ? load.document : undefined;
+	const dispatch = useCallback(
+		(
+			action: GraphAction,
+			resolveTarget?: GraphTargetResolver
+		): GraphActionResult => {
+			if (document === undefined) {
+				throw new Error("Graph dispatch before the document loaded.");
+			}
+
+			const base =
+				pending.current?.base === stored ? pending.current.next : stored;
+			const result = applyGraphAction(base.session, action, {
+				document,
+				homeId,
+				resolveTarget,
+			});
+			const next = { homeId, session: result.session };
+			pending.current = { base: stored, next };
+			setStored(next);
+			return result;
+		},
+		[document, homeId, stored]
+	);
+
 	const graph = useMemo((): GraphRuntime => {
 		if (!canvasAvailable) {
-			return unavailableGraphRuntime(homeId);
+			return { homeId, status: "unavailable" };
 		}
 
-		if (load.status === "loading") {
-			return { homeId, session, setSession, status: "loading" };
-		}
-
-		if (load.status === "error") {
-			return {
-				homeId,
-				retry: load.retry,
-				session,
-				setSession,
-				status: "error",
-			};
+		if (load.status !== "ready") {
+			return load.status === "error"
+				? { homeId, retry: load.retry, status: "error" }
+				: { homeId, status: "loading" };
 		}
 
 		return {
+			dispatch,
 			document: load.document,
 			homeId,
 			narrow,
 			session,
-			setSession,
 			status: "ready",
 		};
-	}, [canvasAvailable, homeId, load, narrow, session]);
+	}, [canvasAvailable, dispatch, homeId, load, narrow, session]);
 
 	return (
 		<GraphContext.Provider value={graph}>{children}</GraphContext.Provider>

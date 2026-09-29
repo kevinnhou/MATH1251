@@ -28,7 +28,8 @@ import {
 } from "react";
 import { useTerminalApi } from "@/components/terminal/provider";
 import { cn } from "@/lib/cn";
-import { parentDirectory, rootOf } from "@/lib/terminal/dirs";
+import { parentPath } from "@/lib/course/catalog";
+import { childDirectories, type Directory, rootOf } from "@/lib/terminal/dirs";
 import { useRailMarks } from "./rail-marks";
 import { TreeRow, TreeSeparator } from "./rows";
 import { handleTreeKey } from "./tree-keys";
@@ -86,34 +87,21 @@ export function SidebarTreeViewport({
 function PersistentFolder({
 	children,
 	item,
+	section,
 }: {
 	children: ReactNode;
 	item: Folder;
+	section?: boolean;
 }) {
 	const pathname = usePathname();
-	const holdsActivePage = useTreePath().includes(item);
-	const { folderOpen, setFolderOpen } = useSidebarTreeState();
-	const id = folderKey(item);
-	const stored = folderOpen(id);
-	const collapsible = item.collapsible !== false;
-	const expanded =
-		!collapsible || (stored ?? item.defaultOpen ?? holdsActivePage);
+	const { collapsible, expanded, holdsActivePage, open, toggle } =
+		useFolderState(item);
+	const indexActive = pathname === item.index?.url;
 	const pinned = !expanded && holdsActivePage;
-	const indexUrl = item.index?.url;
-
-	const held = useRef<boolean | null>(null);
-	useEffect(() => {
-		const entered =
-			holdsActivePage &&
-			(held.current === false ||
-				(held.current === null && stored === undefined));
-		held.current = holdsActivePage;
-		if (entered) {
-			setFolderOpen(id, true);
-		}
-	}, [holdsActivePage, id, setFolderOpen, stored]);
-
-	const toggle = () => setFolderOpen(id, !expanded);
+	const headerData = {
+		"data-tree-folder-open": expanded,
+		"data-tree-section": section || undefined,
+	};
 
 	return (
 		<Collapsible data-tree-folder="" open={expanded || holdsActivePage}>
@@ -121,19 +109,13 @@ function PersistentFolder({
 				{item.index ? (
 					<>
 						<TreeRow
-							active={pathname === indexUrl}
+							active={indexActive}
 							className={collapsible ? "pe-10" : undefined}
-							data-tree-folder-open={expanded}
+							{...headerData}
 							external={item.index.external}
 							header
 							href={item.index.url}
-							onClick={() => {
-								if (pathname === indexUrl) {
-									toggle();
-								} else {
-									setFolderOpen(id, true);
-								}
-							}}
+							onClick={indexActive ? toggle : open}
 						>
 							{item.icon}
 							{item.name}
@@ -157,7 +139,7 @@ function PersistentFolder({
 						aria-expanded={collapsible ? expanded : undefined}
 						as="button"
 						className="w-full"
-						data-tree-folder-open={expanded}
+						{...headerData}
 						data-tree-toggle=""
 						header
 						onClick={collapsible ? toggle : undefined}
@@ -184,6 +166,36 @@ function PersistentFolder({
 			</CollapsibleContent>
 		</Collapsible>
 	);
+}
+
+function useFolderState(item: Folder) {
+	const holdsActivePage = useTreePath().includes(item);
+	const { folderOpen, setFolderOpen } = useSidebarTreeState();
+	const id = folderKey(item);
+	const stored = folderOpen(id);
+	const collapsible = item.collapsible !== false;
+	const expanded =
+		!collapsible || (stored ?? item.defaultOpen ?? holdsActivePage);
+
+	const held = useRef<boolean | null>(null);
+	useEffect(() => {
+		const entered =
+			holdsActivePage &&
+			(held.current === false ||
+				(held.current === null && stored === undefined));
+		held.current = holdsActivePage;
+		if (entered) {
+			setFolderOpen(id, true);
+		}
+	}, [holdsActivePage, id, setFolderOpen, stored]);
+
+	return {
+		collapsible,
+		expanded,
+		holdsActivePage,
+		open: () => setFolderOpen(id, true),
+		toggle: () => setFolderOpen(id, !expanded),
+	};
 }
 
 function ToggleMark({
@@ -214,9 +226,13 @@ function ToggleMark({
 
 export function SidebarPageTree({ dir }: { dir: string }) {
 	const { root } = useTreeContext();
+	const { catalog, changeDirectory } = useTerminalApi();
 	const nodes = useMemo(() => directoryNodes(root, dir), [root, dir]);
-	const parent = parentDirectory(dir);
-	const { changeDirectory } = useTerminalApi();
+	const isSection = useMemo(
+		() => sectionTest(childDirectories(catalog, dir)),
+		[catalog, dir]
+	);
+	const parent = parentPath(dir);
 
 	return (
 		<Fragment key={dir}>
@@ -230,18 +246,24 @@ export function SidebarPageTree({ dir }: { dir: string }) {
 					..
 				</TreeRow>
 			) : null}
-			<TreeNodes nodes={nodes} />
+			<TreeNodes isSection={isSection} nodes={nodes} />
 		</Fragment>
 	);
 }
 
-function TreeNodes({ nodes }: { nodes: Node[] }) {
+function TreeNodes({
+	isSection,
+	nodes,
+}: {
+	isSection?: (node: Node) => boolean;
+	nodes: Node[];
+}) {
 	return nodes.map((node, index) => (
-		<TreeNode key={node.$id ?? index} node={node} />
+		<TreeNode key={node.$id ?? index} node={node} section={isSection?.(node)} />
 	));
 }
 
-function TreeNode({ node }: { node: Node }) {
+function TreeNode({ node, section }: { node: Node; section?: boolean }) {
 	const pathname = usePathname();
 	if (node.type === "separator") {
 		return (
@@ -254,7 +276,7 @@ function TreeNode({ node }: { node: Node }) {
 
 	if (node.type === "folder") {
 		return (
-			<PersistentFolder item={node}>
+			<PersistentFolder item={node} section={section}>
 				<TreeNodes nodes={node.children} />
 			</PersistentFolder>
 		);
@@ -263,6 +285,7 @@ function TreeNode({ node }: { node: Node }) {
 	return (
 		<TreeRow
 			active={pathname === node.url}
+			data-tree-section={section || undefined}
 			external={node.external}
 			href={node.url}
 			icon={node.icon}
@@ -270,6 +293,15 @@ function TreeNode({ node }: { node: Node }) {
 			{node.name}
 		</TreeRow>
 	);
+}
+
+function sectionTest(subdirectories: Directory[]): (node: Node) => boolean {
+	if (subdirectories.length === 0) {
+		return (node) => node.type !== "separator";
+	}
+
+	const urls = new Set(subdirectories.map((dir) => dir.url));
+	return (node) => node.type === "folder" && urls.has(node.index?.url ?? "");
 }
 
 function directoryNodes(root: { children: Node[] }, dir: string): Node[] {
