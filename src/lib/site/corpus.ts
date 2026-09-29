@@ -6,6 +6,7 @@ import {
 	type PageCatalog,
 	parentPath,
 } from "@/lib/course/catalog";
+import type { CourseRoutes } from "@/lib/course/routes";
 import { getStrand } from "@/lib/course/strands";
 import { assembleGraphDocument } from "@/lib/graph/assemble";
 import type { GraphDocument } from "@/lib/graph/types";
@@ -46,6 +47,7 @@ interface PageIndex {
 export interface Corpus extends PageIndex {
 	catalog: PageCatalog;
 	graph: GraphDocument;
+	routes: CourseRoutes;
 	tenets: TenetIndex;
 }
 
@@ -80,6 +82,7 @@ export const getCorpus = memoInProduction((): Corpus => {
 		...index,
 		catalog: buildCatalog(index.byUrl),
 		graph: assembleGraphDocument(index.pages, tenets, resolvePageHref),
+		routes: buildRoutes(index),
 		tenets,
 	};
 });
@@ -139,6 +142,18 @@ function resolvePageHref(href: string, dir: string): string | undefined {
 	}
 
 	return resolved.page.url;
+}
+
+function buildRoutes({ kindViews, pages }: PageIndex): CourseRoutes {
+	const kinds: CourseRoutes["kindViews"] = {};
+	for (const { kind, parentUrl } of kindViews) {
+		kinds[parentUrl] = [...(kinds[parentUrl] ?? []), kind];
+	}
+
+	return {
+		kindViews: kinds,
+		pages: pages.map(({ page }) => page.url).toSorted(),
+	};
 }
 
 function buildCatalog(byUrl: ReadonlyMap<string, ResolvedDocs>): PageCatalog {

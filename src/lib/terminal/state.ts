@@ -56,14 +56,17 @@ export type TerminalAction =
 	| { type: "clear-inspect" }
 	| { type: "show-tree" }
 	| { type: "change-directory"; url: string }
-	| { type: "route"; url: string };
+	| { type: "route"; url: string; inCourse: boolean };
 
-export function initialTerminalState(route: string): TerminalState {
+export function initialTerminalState(
+	route: string,
+	inCourse: boolean
+): TerminalState {
 	return {
 		cycle: null,
 		hadOutput: false,
 		history: emptyHistory(),
-		location: initialLocation(route),
+		location: initialLocation(route, inCourse),
 		pendingNavigation: null,
 		route,
 		surface: emptySurface(),
@@ -147,7 +150,7 @@ export function terminalReducer(
 		case "change-directory":
 			return { ...state, location: { cwd: action.url, view: null } };
 		case "route":
-			return followNavigation(state, action.url);
+			return followNavigation(state, action.url, action.inCourse);
 		default: {
 			const unknown: never = action;
 			return unknown;
@@ -203,14 +206,18 @@ function applyResult(
 	};
 }
 
-function followNavigation(state: TerminalState, url: string): TerminalState {
+function followNavigation(
+	state: TerminalState,
+	url: string,
+	inCourse: boolean
+): TerminalState {
 	if (url === state.route) {
 		return state;
 	}
 
 	const moved = {
 		...state,
-		location: followRoute(state.location, url),
+		location: followRoute(state.location, url, inCourse),
 		route: url,
 	};
 	if (state.pendingNavigation === url) {

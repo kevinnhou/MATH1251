@@ -9,7 +9,7 @@ import {
 	useSidebar,
 } from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { type ReactNode, useMemo } from "react";
-import type { KindView } from "@/lib/math-env/kind-view";
+import { useCourseRoutes } from "@/components/course/provider";
 import { withActiveKindViewPages } from "@/lib/math-env/kind-view-tree";
 import { baseOptions } from "@/lib/site/layout";
 import { Sidebar } from "../sidebar/sidebar";
@@ -31,17 +31,16 @@ const slots = {
 
 export function VirtualDocsLayout({
 	children,
-	kindViewPages,
 	tree,
 }: {
 	children: ReactNode;
-	kindViewPages: readonly KindView[];
 	tree: Root;
 }) {
 	const pathname = usePathname();
+	const routes = useCourseRoutes();
 	const visibleTree = useMemo(
-		() => withActiveKindViewPages(tree, kindViewPages, pathname),
-		[kindViewPages, pathname, tree]
+		() => withActiveKindViewPages(tree, routes.kindViews, pathname),
+		[routes, pathname, tree]
 	);
 
 	return (

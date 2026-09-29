@@ -23,6 +23,8 @@ export interface KindView extends KindViewCopy {
 	parentUrl: string;
 }
 
+export type KindViewRef = Pick<KindView, "kind" | "parentUrl" | "url">;
+
 const trailingSlashes = /\/+$/;
 
 export function getKindViewUrl(pageUrl: string, kind: MathEnvKind): string {

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "fumadocs-core/framework";
-import type { Folder, Node } from "fumadocs-core/page-tree";
+import type { Folder, Node, Root } from "fumadocs-core/page-tree";
 import {
 	SidebarFolder,
 	SidebarFolderContent,
@@ -26,10 +26,11 @@ import {
 	useMemo,
 	useRef,
 } from "react";
+import { useCourseRoutes } from "@/components/course/provider";
 import { useTerminalApi } from "@/components/terminal/provider";
 import { cn } from "@/lib/cn";
 import { parentPath } from "@/lib/course/catalog";
-import { childDirectories, type Directory, rootOf } from "@/lib/terminal/dirs";
+import { rootOf } from "@/lib/terminal/dirs";
 import { useRailMarks } from "./rail-marks";
 import { TreeRow, TreeSeparator } from "./rows";
 import { handleTreeKey } from "./tree-keys";
@@ -225,12 +226,13 @@ function ToggleMark({
 }
 
 export function SidebarPageTree({ dir }: { dir: string }) {
-	const { root } = useTreeContext();
-	const { catalog, changeDirectory } = useTerminalApi();
-	const nodes = useMemo(() => directoryNodes(root, dir), [root, dir]);
+	const { full } = useTreeContext();
+	const routes = useCourseRoutes();
+	const { changeDirectory } = useTerminalApi();
+	const nodes = useMemo(() => directoryNodes(full, dir), [full, dir]);
 	const isSection = useMemo(
-		() => sectionTest(childDirectories(catalog, dir)),
-		[catalog, dir]
+		() => sectionTest(routes.subdirectories(dir)),
+		[routes, dir]
 	);
 	const parent = parentPath(dir);
 
@@ -295,23 +297,28 @@ function TreeNode({ node, section }: { node: Node; section?: boolean }) {
 	);
 }
 
-function sectionTest(subdirectories: Directory[]): (node: Node) => boolean {
-	if (subdirectories.length === 0) {
+function sectionTest(
+	subdirectories: ReadonlySet<string>
+): (node: Node) => boolean {
+	if (subdirectories.size === 0) {
 		return (node) => node.type !== "separator";
 	}
 
-	const urls = new Set(subdirectories.map((dir) => dir.url));
-	return (node) => node.type === "folder" && urls.has(node.index?.url ?? "");
+	return (node) =>
+		node.type === "folder" && subdirectories.has(node.index?.url ?? "");
 }
 
-function directoryNodes(root: { children: Node[] }, dir: string): Node[] {
-	if (rootOf(dir) === dir) {
-		return root.children;
-	}
-
-	const folder = findFolder(root.children, dir);
+function directoryNodes(tree: Root, dir: string): Node[] {
+	const rootUrl = rootOf(dir);
+	const holdsRoot = (node: Node): node is Folder =>
+		node.type === "folder" &&
+		node.children.some(
+			(child) => child.type === "page" && child.url === rootUrl
+		);
+	const nodes = tree.children.find(holdsRoot)?.children ?? tree.children;
+	const folder = dir === rootUrl ? undefined : findFolder(nodes, dir);
 	if (!folder) {
-		return root.children;
+		return nodes;
 	}
 
 	return folder.index ? [folder.index, ...folder.children] : folder.children;
