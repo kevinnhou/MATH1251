@@ -1,14 +1,25 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-import { defaultCache, PAGES_CACHE_NAME } from "@serwist/turbopack/worker";
-import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
+import type {
+	PrecacheEntry,
+	SerwistGlobalConfig,
+	SerwistPlugin,
+} from "serwist";
 import {
 	CacheFirst,
+	cacheNames,
 	ExpirationPlugin,
 	NetworkFirst,
 	NetworkOnly,
 	Serwist,
 } from "serwist";
+import {
+	isPageRequest,
+	type NetworkStatus,
+	networkStatusMessage,
+	pwaCaches,
+} from "../lib/pwa/protocol";
+import { catalogRoute, graphDataRoute, offlineRoute } from "../lib/site/config";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -18,57 +29,144 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+const STATIC_PREFIX = "/_next/static/";
+const DATA_ROUTES = new Set([catalogRoute, graphDataRoute]);
+const OWNED_CACHES = new Set<string>(Object.values(pwaCaches));
+
+const isStatic = (url: string) => url.startsWith(STATIC_PREFIX);
+const urlOf = (entry: PrecacheEntry | string) =>
+	typeof entry === "string" ? entry : entry.url;
+const manifest = self.__SW_MANIFEST ?? [];
+const warmUrls = [...manifest.map(urlOf).filter(isStatic), ...DATA_ROUTES];
+
+const expireUnused = (maxEntries: number) =>
+	new ExpirationPlugin({
+		maxAgeFrom: "last-used",
+		maxAgeSeconds: 30 * 24 * 60 * 60,
+		maxEntries,
+		purgeOnQuotaError: true,
+	});
+
+let reachable = true;
+
+const networkStatus = (): NetworkStatus => ({
+	reachable,
+	type: networkStatusMessage,
+});
+
+async function reportReachable(value: boolean) {
+	if (reachable === value) {
+		return;
+	}
+
+	reachable = value;
+	const clients = await self.clients.matchAll({ type: "window" });
+	for (const client of clients) {
+		client.postMessage(networkStatus());
+	}
+}
+
+const trackReachability: SerwistPlugin = {
+	async cacheDidUpdate() {
+		await reportReachable(true);
+	},
+	async fetchDidFail() {
+		await reportReachable(false);
+	},
+	async fetchDidSucceed({ response }) {
+		await reportReachable(true);
+		return response;
+	},
+};
+
+const offlineRedirect: SerwistPlugin = {
+	handlerDidError({ request }) {
+		if (request.mode !== "navigate") {
+			return Promise.resolve(undefined);
+		}
+
+		const { pathname, search } = new URL(request.url);
+		const from = encodeURIComponent(pathname + search);
+		return Promise.resolve(
+			Response.redirect(`${offlineRoute}?from=${from}`, 302)
+		);
+	},
+};
+
 const serwist = new Serwist({
 	clientsClaim: true,
-	fallbacks: {
-		entries: [
-			{
-				matcher: ({ request }) => request.destination === "document",
-				url: "/~offline",
-			},
-		],
-	},
 	navigationPreload: true,
-	precacheEntries: self.__SW_MANIFEST,
+	precacheEntries: manifest.filter((entry) => !isStatic(urlOf(entry))),
+	precacheOptions: { ignoreURLParametersMatching: [/^from$/] },
 	runtimeCaching: [
 		{
-			handler: new NetworkOnly(),
-			matcher: ({ sameOrigin, url: { pathname } }) =>
-				sameOrigin &&
-				(pathname.endsWith(".md") ||
-					pathname.startsWith("/og/") ||
-					pathname.startsWith("/llms")),
+			handler: new CacheFirst({
+				cacheName: pwaCaches.static,
+				plugins: [expireUnused(400)],
+			}),
+			matcher: ({ sameOrigin, url }) => sameOrigin && isStatic(url.pathname),
 		},
 		{
-			handler: new CacheFirst({
-				cacheName: "next-static-media",
-				plugins: [
-					new ExpirationPlugin({
-						maxAgeFrom: "last-used",
-						maxAgeSeconds: 30 * 24 * 60 * 60,
-						maxEntries: 64,
-					}),
-				],
+			handler: new NetworkOnly({
+				networkTimeoutSeconds: 5,
+				plugins: [trackReachability],
 			}),
-			matcher: ({ sameOrigin, url: { pathname } }) =>
-				sameOrigin && pathname.startsWith("/_next/static/media/"),
+			matcher: ({ request, sameOrigin }) =>
+				sameOrigin && request.headers.get("RSC") === "1",
 		},
 		{
 			handler: new NetworkFirst({
-				cacheName: PAGES_CACHE_NAME.html,
-				plugins: [
-					new ExpirationPlugin({
-						maxAgeSeconds: 24 * 60 * 60,
-						maxEntries: 32,
-					}),
-				],
+				cacheName: pwaCaches.pages,
+				networkTimeoutSeconds: 3,
+				plugins: [expireUnused(150), trackReachability, offlineRedirect],
 			}),
 			matcher: ({ request, sameOrigin }) =>
-				sameOrigin && request.mode === "navigate",
+				sameOrigin && isPageRequest(request),
 		},
-		...defaultCache,
+		{
+			handler: new NetworkFirst({
+				cacheName: pwaCaches.data,
+				networkTimeoutSeconds: 3,
+				plugins: [trackReachability],
+			}),
+			matcher: ({ sameOrigin, url }) =>
+				sameOrigin && DATA_ROUTES.has(url.pathname),
+		},
 	],
 	skipWaiting: true,
+});
+
+self.addEventListener("install", (event) => {
+	event.waitUntil(
+		Promise.all(
+			warmUrls.map((url) =>
+				serwist.handleRequest({ event, request: new Request(url) })
+			)
+		)
+	);
+});
+
+self.addEventListener("activate", (event) => {
+	event.waitUntil(
+		caches
+			.keys()
+			.then((names) =>
+				Promise.all(
+					names
+						.filter(
+							(name) =>
+								!(OWNED_CACHES.has(name) || name.startsWith(cacheNames.prefix))
+						)
+						.map((name) => caches.delete(name))
+				)
+			)
+	);
+});
+
+self.addEventListener("message", (event) => {
+	if (event.data?.type === networkStatusMessage && !reachable) {
+		event.source?.postMessage(networkStatus());
+	}
 });
 
 serwist.addEventListeners();

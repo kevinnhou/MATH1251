@@ -1,17 +1,12 @@
-import { spawnSync } from "node:child_process";
 import { createSerwistRoute } from "@serwist/turbopack";
-
-const revision =
-	process.env.VERCEL_GIT_COMMIT_SHA ??
-	(spawnSync("git", ["rev-parse", "HEAD"], {
-		encoding: "utf-8",
-	}).stdout?.trim() ||
-		crypto.randomUUID());
+import { offlineRoute } from "@/lib/site/config";
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
 	createSerwistRoute({
-		additionalPrecacheEntries: [{ revision, url: "/~offline" }],
-		globPatterns: [],
+		additionalPrecacheEntries: [
+			{ revision: process.env.BUILD_REVISION, url: offlineRoute },
+		],
+		globPatterns: [".next/static/**/*.{js,css,woff2}"],
 		swSrc: "src/app/sw.ts",
 		useNativeEsbuild: true,
 	});
