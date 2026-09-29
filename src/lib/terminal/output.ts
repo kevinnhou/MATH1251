@@ -1,6 +1,5 @@
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 import { plainInlineLabel } from "@/lib/markdown/types";
-import { type GraphModule, STRAND_LABELS } from "@/lib/site/strands";
 import { isSafeInternalUrl } from "@/lib/site/url";
 import type {
 	CatalogPage,
@@ -93,24 +92,6 @@ export function ambiguousOutput(
 		message: `Ambiguous: ${query}`,
 		title: "matches",
 	});
-}
-
-export function strandGroups(pages: CatalogPage[]): LinkGroup[] {
-	const order: GraphModule[] = ["core", "algebra", "calculus"];
-	const groups: LinkGroup[] = [];
-	for (const strand of order) {
-		const items = pages.filter((page) => page.strand === strand);
-		if (items.length > 0) {
-			groups.push(pageLinkGroup(STRAND_LABELS[strand], items));
-		}
-	}
-
-	const unstranded = pages.filter((page) => page.strand === undefined);
-	if (unstranded.length > 0) {
-		groups.push(pageLinkGroup("other", unstranded));
-	}
-
-	return groups;
 }
 
 export function searchHitsOutput(

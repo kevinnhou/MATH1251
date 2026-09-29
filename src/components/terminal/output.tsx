@@ -20,15 +20,15 @@ import type {
 	SearchHit,
 	TerminalOutput,
 } from "@/lib/terminal/types";
-import { useTerminal } from "./provider";
+import { useTerminalApi, useTerminalScreen } from "./provider";
 
 export function TerminalOutputPane({
 	captureRef = true,
 }: {
 	captureRef?: boolean;
 }) {
-	const { outputRef, surface } = useTerminal();
-	const { echo, output } = surface;
+	const { outputRef } = useTerminalApi();
+	const { echo, output } = useTerminalScreen();
 	if (!output) {
 		return null;
 	}

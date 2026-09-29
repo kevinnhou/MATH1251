@@ -1,10 +1,9 @@
-import { isEditableTarget, isModifiedKey } from "@/lib/client/actions";
+import { isModifiedKey } from "@/lib/client/actions";
 
 const ROW = "[data-tree-row]";
 const FOLDER = "[data-tree-folder]";
 const HEADER_ROW = ":scope > [data-tree-header] [data-tree-row]";
 const TOGGLE = ":scope > [data-tree-header] [data-tree-toggle]";
-const DIGIT = /^[0-9]$/;
 
 const MOVES: Record<string, "up" | "down" | "out" | "in"> = {
 	ArrowDown: "down",
@@ -105,25 +104,23 @@ function visibleRows(scope: Element): HTMLElement[] {
 	);
 }
 
-export function sectionIndex(event: KeyboardEvent): number | null {
-	if (
-		event.defaultPrevented ||
-		isModifiedKey(event) ||
-		event.shiftKey ||
-		isEditableTarget(event.target) ||
-		!DIGIT.test(event.key)
-	) {
-		return null;
+export function sectionHeader(
+	root: HTMLElement | null,
+	index: number
+): HTMLElement | undefined {
+	if (!root) {
+		return;
 	}
 
-	return event.key === "0" ? 9 : Number(event.key) - 1;
-}
-
-export function focusSection(root: HTMLElement, index: number): boolean {
 	const sections = [...root.querySelectorAll<HTMLElement>(FOLDER)].filter(
 		(folder) => !folder.parentElement?.closest(FOLDER)
 	);
-	const header = sections[index]?.querySelector<HTMLElement>(HEADER_ROW);
-	header?.focus();
-	return header !== undefined;
+	if (sections.length > 0) {
+		return sections[index]?.querySelector<HTMLElement>(HEADER_ROW) ?? undefined;
+	}
+
+	const rows = [...root.querySelectorAll<HTMLElement>(ROW)].filter(
+		(row) => row.dataset.treeUp === undefined && !row.closest(FOLDER)
+	);
+	return rows[index];
 }

@@ -5,17 +5,23 @@ import {
 	LLM_PROVIDER_LABELS,
 	llmUrls,
 } from "@/lib/site/llm-ask";
-import { isGraphModule } from "@/lib/site/strands";
 import { isSafeExternalUrl, toAbsoluteUrl } from "@/lib/site/url";
+import {
+	childDirectories,
+	type DirectoryOutcome,
+	displayPath,
+	resolveDirectory,
+	resolveRoot,
+	rootOf,
+	roots,
+} from "./dirs";
 import { graphCommand } from "./graph-command";
 import {
 	ambiguousOutput,
 	errorOutput,
-	groupedLinks,
 	markdownOutput,
 	messageOutput,
 	searchHitsOutput,
-	strandGroups,
 	usageOutput,
 } from "./output";
 import { findPageByUrl } from "./pages";
@@ -41,12 +47,24 @@ import type {
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
-const LEADING_SLASH = /^\//;
-
 export function coreDescriptors(): CommandDescriptor[] {
 	return [
-		command("cd", ["cd"], executeCd, completePageArgument, "cd <page>"),
-		command("ls", ["ls"], executeLs, completePageArgument, "ls [strand|path]"),
+		command("cd", ["cd"], executeCd, completeDirectoryArgument, "cd [dir|..]"),
+		command("ls", ["ls"], executeLs, completeDirectoryArgument, "ls [dir]"),
+		command(
+			"open",
+			["open"],
+			executeOpen,
+			completePageArgument,
+			"open <page|dir>"
+		),
+		command(
+			"switch",
+			["switch", "checkout"],
+			executeSwitch,
+			completeRootArgument,
+			"switch <root>"
+		),
 		command("md", ["md"], executeMarkdown, completePageArgument, "md <page|.>"),
 		command(
 			"gpt",
@@ -79,7 +97,7 @@ export function coreDescriptors(): CommandDescriptor[] {
 		},
 		{
 			advertised: true,
-			execute: (ctx) => done(messageOutput(ctx.current.route.url)),
+			execute: (ctx) => done(messageOutput(displayPath(ctx.cwd))),
 			id: "pwd",
 			names: ["pwd"],
 			usage: "pwd",
@@ -150,6 +168,7 @@ export function completeLine(
 	parsed: ParsedLine,
 	catalog: PageCatalog,
 	current: CurrentPages,
+	cwd: string,
 	registry: CommandRegistry,
 	graph: CompleteContext["graph"]
 ): Completion[] {
@@ -165,6 +184,7 @@ export function completeLine(
 		descriptorFor(parsed, registry)?.complete?.({
 			catalog,
 			current,
+			cwd,
 			graph,
 			parsed,
 		}) ?? []
@@ -173,13 +193,68 @@ export function completeLine(
 
 function executeCd(ctx: ExecuteContext): CommandResult {
 	const query = argumentText(ctx.parsed);
-	const resolved = resolvePage(ctx.catalog, query, ctx.current.route);
+	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query);
+	if (resolved.kind !== "dir") {
+		return done(directoryError("cd", query, resolved, ctx.cwd));
+	}
+
+	return done(null, {
+		announce: `In ${displayPath(resolved.dir.url)}.`,
+		cwd: resolved.dir.url,
+	});
+}
+
+function executeLs(ctx: ExecuteContext): CommandResult {
+	const query = argumentText(ctx.parsed);
+	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query || ".");
+	if (resolved.kind !== "dir") {
+		return done(directoryError("ls", query, resolved, ctx.cwd));
+	}
+
+	return done(null, {
+		announce: `Listing ${displayPath(resolved.dir.url)}.`,
+		listing: resolved.dir.url,
+	});
+}
+
+function directoryError(
+	name: string,
+	query: string,
+	outcome: Exclude<DirectoryOutcome, { kind: "dir" }>,
+	cwd: string
+): TerminalOutput {
+	switch (outcome.kind) {
+		case "page":
+			return errorOutput(`${name}: not a directory: ${query} (try open)`);
+		case "above-root":
+			return errorOutput(
+				`${name}: already at the top of ${displayPath(rootOf(cwd))} (try switch)`
+			);
+		case "other-root":
+			return errorOutput(
+				`${name}: ${query} is in ${outcome.root.name} (try switch ${outcome.root.name})`
+			);
+		default:
+			return errorOutput(`${name}: no such directory: ${query}`);
+	}
+}
+
+function executeOpen(ctx: ExecuteContext): CommandResult {
+	const query = argumentText(ctx.parsed);
+	if (query === "") {
+		return done(usageOutput("open <page|dir>"));
+	}
+
+	const page = pageInCwd(ctx, query);
+	const resolved: ResolveOutcome = page
+		? { kind: "match", page }
+		: resolvePage(ctx.catalog, query, ctx.current.route);
 	if (resolved.kind === "empty") {
-		return done(usageOutput("cd <page>"));
+		return done(usageOutput("open <page|dir>"));
 	}
 
 	if (resolved.kind === "none") {
-		return done(errorOutput(`cd: no such page: ${query}`));
+		return done(errorOutput(`open: no such page: ${query}`));
 	}
 
 	if (resolved.kind === "ambiguous") {
@@ -196,48 +271,41 @@ function executeCd(ctx: ExecuteContext): CommandResult {
 	});
 }
 
-function executeLs(ctx: ExecuteContext): CommandResult {
-	const filter = argumentText(ctx.parsed).toLowerCase();
-	const pages = ctx.catalog.pages.filter((page) =>
-		matchesLsFilter(page, filter)
-	);
-	if (pages.length === 0) {
+function pageInCwd(
+	ctx: ExecuteContext,
+	query: string
+): CatalogPage | undefined {
+	const outcome = resolveDirectory(ctx.catalog, ctx.cwd, query);
+	if (outcome.kind === "dir") {
+		return outcome.dir.page;
+	}
+
+	return outcome.kind === "page" ? outcome.page : undefined;
+}
+
+function executeSwitch(ctx: ExecuteContext): CommandResult {
+	const query = argumentText(ctx.parsed);
+	const names = roots(ctx.catalog).map((dir) => dir.name);
+	if (query === "") {
+		return done(usageOutput(`switch <${names.join("|")}>`));
+	}
+
+	const root = resolveRoot(ctx.catalog, query);
+	if (!root?.page) {
 		return done(
-			errorOutput(
-				filter === ""
-					? "ls: nothing to list."
-					: `ls: no pages match "${filter}".`
-			)
+			errorOutput(`switch: no such root: ${query} (${names.join(", ")})`)
 		);
 	}
 
-	return done(
-		groupedLinks(strandGroups(pages), {
-			title: filter === "" ? "pages" : `pages matching ${filter}`,
-		})
-	);
-}
-
-function matchesLsFilter(page: CatalogPage, filter: string): boolean {
-	if (page.kindView) {
-		return false;
+	if (rootOf(ctx.current.route.url) === root.url) {
+		return done(null, { announce: `On ${root.name}.`, cwd: root.url });
 	}
 
-	if (filter === "") {
-		return true;
-	}
-
-	if (isGraphModule(filter)) {
-		return page.strand === filter;
-	}
-
-	const path = page.url.replace(LEADING_SLASH, "").toLowerCase();
-	return (
-		path.startsWith(filter) ||
-		page.title.source.toLowerCase().startsWith(filter) ||
-		page.title.plain.toLowerCase().startsWith(filter) ||
-		page.url.toLowerCase().startsWith(`/${filter}`)
-	);
+	return done(null, {
+		announce: `Switched to ${root.name}.`,
+		cwd: root.url,
+		navigate: root.page.url,
+	});
 }
 
 async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
@@ -394,6 +462,44 @@ function resolveToOutput(
 	}
 
 	return errorOutput(`no such page: ${query === "" ? "." : query}`);
+}
+
+function completeDirectoryArgument(ctx: CompleteContext): Completion[] {
+	const partial = argumentPartial(ctx.parsed);
+	const head = partial.slice(0, partial.lastIndexOf("/") + 1);
+	const tail = partial.slice(head.length).toLowerCase();
+	const base = resolveDirectory(ctx.catalog, ctx.cwd, head || ".");
+	if (base.kind !== "dir") {
+		return [];
+	}
+
+	const up: Completion[] =
+		base.dir.parent && "..".startsWith(tail)
+			? [{ detail: "up", label: "..", replace: `${head}..` }]
+			: [];
+	const children = childDirectories(ctx.catalog, base.dir.url)
+		.filter(
+			(dir) =>
+				dir.name.startsWith(tail) ||
+				dir.page?.title.plain.toLowerCase().startsWith(tail)
+		)
+		.map((dir) => ({
+			detail: dir.page?.title ?? dir.name,
+			label: `${dir.name}/`,
+			replace: quoteIfNeeded(`${head}${dir.name}`),
+		}));
+	return [...children, ...up].slice(0, TERMINAL_COMPLETION_LIMIT);
+}
+
+function completeRootArgument(ctx: CompleteContext): Completion[] {
+	const partial = argumentPartial(ctx.parsed).toLowerCase();
+	return roots(ctx.catalog)
+		.filter((dir) => dir.name.startsWith(partial))
+		.map((dir) => ({
+			detail: dir.page?.title ?? dir.name,
+			label: dir.name,
+			replace: dir.name,
+		}));
 }
 
 function completePageArgument(ctx: CompleteContext): Completion[] {

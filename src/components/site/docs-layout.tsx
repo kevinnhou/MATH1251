@@ -3,14 +3,31 @@
 import { usePathname } from "fumadocs-core/framework";
 import type { Root } from "fumadocs-core/page-tree";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import {
+	SidebarProvider,
+	SidebarTrigger,
+	useSidebar,
+} from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { type ReactNode, useMemo } from "react";
 import type { KindView } from "@/lib/math-env/kind-view";
 import { withActiveKindViewPages } from "@/lib/math-env/kind-view-tree";
 import { baseOptions } from "@/lib/site/layout";
-import { terminalDocsSlots } from "../terminal/slots";
+import { Sidebar } from "../sidebar/sidebar";
 import { Header } from "./header";
+import { Subnav } from "./subnav";
 
 const { githubUrl, nav } = baseOptions;
+
+const slots = {
+	header: Subnav,
+	searchTrigger: false as const,
+	sidebar: {
+		provider: SidebarProvider,
+		root: Sidebar,
+		trigger: SidebarTrigger,
+		useSidebar,
+	},
+};
 
 export function VirtualDocsLayout({
 	children,
@@ -32,7 +49,7 @@ export function VirtualDocsLayout({
 			githubUrl={githubUrl}
 			nav={{ ...nav, title: <Header /> }}
 			searchToggle={{ enabled: false }}
-			slots={terminalDocsSlots}
+			slots={slots}
 			tabs={{
 				transform: (option) => {
 					if (!option.icon) {

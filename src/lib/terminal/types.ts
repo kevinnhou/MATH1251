@@ -7,7 +7,7 @@ import type {
 import type { GraphModule } from "@/lib/site/strands";
 
 export const TERMINAL_HISTORY_LIMIT = 50;
-export const TERMINAL_HISTORY_KEY = "math1251-terminal-history";
+export const TERMINAL_HISTORY_KEY = "terminal-history";
 export const TERMINAL_COMPLETION_LIMIT = 8;
 
 export type TerminalMode = "browse" | "edit" | "output";
@@ -138,6 +138,7 @@ export interface CommandRuntime {
 export interface CompleteContext {
 	catalog: PageCatalog;
 	current: CurrentPages;
+	cwd: string;
 	graph: GraphRuntime;
 	parsed: ParsedLine;
 }
@@ -145,6 +146,7 @@ export interface CompleteContext {
 export interface ExecuteContext {
 	catalog: PageCatalog;
 	current: CurrentPages;
+	cwd: string;
 	graph: GraphRuntime;
 	parsed: ParsedLine;
 	runtime: CommandRuntime;
@@ -152,9 +154,17 @@ export interface ExecuteContext {
 }
 
 export interface CommandResult {
+	announce?: string;
 	closeDrawer?: boolean;
+	cwd?: string;
+	listing?: string;
 	navigate?: string;
 	output: TerminalOutput | null;
+}
+
+export interface TerminalLocation {
+	cwd: string;
+	listing: string | null;
 }
 
 export interface CommandDescriptor {

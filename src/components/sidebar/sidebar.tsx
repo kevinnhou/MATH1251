@@ -14,37 +14,29 @@ import type { SidebarProps } from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { LinkItem } from "fumadocs-ui/layouts/shared";
 import { ChevronDown, Languages, SidebarIcon } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
+import { TerminalLauncher, TerminalPrompt } from "@/components/terminal/prompt";
+import {
+	useTerminalApi,
+	useTerminalScreen,
+} from "@/components/terminal/provider";
+import { sectionHotkey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
-import { TerminalPanes } from "./panes";
-import { TerminalPrompt } from "./prompt";
-import { useTerminal } from "./provider";
-import { focusSection, sectionIndex } from "./sidebar-keys";
-import { SidebarTreeStateProvider } from "./sidebar-state";
+import { SidebarPanes } from "./panes";
+import { sectionHeader } from "./tree-keys";
+import { SidebarTreeStateProvider } from "./tree-state";
 
-export function TerminalSidebar({
-	banner,
-	collapsible = true,
-	components,
-	footer,
-	...rest
-}: SidebarProps) {
+export function Sidebar(props: SidebarProps) {
 	return (
 		<SidebarTreeStateProvider>
-			<TerminalSidebarChrome
-				banner={banner}
-				collapsible={collapsible}
-				components={components}
-				footer={footer}
-				{...rest}
-			/>
+			<SidebarChrome {...props} />
 		</SidebarTreeStateProvider>
 	);
 }
 
-function TerminalSidebarChrome({
+function SidebarChrome({
 	banner,
 	collapsible = true,
-	components,
+	components: _components,
 	footer,
 	...rest
 }: SidebarProps) {
@@ -53,8 +45,8 @@ function TerminalSidebarChrome({
 		slots,
 		menuItems,
 	} = useDocsLayout();
-	const { closeDrawerAfter, focusEpoch, hadOutput, inputRef, pane, surface } =
-		useTerminal();
+	const { bindSidebar, inputRef, showTree } = useTerminalApi();
+	const { hadOutput, listing, pane } = useTerminalScreen();
 	const { collapsed, mode, open, setCollapsed, setOpen } = useSidebar();
 	const iconLinks = menuItems.filter((item) => item.type === "icon");
 	const sidebarRef = useRef({ collapsed, mode, setCollapsed, setOpen });
@@ -62,65 +54,56 @@ function TerminalSidebarChrome({
 	const showDrawerField = mode === "drawer";
 
 	useEffect(() => {
-		if (focusEpoch === 0) {
-			return;
-		}
-
-		const sidebar = sidebarRef.current;
-		if (sidebar.collapsed) {
-			sidebar.setCollapsed(false);
-		}
-
-		if (sidebar.mode === "drawer") {
-			sidebar.setOpen(true);
-		}
-
-		const frame = window.requestAnimationFrame(() => {
-			inputRef.current?.focus();
-		});
-		return () => window.cancelAnimationFrame(frame);
-	}, [focusEpoch, inputRef]);
-
-	useEffect(() => {
-		if (mode !== "full" || pane !== "tree") {
-			return;
-		}
-
-		const onKeyDown = (event: KeyboardEvent) => {
-			const index = sectionIndex(event);
-			if (index === null) {
-				return;
-			}
-
-			const root = document.querySelector<HTMLElement>(
-				"#nd-sidebar [data-tree-root]"
-			);
-			if (!root) {
-				return;
-			}
-
+		const show = () => {
 			const sidebar = sidebarRef.current;
 			if (sidebar.collapsed) {
 				sidebar.setCollapsed(false);
 			}
 
-			if (focusSection(root, index)) {
-				event.preventDefault();
+			if (sidebar.mode === "drawer") {
+				sidebar.setOpen(true);
 			}
 		};
 
+		const unbind = bindSidebar({
+			closeDrawer: () => sidebarRef.current.setOpen(false),
+			reveal: () => {
+				show();
+				requestAnimationFrame(() => inputRef.current?.focus());
+			},
+		});
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			const index = sectionHotkey(event);
+			if (index === null || !sectionHeader(visibleTreeRoot(), index)) {
+				return;
+			}
+
+			event.preventDefault();
+			showTree();
+			show();
+			requestAnimationFrame(() =>
+				sectionHeader(visibleTreeRoot(), index)?.focus()
+			);
+		};
+
 		window.addEventListener("keydown", onKeyDown);
-		return () => window.removeEventListener("keydown", onKeyDown);
-	}, [mode, pane]);
+		return () => {
+			unbind();
+			window.removeEventListener("keydown", onKeyDown);
+		};
+	}, [bindSidebar, inputRef, showTree]);
 
 	useEffect(() => {
-		if (closeDrawerAfter === 0) {
+		if (!listing) {
 			return;
 		}
 
-		setOpen(false);
-		inputRef.current?.blur();
-	}, [closeDrawerAfter, inputRef, setOpen]);
+		const frame = requestAnimationFrame(() =>
+			visibleTreeRoot()?.querySelector<HTMLElement>("[data-tree-row]")?.focus()
+		);
+		return () => cancelAnimationFrame(frame);
+	}, [listing]);
 
 	const header = (desktopField: boolean) => (
 		<div className="flex flex-col gap-3 border-b p-4">
@@ -143,7 +126,7 @@ function TerminalSidebarChrome({
 					</SidebarCollapseTrigger>
 				) : null}
 			</div>
-			{desktopField ? <TerminalPrompt /> : <TerminalPrompt compact />}
+			{desktopField ? <TerminalPrompt /> : <TerminalLauncher />}
 		</div>
 	);
 
@@ -189,7 +172,7 @@ function TerminalSidebarChrome({
 		) : null;
 
 	const panes = (active: boolean) => (
-		<TerminalPanes active={active} banner={banner} components={components} />
+		<SidebarPanes active={active} banner={banner} />
 	);
 
 	return (
@@ -220,7 +203,6 @@ function TerminalSidebarChrome({
 								data-collapsed={isCollapsed}
 								data-hovered={isCollapsed && hovered}
 								data-terminal-had-output={hadOutput || undefined}
-								data-terminal-mode={surface.mode}
 								data-terminal-pane-target={pane}
 								id="nd-sidebar"
 								ref={asideRef}
@@ -250,7 +232,7 @@ function TerminalSidebarChrome({
 							>
 								<SidebarIcon />
 							</SidebarCollapseTrigger>
-							<TerminalPrompt className="px-1" compact />
+							<TerminalLauncher className="px-1" />
 						</div>
 					</>
 				)}
@@ -297,7 +279,7 @@ function TerminalSidebarChrome({
 							<SidebarIcon />
 						</SidebarTrigger>
 					</div>
-					{showDrawerField ? <TerminalPrompt /> : <TerminalPrompt compact />}
+					{showDrawerField ? <TerminalPrompt /> : <TerminalLauncher />}
 				</div>
 				{panes(mode === "drawer")}
 				<div className="flex flex-col border-t p-4 pt-2 empty:hidden">
@@ -331,4 +313,16 @@ function SidebarDrawer({
 			</SidebarDrawerContent>
 		</>
 	);
+}
+
+function visibleTreeRoot(): HTMLElement | null {
+	for (const root of document.querySelectorAll<HTMLElement>(
+		"[data-tree-root]"
+	)) {
+		if (root.checkVisibility()) {
+			return root;
+		}
+	}
+
+	return document.querySelector<HTMLElement>("[data-tree-root]");
 }

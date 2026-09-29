@@ -9,6 +9,11 @@ import {
 	isPrintableKey,
 	openExternal,
 } from "@/lib/client/actions";
+import {
+	isSearchHotkey,
+	isSlashHotkey,
+	sectionHotkey,
+} from "@/lib/client/keybinds";
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import { isSafeExternalUrl } from "@/lib/site/url";
 import { lookupCommand } from "@/lib/terminal/commands";
@@ -37,13 +42,16 @@ import type {
 	CurrentPages,
 	PageCatalog,
 	ParsedLine,
+	TerminalLocation,
 	TerminalOutput,
 } from "@/lib/terminal/types";
 
 export interface TerminalRunDeps {
 	abortRef: { current: AbortController | null };
 	catalog: PageCatalog;
+	closeDrawer: () => void;
 	current: CurrentPages;
+	cwd: string;
 	generationRef: { current: number };
 	graph: GraphRuntime;
 	historyEntries: string[];
@@ -51,9 +59,9 @@ export interface TerminalRunDeps {
 	registry: CommandRegistry;
 	retainUrlRef: { current: string | null };
 	routerPush: (url: string) => void;
-	setCloseDrawerAfter: Dispatch<SetStateAction<number>>;
 	setHistory: Dispatch<SetStateAction<HistoryState>>;
 	setLiveMessage: (message: string) => void;
+	setLocation: Dispatch<SetStateAction<TerminalLocation>>;
 	setSurface: Dispatch<SetStateAction<TerminalSurface>>;
 }
 
@@ -105,6 +113,7 @@ async function runDescriptor(
 	const executed = descriptor.execute({
 		catalog: deps.catalog,
 		current: deps.current,
+		cwd: deps.cwd,
 		graph: deps.graph,
 		parsed,
 		runtime: {
@@ -146,12 +155,20 @@ function publishCommandResult(
 	}
 
 	if (result.closeDrawer) {
-		deps.setCloseDrawerAfter((epoch) => epoch + 1);
+		deps.closeDrawer();
+	}
+
+	const { cwd, listing } = result;
+	if (cwd !== undefined || listing !== undefined) {
+		deps.setLocation((location) => ({
+			cwd: cwd ?? location.cwd,
+			listing: listing ?? null,
+		}));
 	}
 
 	if (result.output === null) {
 		deps.setSurface(emptySurface());
-		deps.setLiveMessage("Cleared.");
+		deps.setLiveMessage(result.announce ?? "Cleared.");
 		return;
 	}
 
@@ -378,21 +395,6 @@ export function handleWindowPaste(options: {
 	return true;
 }
 
-function isSearchHotkey(event: KeyboardEvent): boolean {
-	const meta = event.metaKey || event.ctrlKey;
-	return (event.key === "k" || event.key === "K") && meta && !event.altKey;
-}
-
-function isSlashHotkey(event: KeyboardEvent): boolean {
-	const meta = event.metaKey || event.ctrlKey;
-	return (
-		event.key === "/" &&
-		!meta &&
-		!event.altKey &&
-		!isEditableTarget(event.target)
-	);
-}
-
 function handleOutputKey(options: {
 	event: KeyboardEvent;
 	focusPrompt: (opts?: { expand?: boolean }) => void;
@@ -443,7 +445,11 @@ function handleOutputKey(options: {
 		return true;
 	}
 
-	if (isPrintableKey(event) && event.target !== options.inputRef.current) {
+	if (
+		isPrintableKey(event) &&
+		event.target !== options.inputRef.current &&
+		sectionHotkey(event) === null
+	) {
 		event.preventDefault();
 		options.focusPrompt({ expand: true });
 		options.setInput(event.key);

@@ -3,29 +3,23 @@
 import { SidebarTabsDropdown } from "fumadocs-ui/components/sidebar/tabs/dropdown";
 import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
-import { TerminalOutputPane } from "./output";
-import { useTerminal } from "./provider";
-import {
-	PersistentFolder,
-	SidebarLinkItem,
-	SidebarPageTree,
-	SidebarTreeViewport,
-} from "./sidebar-tree";
+import { TerminalOutputPane } from "@/components/terminal/output";
+import { useTerminalScreen } from "@/components/terminal/provider";
+import { SidebarLinkItem, SidebarPageTree, SidebarTreeViewport } from "./tree";
 
-export function TerminalPanes({
+export function SidebarPanes({
 	active,
 	banner,
-	components,
 }: {
 	active: boolean;
 	banner?: ReactNode;
-	components?: Parameters<typeof SidebarPageTree>[0];
 }) {
 	const {
 		menuItems,
 		props: { tabMode, tabs },
 	} = useDocsLayout();
-	const { hadOutput, pane } = useTerminal();
+	const { cwd, hadOutput, listing, pane } = useTerminalScreen();
+	const dir = listing ?? cwd;
 	const treeHidden = pane === "output";
 	const outputHidden = pane === "tree";
 
@@ -54,7 +48,7 @@ export function TerminalPanes({
 					{banner}
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col" data-terminal-cascade="3">
-					<SidebarTreeViewport>
+					<SidebarTreeViewport dir={dir}>
 						{menuItems
 							.filter((item) => item.type !== "icon")
 							.map((item, index, list) => (
@@ -64,7 +58,7 @@ export function TerminalPanes({
 									key={`${item.type}-${index}`}
 								/>
 							))}
-						<SidebarPageTree {...components} Folder={PersistentFolder} />
+						<SidebarPageTree dir={dir} />
 					</SidebarTreeViewport>
 				</div>
 			</div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "fumadocs-core/framework";
-import type { Folder } from "fumadocs-core/page-tree";
+import type { Folder, Node } from "fumadocs-core/page-tree";
 import {
 	SidebarFolder,
 	SidebarFolderContent,
@@ -11,7 +11,6 @@ import {
 	SidebarSeparator,
 } from "fumadocs-ui/components/sidebar/base";
 import { createLinkItemRenderer } from "fumadocs-ui/components/sidebar/link-item";
-import { createPageTreeRenderer } from "fumadocs-ui/components/sidebar/page-tree";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -20,27 +19,28 @@ import {
 	ScrollArea,
 	ScrollViewport,
 } from "fumadocs-ui/components/ui/scroll-area";
-import { useTreePath } from "fumadocs-ui/contexts/tree";
+import { useTreeContext, useTreePath } from "fumadocs-ui/contexts/tree";
 import {
+	Fragment,
 	type ReactNode,
 	type RefObject,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 } from "react";
+import { useTerminalApi } from "@/components/terminal/provider";
 import { cn } from "@/lib/cn";
-import { handleTreeKey } from "./sidebar-keys";
-import { useSidebarTreeState } from "./sidebar-state";
+import { parentDirectory, rootOf } from "@/lib/terminal/dirs";
+import { handleTreeKey } from "./tree-keys";
+import { useSidebarTreeState } from "./tree-state";
 
 const rowClass =
 	"relative flex flex-row items-center gap-2 px-2 py-1.5 text-start text-fd-muted-foreground wrap-anywhere outline-none hover:text-fd-foreground [&_svg]:size-4 [&_svg]:shrink-0";
 
-// Current page: a `>` cursor over the hatched field. The rail bar beside it
-// is placed by useRailMarks.
 const activeRowClass =
 	"data-[active=true]:font-medium data-[active=true]:text-fd-foreground data-[active=true]:before:-me-0.5 data-[active=true]:before:font-bold data-[active=true]:before:font-mono data-[active=true]:before:text-[0.8em] data-[active=true]:before:content-['>'] data-[active=true]:bg-[repeating-linear-gradient(315deg,var(--color-fd-border)_0_1px,#0000_0_50%)] data-[active=true]:bg-size-[6px_6px]";
 
-// Keyboard highlight, distinct from the current page.
 const focusRowClass =
 	"focus-visible:bg-fd-accent focus-visible:text-fd-foreground";
 
@@ -53,14 +53,27 @@ const railClass =
 
 const ROW = "[data-tree-row]";
 const HEADER_ROW = ":scope > [data-tree-header] [data-tree-row]";
-// The direct child of a rail that is, or contains, the current page.
 const ACTIVE_CHILD =
 	":scope > [data-active='true'], :scope > :has([data-active='true'])";
 
-export function SidebarTreeViewport({ children }: { children: ReactNode }) {
+export function SidebarTreeViewport({
+	children,
+	dir,
+}: {
+	children: ReactNode;
+	dir: string;
+}) {
 	const { scrollTopRef } = useSidebarTreeState();
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
+	const dirRef = useRef(dir);
+
+	useLayoutEffect(() => {
+		if (dirRef.current !== dir && viewportRef.current) {
+			dirRef.current = dir;
+			viewportRef.current.scrollTop = 0;
+		}
+	}, [dir]);
 
 	useLayoutEffect(() => {
 		const viewport = viewportRef.current;
@@ -92,8 +105,6 @@ export function SidebarTreeViewport({ children }: { children: ReactNode }) {
 	);
 }
 
-// One controller per tree places the bar on every rail. Route changes slide
-// it; size changes (folding, opening) jump it so it stays on its row.
 function useRailMarks(listRef: RefObject<HTMLDivElement | null>) {
 	const pathname = usePathname();
 
@@ -124,7 +135,6 @@ function useRailMarks(listRef: RefObject<HTMLDivElement | null>) {
 }
 
 function placeRailMarks(list: HTMLElement, slide: boolean) {
-	// Read every rail before writing any mark, so layout is computed once.
 	const placements = [
 		...list.querySelectorAll<HTMLElement>("[data-rail-mark]"),
 	].map((mark) => {
@@ -169,9 +179,6 @@ function placeRailMarks(list: HTMLElement, slide: boolean) {
 	}
 }
 
-// Page-tree folder. `expanded` is the persisted [+]/[−] state; the panel stays
-// open while the folder holds the current page, and a collapsed folder then
-// folds every row but the active one (see [data-tree-pinned] in global.css).
 export function PersistentFolder({
 	children,
 	item,
@@ -190,8 +197,6 @@ export function PersistentFolder({
 	const pinned = !expanded && holdsActivePage;
 	const indexUrl = item.index?.url;
 
-	// Entering a folder opens it, as Fumadocs does. On first mount this only
-	// records the default, so a folder the reader collapsed stays collapsed.
 	const held = useRef<boolean | null>(null);
 	useEffect(() => {
 		const entered =
@@ -328,9 +333,6 @@ function StyledItem({
 	);
 }
 
-// Folders in the page tree render through the `Folder` prop (PersistentFolder),
-// so the folder parts registered here are the library defaults and only reach
-// menu-link folders, which this site does not configure.
 const libraryFolderParts = {
 	SidebarFolder,
 	SidebarFolderContent,
@@ -338,11 +340,96 @@ const libraryFolderParts = {
 	SidebarFolderTrigger,
 };
 
-export const SidebarPageTree = createPageTreeRenderer({
-	...libraryFolderParts,
-	SidebarItem: StyledItem,
-	SidebarSeparator: StyledSeparator,
-});
+export function SidebarPageTree({ dir }: { dir: string }) {
+	const { root } = useTreeContext();
+	const nodes = useMemo(() => directoryNodes(root, dir), [root, dir]);
+	const parent = parentDirectory(dir);
+	const { changeDirectory } = useTerminalApi();
+
+	return (
+		<Fragment key={dir}>
+			{parent ? (
+				<button
+					className={cn(itemClass, "font-mono")}
+					data-tree-row=""
+					data-tree-up=""
+					onClick={() => changeDirectory(parent)}
+					type="button"
+				>
+					..
+				</button>
+			) : null}
+			<TreeNodes nodes={nodes} />
+		</Fragment>
+	);
+}
+
+function TreeNodes({ nodes }: { nodes: Node[] }) {
+	return nodes.map((node, index) => (
+		<TreeNode key={node.$id ?? index} node={node} />
+	));
+}
+
+function TreeNode({ node }: { node: Node }) {
+	const pathname = usePathname();
+	if (node.type === "separator") {
+		return (
+			<StyledSeparator>
+				{node.icon}
+				{node.name}
+			</StyledSeparator>
+		);
+	}
+
+	if (node.type === "folder") {
+		return (
+			<PersistentFolder item={node}>
+				<TreeNodes nodes={node.children} />
+			</PersistentFolder>
+		);
+	}
+
+	return (
+		<StyledItem
+			active={pathname === node.url}
+			external={node.external}
+			href={node.url}
+			icon={node.icon}
+		>
+			{node.name}
+		</StyledItem>
+	);
+}
+
+function directoryNodes(root: { children: Node[] }, dir: string): Node[] {
+	if (rootOf(dir) === dir) {
+		return root.children;
+	}
+
+	const folder = findFolder(root.children, dir);
+	if (!folder) {
+		return root.children;
+	}
+
+	return folder.index ? [folder.index, ...folder.children] : folder.children;
+}
+
+function findFolder(nodes: Node[], url: string): Folder | undefined {
+	for (const node of nodes) {
+		if (node.type !== "folder") {
+			continue;
+		}
+
+		if (node.index?.url === url) {
+			return node;
+		}
+
+		const nested = findFolder(node.children, url);
+		if (nested) {
+			return nested;
+		}
+	}
+}
 
 export const SidebarLinkItem = createLinkItemRenderer({
 	...libraryFolderParts,

@@ -6,15 +6,29 @@ import { cn } from "@/lib/cn";
 import { plainInlineLabel } from "@/lib/markdown/types";
 import { applyCompletion, parseLine } from "@/lib/terminal/parse";
 import type { Completion, ParsedLine } from "@/lib/terminal/types";
-import { useTerminal } from "./provider";
+import { useTerminal, useTerminalApi, useTerminalScreen } from "./provider";
 
-export function TerminalPrompt({
-	className,
-	compact = false,
-}: {
-	className?: string;
-	compact?: boolean;
-}) {
+export function TerminalLauncher({ className }: { className?: string }) {
+	const { focusPrompt } = useTerminalApi();
+
+	return (
+		<button
+			aria-label="Open terminal"
+			className={cn(
+				"flex h-8 items-center font-mono text-[11px] text-fd-muted-foreground outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground",
+				className
+			)}
+			onClick={() => focusPrompt({ expand: true })}
+			type="button"
+		>
+			<span className="text-fd-foreground">[</span>
+			{" / "}
+			<span className="text-fd-foreground">]</span>
+		</button>
+	);
+}
+
+export function TerminalPrompt({ className }: { className?: string }) {
 	const {
 		completionListId,
 		completions,
@@ -28,6 +42,7 @@ export function TerminalPrompt({
 		setInput,
 		surface,
 	} = useTerminal();
+	const { cwd } = useTerminalScreen();
 	const parsed = parseLine(surface.input);
 	const selected = completions[selectedCompletion];
 	const ghost = ghostSuffix(parsed.partial, selected?.replace);
@@ -37,45 +52,23 @@ export function TerminalPrompt({
 		: undefined;
 
 	useLayoutEffect(() => {
-		if (compact) {
-			return;
-		}
-
 		if (focusEpoch === 0 || focusedEpochRef.current === focusEpoch) {
 			return;
 		}
 
 		focusedEpochRef.current = focusEpoch;
 		inputRef.current?.focus();
-	}, [compact, focusEpoch, focusedEpochRef, inputRef]);
+	}, [focusEpoch, focusedEpochRef, inputRef]);
 
 	useLayoutEffect(() => {
-		if (compact || !activeOptionId) {
+		if (!activeOptionId) {
 			return;
 		}
 
 		document
 			.getElementById(activeOptionId)
 			?.scrollIntoView({ block: "nearest" });
-	}, [activeOptionId, compact]);
-
-	if (compact) {
-		return (
-			<button
-				aria-label="Open terminal"
-				className={cn(
-					"flex h-8 items-center font-mono text-[11px] text-fd-muted-foreground outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground",
-					className
-				)}
-				onClick={() => focusPrompt({ expand: true })}
-				type="button"
-			>
-				<span className="text-fd-foreground">[</span>
-				{" / "}
-				<span className="text-fd-foreground">]</span>
-			</button>
-		);
-	}
+	}, [activeOptionId]);
 
 	return (
 		<div
@@ -88,8 +81,11 @@ export function TerminalPrompt({
 				<span aria-hidden="true" className="text-fd-foreground">
 					[
 				</span>
-				<span aria-hidden="true" className="text-fd-muted-foreground">
-					/
+				<span
+					aria-hidden="true"
+					className="max-w-[45%] shrink-0 truncate text-fd-muted-foreground"
+				>
+					{cwd.slice(cwd.lastIndexOf("/") + 1)}/
 				</span>
 				<div className="relative min-w-0 flex-1">
 					<input
@@ -104,11 +100,7 @@ export function TerminalPrompt({
 						autoCorrect="off"
 						className="relative z-10 h-8 w-full min-w-0 border-0 bg-transparent p-0 text-[12px] text-fd-foreground outline-none"
 						onChange={(event) => setInput(event.target.value)}
-						onFocus={() => {
-							if (surface.mode === "output") {
-								focusPrompt({ expand: false });
-							}
-						}}
+						onFocus={() => focusPrompt({ expand: false })}
 						onKeyDown={onPromptKeyDown}
 						ref={inputRef}
 						role="combobox"
