@@ -17,6 +17,7 @@ import {
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import { isSafeExternalUrl } from "@/lib/site/url";
 import { lookupCommand } from "@/lib/terminal/commands";
+import { clearView } from "@/lib/terminal/dirs";
 import {
 	type HistoryState,
 	historyDown,
@@ -158,11 +159,11 @@ function publishCommandResult(
 		deps.closeDrawer();
 	}
 
-	const { cwd, listing } = result;
-	if (cwd !== undefined || listing !== undefined) {
+	const { cwd, view } = result;
+	if (cwd !== undefined || view !== undefined) {
 		deps.setLocation((location) => ({
 			cwd: cwd ?? location.cwd,
-			listing: listing ?? null,
+			view: view ?? null,
 		}));
 	}
 
@@ -312,9 +313,11 @@ export function handleWindowKey(options: {
 	event: KeyboardEvent;
 	focusPrompt: (opts?: { expand?: boolean }) => void;
 	inputRef: { current: HTMLInputElement | null };
+	location: TerminalLocation;
 	outputRoot: HTMLElement | null;
 	setHistory: Dispatch<SetStateAction<HistoryState>>;
 	setInput: (next: string) => void;
+	setLocation: Dispatch<SetStateAction<TerminalLocation>>;
 	setSelectedCompletion: (index: number) => void;
 	setSurface: Dispatch<SetStateAction<TerminalSurface>>;
 	surface: TerminalSurface;
@@ -351,6 +354,12 @@ export function handleWindowKey(options: {
 		if (dismissed.consumed) {
 			event.preventDefault();
 			options.setSurface(dismissed.surface);
+			return true;
+		}
+
+		if (options.location.view) {
+			event.preventDefault();
+			options.setLocation(clearView);
 			return true;
 		}
 

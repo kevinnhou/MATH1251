@@ -6,8 +6,6 @@ export const docsRoute = "/";
 export const docsImageRoute = "/og/docs";
 export const docsContentRoute = "/llms.mdx/docs";
 
-// `--color-fd-background` from fumadocs-ui/css/lib/default-colors.css,
-// which the neutral theme uses unchanged.
 export const themeBackground = {
 	dark: "#121212",
 	light: "#f5f5f5",

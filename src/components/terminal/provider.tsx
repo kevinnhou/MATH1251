@@ -19,11 +19,7 @@ import {
 	unavailableGraphRuntime,
 } from "@/lib/graph/runtime";
 import { completeLine, coreDescriptors } from "@/lib/terminal/commands";
-import {
-	clearListing,
-	followRoute,
-	initialLocation,
-} from "@/lib/terminal/dirs";
+import { clearView, followRoute, initialLocation } from "@/lib/terminal/dirs";
 import { emptyHistory, loadHistory } from "@/lib/terminal/history";
 import {
 	emptySurface,
@@ -42,6 +38,7 @@ import type {
 	PageCatalog,
 	TerminalOutput,
 	TerminalPane,
+	TreeView,
 } from "@/lib/terminal/types";
 import {
 	executeTerminalLine,
@@ -49,6 +46,7 @@ import {
 	handleWindowKey,
 	handleWindowPaste,
 } from "./handlers";
+import { SearchHighlight } from "./highlight";
 
 export interface SidebarControls {
 	closeDrawer: () => void;
@@ -70,9 +68,9 @@ export interface TerminalScreen {
 	cwd: string;
 	echo: string;
 	hadOutput: boolean;
-	listing: string | null;
 	output: TerminalOutput | null;
 	pane: TerminalPane;
+	view: TreeView | null;
 }
 
 export interface TerminalViewValue {
@@ -159,6 +157,8 @@ export function TerminalProvider({
 		[catalog, routeUrl]
 	);
 	surfaceRef.current = surface;
+	const locationRef = useRef(location);
+	locationRef.current = location;
 	graphRef.current = graph;
 
 	useEffect(() => {
@@ -274,11 +274,11 @@ export function TerminalProvider({
 	}, []);
 
 	const changeDirectory = useCallback((url: string) => {
-		setLocation({ cwd: url, listing: null });
+		setLocation({ cwd: url, view: null });
 	}, []);
 
 	const focusPrompt = useCallback((options?: { expand?: boolean }) => {
-		setLocation(clearListing);
+		setLocation(clearView);
 		if (options?.expand !== false) {
 			sidebarRef.current?.reveal();
 			setFocusEpoch((epoch) => epoch + 1);
@@ -363,9 +363,11 @@ export function TerminalProvider({
 				event,
 				focusPrompt: focusPromptRef.current,
 				inputRef,
+				location: locationRef.current,
 				outputRoot: outputRef.current,
 				setHistory,
 				setInput: setInputRef.current,
+				setLocation,
 				setSelectedCompletion,
 				setSurface,
 				surface: surfaceRef.current,
@@ -417,9 +419,9 @@ export function TerminalProvider({
 			cwd: location.cwd,
 			echo: surface.echo,
 			hadOutput,
-			listing: location.listing,
 			output: surface.output,
 			pane,
+			view: location.view,
 		}),
 		[hadOutput, location, pane, surface.echo, surface.output]
 	);
@@ -464,6 +466,12 @@ export function TerminalProvider({
 					<div aria-live="polite" className="sr-only">
 						{liveMessage}
 					</div>
+					<SearchHighlight
+						query={
+							location.view?.kind === "search" ? location.view.query : null
+						}
+						route={routeUrl}
+					/>
 					{children}
 				</TerminalViewContext.Provider>
 			</TerminalScreenContext.Provider>

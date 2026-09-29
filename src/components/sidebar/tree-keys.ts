@@ -112,6 +112,11 @@ export function sectionHeader(
 		return;
 	}
 
+	const groups = root.querySelectorAll<HTMLElement>("[data-tree-group]");
+	if (groups.length > 0) {
+		return groups[index]?.querySelector<HTMLElement>(ROW) ?? undefined;
+	}
+
 	const sections = [...root.querySelectorAll<HTMLElement>(FOLDER)].filter(
 		(folder) => !folder.parentElement?.closest(FOLDER)
 	);

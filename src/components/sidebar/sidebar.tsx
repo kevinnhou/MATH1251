@@ -46,7 +46,7 @@ function SidebarChrome({
 		menuItems,
 	} = useDocsLayout();
 	const { bindSidebar, inputRef, showTree } = useTerminalApi();
-	const { hadOutput, listing, pane } = useTerminalScreen();
+	const { hadOutput, pane, view } = useTerminalScreen();
 	const { collapsed, mode, open, setCollapsed, setOpen } = useSidebar();
 	const iconLinks = menuItems.filter((item) => item.type === "icon");
 	const sidebarRef = useRef({ collapsed, mode, setCollapsed, setOpen });
@@ -95,15 +95,19 @@ function SidebarChrome({
 	}, [bindSidebar, inputRef, showTree]);
 
 	useEffect(() => {
-		if (!listing) {
+		if (!view) {
 			return;
 		}
 
+		const target =
+			view.kind === "search"
+				? `[data-hit-url="${CSS.escape(view.results[0]?.url ?? "")}"]`
+				: "[data-tree-row]";
 		const frame = requestAnimationFrame(() =>
-			visibleTreeRoot()?.querySelector<HTMLElement>("[data-tree-row]")?.focus()
+			visibleTreeRoot()?.querySelector<HTMLElement>(target)?.focus()
 		);
 		return () => cancelAnimationFrame(frame);
-	}, [listing]);
+	}, [view]);
 
 	const header = (desktopField: boolean) => (
 		<div className="flex flex-col gap-3 border-b p-4">

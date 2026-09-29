@@ -53,7 +53,7 @@ function katexNodes(tex: string, displayMode: boolean): RootContent[] {
 			return fragment.children;
 		}
 	} catch {
-		// Keep the TeX as text when KaTeX cannot produce markup.
+		//
 	}
 
 	return [

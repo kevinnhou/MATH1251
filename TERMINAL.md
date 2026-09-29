@@ -46,7 +46,7 @@ serve the graph and the page, while the sidebar lives inside the layout.
 | `graph <depth\|strand\|focus\|find\|immerse\|collapse\|reset>` | Drives the course graph |
 | `help` | Lists commands |
 | `clear` | Clears output |
-| anything else | Full-text search of the notes |
+| anything else | Full-text search; matching pages replace the tree |
 
 For `md` and the assistants, `.` means the current page. Page arguments
 resolve by URL, title or alias (`resolve.ts`); ambiguous matches print a pick
@@ -55,7 +55,7 @@ list. `open` tries the working directory first.
 Each command is a `CommandDescriptor` in the registry: `names`, `execute`,
 optional `complete` and `usage`. The search descriptor has no names and is
 the registry's fallback. `execute` returns a `CommandResult` (output, plus
-optional `navigate`, `closeDrawer`, `cwd`, `listing` and `announce`) or a promise of one; async commands
+optional `navigate`, `closeDrawer`, `cwd`, `view` and `announce`) or a promise of one; async commands
 show their `loading` message first and are cancelled by the next command.
 
 ## State
@@ -86,17 +86,42 @@ note page. There are two levels: **roots** (`/core`, `/algebra`,
 `/calculus`, the Fumadocs tabs) and the **chapters** inside them. Kind-view
 pages are not directories.
 
-`TerminalLocation` holds two URLs:
+`TerminalLocation` holds:
 
 - `cwd`: the working directory. The tree shows it and the prompt shows its
   name (`[eigenvalues/ …]`). It starts at the current page's root.
-- `listing`: a directory `ls` is showing instead. It is cleared when the
-  prompt is focused, and on navigation.
+- `view`: what the tree shows instead, a `TreeView`:
+  - `list`: a directory from `ls`. Cleared on navigation.
+  - `search`: the pages a search matched. Kept across navigation so the
+    reader can step through results.
+
+  Either is cleared by focusing the prompt, Esc (once nothing else is left
+  to dismiss), `clear`, `cd` or `ls`.
 
 Roots are separate trees. `cd` resolves paths (`../vector-spaces`, slugs or
 titles) within the current root and stops at its top; other roots are only
 reachable with `switch`. Opening a page inside `cwd` keeps it; opening one
 outside resets `cwd` to that page's root (`followRoute`).
+
+## Search
+
+A search that matches pages sets a `search` view; one that matches nothing
+in the tree falls back to the output pane.
+
+- **Tree:** `SidebarSearchTree` prunes the full page tree (all roots) to the
+  matching pages, in tree order, with folders forced open. Focus lands on
+  the best match.
+- **Preview:** `SearchPreview` sits under the tree and shows the hits of the
+  result row last focused or hovered, with highlighted snippets and links to
+  each section. One delegated `pointerover`/`focusin` listener on the pane
+  picks the row, so moving between rows re-renders only the preview.
+- **Page:** `SearchHighlight` marks the query terms in `[data-graph-prose]`
+  with the CSS Custom Highlight API: no DOM changes, cleared with the view.
+  Its `::highlight()` rule is rendered inline because the CSS pipeline does
+  not parse it yet.
+
+`searchResults()` (`search.ts`) groups hits by page, best match first;
+kind-view hits count towards their parent page.
 
 ## Contexts
 
@@ -106,7 +131,7 @@ so typing re-renders only the prompt:
 | Hook | Changes | Holds | Used by |
 |---|---|---|---|
 | `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
-| `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `listing` | sidebar, panes, tree, prompt, output pane |
+| `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `view` | sidebar, panes, tree, prompt, output pane |
 | `useTerminal()` | every keystroke | everything above, plus surface, completions, history focus | `TerminalPrompt` only |
 
 Keep new consumers on the narrowest hook. Subscribing the sidebar to
@@ -130,7 +155,7 @@ return `closeDrawer` call `closeDrawer()`.
 cross-fade in `global.css`.
 
 The tree (`tree.tsx`) renders the current root's Fumadocs page tree itself,
-starting from `listing ?? cwd`: a chapter shows its index page and pages,
+starting from the `ls` directory or `cwd`: a chapter shows its index page and pages,
 led by a `..` row that moves up a directory. `ls` moves focus to the first
 row; scrolling resets when the directory changes. `PersistentFolder` keeps
 open state across routes (`tree-state.tsx`) and, when collapsed but

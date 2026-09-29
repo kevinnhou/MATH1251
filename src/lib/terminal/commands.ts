@@ -32,6 +32,7 @@ import {
 	findRegistered,
 } from "./registry";
 import { rankPages, resolvePage } from "./resolve";
+import { searchResults } from "./search";
 import type {
 	CatalogPage,
 	CommandDescriptor,
@@ -104,7 +105,7 @@ export function coreDescriptors(): CommandDescriptor[] {
 		},
 		{
 			advertised: true,
-			execute: () => done(null),
+			execute: () => done(null, { view: null }),
 			id: "clear",
 			names: ["clear"],
 			usage: "clear",
@@ -213,7 +214,7 @@ function executeLs(ctx: ExecuteContext): CommandResult {
 
 	return done(null, {
 		announce: `Listing ${displayPath(resolved.dir.url)}.`,
-		listing: resolved.dir.url,
+		view: { dir: resolved.dir.url, kind: "list" },
 	});
 }
 
@@ -311,8 +312,17 @@ function executeSwitch(ctx: ExecuteContext): CommandResult {
 async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
 	const query = ctx.parsed.raw.trim();
 	try {
-		const results = await ctx.runtime.searchNotes(query, ctx.signal);
-		return done(searchHitsOutput(query, results));
+		const hits = await ctx.runtime.searchNotes(query, ctx.signal);
+		const results = searchResults(ctx.catalog, hits);
+		if (results.length === 0) {
+			return done(searchHitsOutput(query, hits));
+		}
+
+		const count = `${results.length} page${results.length === 1 ? "" : "s"}`;
+		return done(null, {
+			announce: `${count} match “${query}”.`,
+			view: { kind: "search", query, results },
+		});
 	} catch (error) {
 		if (ctx.signal.aborted || isAbortError(error)) {
 			return done(null);

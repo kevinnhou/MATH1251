@@ -1,4 +1,5 @@
-import type { SearchHit } from "./types";
+import { findPageByUrl } from "./pages";
+import type { PageCatalog, SearchHit, SearchResult } from "./types";
 
 export const SEARCH_LIMIT = 24;
 
@@ -47,6 +48,22 @@ export function groupSearchHits(hits: SearchHit[]): SearchHitGroup[] {
 	}
 
 	return groups;
+}
+
+export function searchResults(
+	catalog: PageCatalog,
+	hits: SearchHit[]
+): SearchResult[] {
+	const results = new Map<string, SearchHit[]>();
+	for (const hit of hits) {
+		const page = findPageByUrl(catalog, hit.url.split("#")[0] ?? hit.url);
+		const url = page?.kindView ? page.parentUrl : page?.url;
+		if (url) {
+			results.set(url, [...(results.get(url) ?? []), hit]);
+		}
+	}
+
+	return [...results].map(([url, pageHits]) => ({ hits: pageHits, url }));
 }
 
 export function isTerminalSearchRequest(url: URL): boolean {

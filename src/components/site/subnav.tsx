@@ -37,7 +37,7 @@ export function Subnav(props: ComponentProps<"header">) {
 				<slots.sidebar.trigger
 					className={cn(
 						buttonVariants({
-							className: "rounded-none p-2",
+							className: "rounded-md p-2",
 							color: "ghost",
 							size: "icon-sm",
 						})

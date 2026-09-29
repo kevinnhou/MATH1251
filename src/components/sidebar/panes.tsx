@@ -5,7 +5,13 @@ import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
 import { TerminalOutputPane } from "@/components/terminal/output";
 import { useTerminalScreen } from "@/components/terminal/provider";
-import { SidebarLinkItem, SidebarPageTree, SidebarTreeViewport } from "./tree";
+import { SearchPreview } from "./search-preview";
+import {
+	SidebarLinkItem,
+	SidebarPageTree,
+	SidebarSearchTree,
+	SidebarTreeViewport,
+} from "./tree";
 
 export function SidebarPanes({
 	active,
@@ -18,8 +24,9 @@ export function SidebarPanes({
 		menuItems,
 		props: { tabMode, tabs },
 	} = useDocsLayout();
-	const { cwd, hadOutput, listing, pane } = useTerminalScreen();
-	const dir = listing ?? cwd;
+	const { cwd, hadOutput, pane, view } = useTerminalScreen();
+	const search = view?.kind === "search" ? view : null;
+	const dir = view?.kind === "list" ? view.dir : cwd;
 	const treeHidden = pane === "output";
 	const outputHidden = pane === "tree";
 
@@ -48,18 +55,30 @@ export function SidebarPanes({
 					{banner}
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col" data-terminal-cascade="3">
-					<SidebarTreeViewport dir={dir}>
-						{menuItems
-							.filter((item) => item.type !== "icon")
-							.map((item, index, list) => (
-								<SidebarLinkItem
-									className={index === list.length - 1 ? "mb-4" : undefined}
-									item={item}
-									key={`${item.type}-${index}`}
-								/>
-							))}
-						<SidebarPageTree dir={dir} />
+					<SidebarTreeViewport dir={search ? `?${search.query}` : dir}>
+						{search ? (
+							<SidebarSearchTree
+								query={search.query}
+								results={search.results}
+							/>
+						) : (
+							<>
+								{menuItems
+									.filter((item) => item.type !== "icon")
+									.map((item, index, list) => (
+										<SidebarLinkItem
+											className={index === list.length - 1 ? "mb-4" : undefined}
+											item={item}
+											key={`${item.type}-${index}`}
+										/>
+									))}
+								<SidebarPageTree dir={dir} />
+							</>
+						)}
 					</SidebarTreeViewport>
+					{search ? (
+						<SearchPreview key={search.query} results={search.results} />
+					) : null}
 				</div>
 			</div>
 			<div

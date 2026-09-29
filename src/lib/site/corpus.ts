@@ -19,7 +19,6 @@ import { getStrand } from "./strands";
 export type { PageIndex, ResolvedDocs, SiteCorpus } from "./build-corpus";
 
 function memoInProduction<T>(build: () => T): () => T {
-	// Development must stay per-request so MDX edits show up without a restart.
 	if (process.env.NODE_ENV !== "production") {
 		return cache(build);
 	}

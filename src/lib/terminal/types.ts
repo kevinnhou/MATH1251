@@ -157,14 +157,23 @@ export interface CommandResult {
 	announce?: string;
 	closeDrawer?: boolean;
 	cwd?: string;
-	listing?: string;
 	navigate?: string;
 	output: TerminalOutput | null;
+	view?: TreeView | null;
 }
+
+export interface SearchResult {
+	hits: SearchHit[];
+	url: string;
+}
+
+export type TreeView =
+	| { dir: string; kind: "list" }
+	| { kind: "search"; query: string; results: SearchResult[] };
 
 export interface TerminalLocation {
 	cwd: string;
-	listing: string | null;
+	view: TreeView | null;
 }
 
 export interface CommandDescriptor {

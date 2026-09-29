@@ -241,7 +241,13 @@ function LinkList({ items }: { items: OutputLink[] }) {
 const SEARCH_SNIPPET_CLASS =
 	"md-fragment-compact mb-0 bg-fd-card/40 px-2 py-2 text-[12px] text-fd-muted-foreground leading-snug [&_mark]:rounded-sm [&_mark]:bg-fd-primary/20 [&_mark]:px-0.5 [&_mark]:text-fd-foreground";
 
-function SearchList({ hits }: { hits: SearchHit[] }) {
+export function SearchList({
+	compact = false,
+	hits,
+}: {
+	compact?: boolean;
+	hits: SearchHit[];
+}) {
 	if (hits.length === 0) {
 		return null;
 	}
@@ -249,18 +255,24 @@ function SearchList({ hits }: { hits: SearchHit[] }) {
 	const groups = groupSearchHits(hits);
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className={cn("flex flex-col", compact ? "gap-5" : "gap-8")}>
 			{groups.map((group, groupIndex) => (
 				<section
-					className="flex flex-col gap-4"
+					className={cn("flex flex-col", compact ? "gap-3" : "gap-4")}
 					key={`${group.path}-${groupIndex}`}
 				>
 					<p className="text-[11px] text-fd-muted-foreground tracking-wide">
 						{group.path}
 					</p>
-					<ol className="flex list-none flex-col gap-6 p-0">
+					<ol
+						className={cn(
+							"flex list-none flex-col p-0",
+							compact ? "gap-4" : "gap-6"
+						)}
+					>
 						{group.hits.map((hit, index) => (
 							<SearchHitRow
+								compact={compact}
 								hit={hit}
 								index={index + 1}
 								key={`${hit.url}-${hit.title.plain}`}
@@ -273,19 +285,39 @@ function SearchList({ hits }: { hits: SearchHit[] }) {
 	);
 }
 
-function SearchHitRow({ hit, index }: { hit: SearchHit; index: number }) {
+function SearchHitRow({
+	compact,
+	hit,
+	index,
+}: {
+	compact: boolean;
+	hit: SearchHit;
+	index: number;
+}) {
 	const fragment = hitFragment(hit.path);
 
 	return (
 		<li>
 			<Link
-				className="group grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3 rounded-sm outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground"
+				className={cn(
+					"group grid gap-x-3 rounded-sm outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground",
+					compact
+						? "grid-cols-[1.25rem_minmax(0,1fr)]"
+						: "grid-cols-[1.75rem_minmax(0,1fr)]"
+				)}
 				href={hit.url}
 			>
 				<span className="pt-px text-fd-muted-foreground transition-colors group-hover:text-fd-primary">
 					{index}
 				</span>
-				<span className="flex min-w-0 flex-col gap-2 border-fd-border border-l pl-3 transition-colors group-hover:border-fd-primary">
+				<span
+					className={cn(
+						"flex min-w-0 flex-col",
+						compact
+							? "gap-1.5"
+							: "gap-2 border-fd-border border-l pl-3 transition-colors group-hover:border-fd-primary"
+					)}
+				>
 					<span className="text-fd-foreground [&_mark]:rounded-sm [&_mark]:bg-fd-primary/20 [&_mark]:px-0.5">
 						<InlineHtml html={hit.title.html} />
 					</span>

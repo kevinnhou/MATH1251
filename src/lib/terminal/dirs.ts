@@ -164,7 +164,7 @@ export function parentDirectory(url: string): string | null {
 }
 
 export function initialLocation(route: string): TerminalLocation {
-	return { cwd: rootOf(route), listing: null };
+	return { cwd: rootOf(route), view: null };
 }
 
 export function followRoute(
@@ -172,13 +172,14 @@ export function followRoute(
 	route: string
 ): TerminalLocation {
 	const cwd = isWithin(route, location.cwd) ? location.cwd : rootOf(route);
-	if (cwd === location.cwd && location.listing === null) {
+	const view = location.view?.kind === "search" ? location.view : null;
+	if (cwd === location.cwd && view === location.view) {
 		return location;
 	}
 
-	return { cwd, listing: null };
+	return { cwd, view };
 }
 
-export function clearListing(location: TerminalLocation): TerminalLocation {
-	return location.listing === null ? location : { ...location, listing: null };
+export function clearView(location: TerminalLocation): TerminalLocation {
+	return location.view === null ? location : { ...location, view: null };
 }

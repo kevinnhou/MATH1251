@@ -73,7 +73,7 @@ export function TerminalPrompt({ className }: { className?: string }) {
 	return (
 		<div
 			className={cn(
-				"border bg-fd-background font-mono text-[12px] text-fd-foreground",
+				"relative border bg-fd-background font-mono text-[12px] text-fd-foreground",
 				className
 			)}
 		>
@@ -155,7 +155,7 @@ function CompletionList({
 }) {
 	return (
 		<div
-			className="max-h-[min(16rem,40dvh)] overflow-auto border-fd-foreground/20 border-t"
+			className="absolute inset-x-[-1px] top-full z-30 max-h-[min(16rem,40dvh)] overflow-auto border bg-fd-background shadow-[3px_3px_0_0_var(--color-fd-border)]"
 			id={id}
 			role="listbox"
 		>
