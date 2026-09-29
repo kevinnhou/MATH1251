@@ -1,6 +1,5 @@
 "use client";
 
-import { SidebarTabsDropdown } from "fumadocs-ui/components/sidebar/tabs/dropdown";
 import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import type { ReactNode } from "react";
 import { TerminalOutputPane } from "@/components/terminal/output";
@@ -8,6 +7,7 @@ import { useTerminalScreen } from "@/components/terminal/provider";
 import type { TerminalPane } from "@/lib/terminal/types";
 import { SearchPreview } from "./search-preview";
 import { SidebarSearchTree } from "./search-tree";
+import { SidebarTabs } from "./tabs";
 import { SidebarLinkItem, SidebarPageTree, SidebarTreeViewport } from "./tree";
 
 export function SidebarPanes({ banner }: { banner?: ReactNode }) {
@@ -31,8 +31,9 @@ export function SidebarPanes({ banner }: { banner?: ReactNode }) {
 					data-terminal-cascade="1"
 				>
 					{tabs.length > 0 && tabMode === "auto" ? (
-						<SidebarTabsDropdown
+						<SidebarTabs
 							className="rounded-none bg-transparent"
+							dir={dir}
 							options={tabs}
 						/>
 					) : null}

@@ -5,6 +5,7 @@ import {
 	SidebarSeparator,
 } from "fumadocs-ui/components/sidebar/base";
 import type { ComponentProps } from "react";
+import { useUnsaved } from "@/components/pwa/network";
 import { cn } from "@/lib/cn";
 
 export function TreeSeparator({ className, ...props }: ComponentProps<"p">) {
@@ -30,11 +31,12 @@ export function TreeRow({ className, header = false, ...props }: TreeRowProps) {
 		"wrap-anywhere relative flex flex-row items-center gap-2 px-2 py-1.5 text-start text-fd-muted-foreground outline-none hover:text-fd-foreground focus-visible:bg-fd-accent focus-visible:text-fd-foreground [&_svg]:size-4 [&_svg]:shrink-0",
 		"data-[active=true]:bg-[repeating-linear-gradient(315deg,var(--color-fd-border)_0_1px,#0000_0_50%)] data-[active=true]:bg-size-[6px_6px] data-[active=true]:font-medium data-[active=true]:text-fd-foreground data-[active=true]:before:-me-0.5 data-[active=true]:before:font-bold data-[active=true]:before:font-mono data-[active=true]:before:text-[0.8em] data-[active=true]:before:content-['>']",
 		header && "font-medium text-fd-foreground",
+		"aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:text-inherit",
 		className
 	);
 
 	if (!("as" in props)) {
-		return <SidebarItem className={rowClassName} data-tree-row="" {...props} />;
+		return <LinkRow className={rowClassName} {...props} />;
 	}
 
 	if (props.as === "div") {
@@ -45,5 +47,25 @@ export function TreeRow({ className, header = false, ...props }: TreeRowProps) {
 	const { as: _as, ...rest } = props;
 	return (
 		<button className={rowClassName} data-tree-row="" type="button" {...rest} />
+	);
+}
+
+function LinkRow(props: ComponentProps<typeof SidebarItem>) {
+	const unsaved = useUnsaved(props.external ? undefined : props.href);
+	if (!unsaved) {
+		return <SidebarItem data-tree-row="" {...props} />;
+	}
+
+	return (
+		<SidebarItem
+			data-tree-row=""
+			{...props}
+			aria-disabled
+			onClick={(event) => {
+				props.onClick?.(event);
+				event.preventDefault();
+			}}
+			title="Not saved for offline reading"
+		/>
 	);
 }
