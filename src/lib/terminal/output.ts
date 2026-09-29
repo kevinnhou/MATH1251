@@ -68,10 +68,7 @@ export function groupedLinks(
 	};
 }
 
-export function pageLinkGroup(
-	heading: string,
-	pages: CatalogPage[]
-): LinkGroup {
+function pageLinkGroup(heading: string, pages: CatalogPage[]): LinkGroup {
 	return {
 		heading,
 		items: pages.map(

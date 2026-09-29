@@ -17,7 +17,7 @@ import {
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import { isSafeExternalUrl } from "@/lib/site/url";
 import { lookupCommand } from "@/lib/terminal/commands";
-import { clearView } from "@/lib/terminal/dirs";
+import { applyCommandLocation, clearView } from "@/lib/terminal/dirs";
 import {
 	type HistoryState,
 	historyDown,
@@ -159,13 +159,7 @@ function publishCommandResult(
 		deps.closeDrawer();
 	}
 
-	const { cwd, view } = result;
-	if (cwd !== undefined || view !== undefined) {
-		deps.setLocation((location) => ({
-			cwd: cwd ?? location.cwd,
-			view: view ?? null,
-		}));
-	}
+	deps.setLocation((location) => applyCommandLocation(location, result));
 
 	if (result.output === null) {
 		deps.setSurface(emptySurface());

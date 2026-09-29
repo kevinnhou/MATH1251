@@ -147,8 +147,9 @@ bindSidebar({ reveal, closeDrawer })
 ```
 
 `focusPrompt({ expand: true })` calls `reveal()`, which un-collapses the
-desktop sidebar or opens the drawer, then focuses the input. Commands that
-return `closeDrawer` call `closeDrawer()`.
+desktop sidebar or opens the drawer, then focuses the input itself. The
+section hotkeys reuse the same `reveal()`. Commands that return
+`closeDrawer` call `closeDrawer()`.
 
 `panes.tsx` renders the tree and the output pane stacked; the hidden one is
 `inert`. `data-terminal-pane-target` and `data-terminal-had-output` drive the

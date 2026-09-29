@@ -161,8 +161,6 @@ html > body[data-scroll-locked] {
 	pointer-events: none;
 }
 
-/* Sidebar rails. Rows keep their size while Base UI animates the panel height;
-   spacing is a margin rather than a gap so it can fold with the row. */
 [data-tree-content] {
 	interpolate-size: allow-keywords;
 }
@@ -180,10 +178,8 @@ html > body[data-scroll-locked] {
 		visibility 200ms;
 }
 
-/* A collapsed folder holding the current page folds every row outside the
-   active chain, including rows of folders nested inside it. */
 :is([data-tree-pinned], [data-tree-pinned] [data-tree-content])
-> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
+	> :not([data-rail-mark], [data-active="true"], :has([data-active="true"])) {
 	visibility: hidden;
 	height: 0;
 	padding-block: 0;

@@ -11,7 +11,7 @@ import {
 import { buttonVariants } from "fumadocs-ui/components/ui/button";
 import { useDocsLayout } from "fumadocs-ui/layouts/docs";
 import type { SidebarProps } from "fumadocs-ui/layouts/docs/slots/sidebar";
-import { LinkItem } from "fumadocs-ui/layouts/shared";
+import { type IconItemType, LinkItem } from "fumadocs-ui/layouts/shared";
 import { ChevronDown, Languages, SidebarIcon } from "lucide-react";
 import { type ReactNode, useEffect, useRef } from "react";
 import { TerminalLauncher, TerminalPrompt } from "@/components/terminal/prompt";
@@ -22,7 +22,7 @@ import {
 import { sectionHotkey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
 import { SidebarPanes } from "./panes";
-import { sectionHeader } from "./tree-keys";
+import { sectionHeader, TREE, visibleTreeRoot } from "./tree-keys";
 import { SidebarTreeStateProvider } from "./tree-state";
 
 export function Sidebar(props: SidebarProps) {
@@ -45,94 +45,10 @@ function SidebarChrome({
 		slots,
 		menuItems,
 	} = useDocsLayout();
-	const { bindSidebar, inputRef, showTree } = useTerminalApi();
-	const { hadOutput, pane, view } = useTerminalScreen();
 	const { collapsed, mode, open, setCollapsed, setOpen } = useSidebar();
 	const iconLinks = menuItems.filter((item) => item.type === "icon");
-	const sidebarRef = useRef({ collapsed, mode, setCollapsed, setOpen });
-	sidebarRef.current = { collapsed, mode, setCollapsed, setOpen };
-	const showDrawerField = mode === "drawer";
-
-	useEffect(() => {
-		const show = () => {
-			const sidebar = sidebarRef.current;
-			if (sidebar.collapsed) {
-				sidebar.setCollapsed(false);
-			}
-
-			if (sidebar.mode === "drawer") {
-				sidebar.setOpen(true);
-			}
-		};
-
-		const unbind = bindSidebar({
-			closeDrawer: () => sidebarRef.current.setOpen(false),
-			reveal: () => {
-				show();
-				requestAnimationFrame(() => inputRef.current?.focus());
-			},
-		});
-
-		const onKeyDown = (event: KeyboardEvent) => {
-			const index = sectionHotkey(event);
-			if (index === null || !sectionHeader(visibleTreeRoot(), index)) {
-				return;
-			}
-
-			event.preventDefault();
-			showTree();
-			show();
-			requestAnimationFrame(() =>
-				sectionHeader(visibleTreeRoot(), index)?.focus()
-			);
-		};
-
-		window.addEventListener("keydown", onKeyDown);
-		return () => {
-			unbind();
-			window.removeEventListener("keydown", onKeyDown);
-		};
-	}, [bindSidebar, inputRef, showTree]);
-
-	useEffect(() => {
-		if (!view) {
-			return;
-		}
-
-		const target =
-			view.kind === "search"
-				? `[data-hit-url="${CSS.escape(view.results[0]?.url ?? "")}"]`
-				: "[data-tree-row]";
-		const frame = requestAnimationFrame(() =>
-			visibleTreeRoot()?.querySelector<HTMLElement>(target)?.focus()
-		);
-		return () => cancelAnimationFrame(frame);
-	}, [view]);
-
-	const header = (desktopField: boolean) => (
-		<div className="flex flex-col gap-3 border-b p-4">
-			<div className="flex">
-				{slots.navTitle ? (
-					<slots.navTitle className="me-auto inline-flex items-center gap-2.5 font-medium text-[0.9375rem]" />
-				) : null}
-				{nav?.children}
-				{collapsible ? (
-					<SidebarCollapseTrigger
-						className={cn(
-							buttonVariants({
-								className: "mb-auto rounded-none text-fd-muted-foreground",
-								color: "ghost",
-								size: "icon-sm",
-							})
-						)}
-					>
-						<SidebarIcon />
-					</SidebarCollapseTrigger>
-				) : null}
-			</div>
-			{desktopField ? <TerminalPrompt /> : <TerminalLauncher />}
-		</div>
-	);
+	useTerminalBinding({ collapsed, mode, setCollapsed, setOpen });
+	useFocusTreeView();
 
 	const chromeFooter =
 		slots.languageSelect ||
@@ -151,22 +67,7 @@ function SidebarChrome({
 					</slots.languageSelect.root>
 				) : null}
 				<div className="flex items-center px-2 py-1.5 text-fd-muted-foreground empty:hidden">
-					{iconLinks.map((item, index) => (
-						<LinkItem
-							aria-label={item.label}
-							className={cn(
-								buttonVariants({
-									className: "rounded-none",
-									color: "ghost",
-									size: "icon-sm",
-								})
-							)}
-							item={item}
-							key={`${item.url}-${index}`}
-						>
-							{item.icon}
-						</LinkItem>
-					))}
+					<IconLinks className="rounded-none" items={iconLinks} />
 					{slots.themeSwitch ? (
 						<slots.themeSwitch className="ms-auto rounded-none p-0.5 *:rounded-none" />
 					) : null}
@@ -174,10 +75,6 @@ function SidebarChrome({
 				{footer}
 			</div>
 		) : null;
-
-	const panes = (active: boolean) => (
-		<SidebarPanes active={active} banner={banner} />
-	);
 
 	return (
 		<>
@@ -206,15 +103,39 @@ function SidebarChrome({
 								)}
 								data-collapsed={isCollapsed}
 								data-hovered={isCollapsed && hovered}
-								data-terminal-had-output={hadOutput || undefined}
-								data-terminal-pane-target={pane}
 								id="nd-sidebar"
 								ref={asideRef}
 								{...pointer}
 								{...rest}
 							>
-								{header(mode === "full" && (!isCollapsed || hovered))}
-								{panes(mode === "full")}
+								<div className="flex flex-col gap-3 border-b p-4">
+									<div className="flex">
+										{slots.navTitle ? (
+											<slots.navTitle className="me-auto inline-flex items-center gap-2.5 font-medium text-[0.9375rem]" />
+										) : null}
+										{nav?.children}
+										{collapsible ? (
+											<SidebarCollapseTrigger
+												className={cn(
+													buttonVariants({
+														className:
+															"mb-auto rounded-none text-fd-muted-foreground",
+														color: "ghost",
+														size: "icon-sm",
+													})
+												)}
+											>
+												<SidebarIcon />
+											</SidebarCollapseTrigger>
+										) : null}
+									</div>
+									{mode === "full" && (!isCollapsed || hovered) ? (
+										<TerminalPrompt />
+									) : (
+										<TerminalLauncher />
+									)}
+								</div>
+								<SidebarPanes active={mode === "full"} banner={banner} />
 								{chromeFooter}
 							</aside>
 						</div>
@@ -241,26 +162,11 @@ function SidebarChrome({
 					</>
 				)}
 			</SidebarContent>
-			<SidebarDrawer className="flex flex-col" closed={!open}>
+			<SidebarDrawer closed={!open}>
 				<div className="flex flex-col gap-3 border-b p-4">
 					<div className="flex items-center gap-1.5 text-fd-muted-foreground">
 						<div className="flex flex-1">
-							{iconLinks.map((item, index) => (
-								<LinkItem
-									aria-label={item.label}
-									className={cn(
-										buttonVariants({
-											className: "rounded-none p-2",
-											color: "ghost",
-											size: "icon-sm",
-										})
-									)}
-									item={item}
-									key={`${item.url}-drawer-${index}`}
-								>
-									{item.icon}
-								</LinkItem>
-							))}
+							<IconLinks className="rounded-none p-2" items={iconLinks} />
 						</div>
 						{slots.languageSelect ? (
 							<slots.languageSelect.root>
@@ -283,9 +189,9 @@ function SidebarChrome({
 							<SidebarIcon />
 						</SidebarTrigger>
 					</div>
-					{showDrawerField ? <TerminalPrompt /> : <TerminalLauncher />}
+					{mode === "drawer" ? <TerminalPrompt /> : <TerminalLauncher />}
 				</div>
-				{panes(mode === "drawer")}
+				<SidebarPanes active={mode === "drawer"} banner={banner} />
 				<div className="flex flex-col border-t p-4 pt-2 empty:hidden">
 					{footer}
 				</div>
@@ -296,21 +202,16 @@ function SidebarChrome({
 
 function SidebarDrawer({
 	children,
-	className,
 	closed,
 }: {
 	children: ReactNode;
-	className?: string;
 	closed: boolean;
 }) {
 	return (
 		<>
 			<SidebarDrawerOverlay className="fixed inset-0 z-40 backdrop-blur-xs data-[state=closed]:animate-fd-fade-out data-[state=open]:animate-fd-fade-in" />
 			<SidebarDrawerContent
-				className={cn(
-					"fixed inset-e-0 inset-y-0 z-40 flex w-[85%] max-w-95 flex-col border-s bg-fd-background text-[0.9375rem] data-[state=closed]:animate-fd-sidebar-out data-[state=open]:animate-fd-sidebar-in",
-					className
-				)}
+				className="fixed inset-e-0 inset-y-0 z-40 flex w-[85%] max-w-95 flex-col border-s bg-fd-background text-[0.9375rem] data-[state=closed]:animate-fd-sidebar-out data-[state=open]:animate-fd-sidebar-in"
 				inert={closed || undefined}
 			>
 				{children}
@@ -319,14 +220,91 @@ function SidebarDrawer({
 	);
 }
 
-function visibleTreeRoot(): HTMLElement | null {
-	for (const root of document.querySelectorAll<HTMLElement>(
-		"[data-tree-root]"
-	)) {
-		if (root.checkVisibility()) {
-			return root;
-		}
-	}
+function IconLinks({
+	className,
+	items,
+}: {
+	className: string;
+	items: IconItemType[];
+}) {
+	return items.map((item, index) => (
+		<LinkItem
+			aria-label={item.label}
+			className={cn(
+				buttonVariants({ className, color: "ghost", size: "icon-sm" })
+			)}
+			item={item}
+			key={`${item.url}-${index}`}
+		>
+			{item.icon}
+		</LinkItem>
+	));
+}
 
-	return document.querySelector<HTMLElement>("[data-tree-root]");
+type SidebarState = Pick<
+	ReturnType<typeof useSidebar>,
+	"collapsed" | "mode" | "setCollapsed" | "setOpen"
+>;
+
+function useTerminalBinding(sidebar: SidebarState) {
+	const { bindSidebar, showTree } = useTerminalApi();
+	const sidebarRef = useRef(sidebar);
+	sidebarRef.current = sidebar;
+
+	useEffect(() => {
+		const reveal = () => {
+			const { collapsed, mode, setCollapsed, setOpen } = sidebarRef.current;
+			if (collapsed) {
+				setCollapsed(false);
+			}
+
+			if (mode === "drawer") {
+				setOpen(true);
+			}
+		};
+
+		const unbind = bindSidebar({
+			closeDrawer: () => sidebarRef.current.setOpen(false),
+			reveal,
+		});
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			const index = sectionHotkey(event);
+			if (index === null || !sectionHeader(visibleTreeRoot(), index)) {
+				return;
+			}
+
+			event.preventDefault();
+			showTree();
+			reveal();
+			requestAnimationFrame(() =>
+				sectionHeader(visibleTreeRoot(), index)?.focus()
+			);
+		};
+
+		window.addEventListener("keydown", onKeyDown);
+		return () => {
+			unbind();
+			window.removeEventListener("keydown", onKeyDown);
+		};
+	}, [bindSidebar, showTree]);
+}
+
+function useFocusTreeView() {
+	const { view } = useTerminalScreen();
+
+	useEffect(() => {
+		if (!view) {
+			return;
+		}
+
+		const target =
+			view.kind === "search"
+				? `[data-hit-url="${CSS.escape(view.results[0]?.url ?? "")}"]`
+				: TREE.row;
+		const frame = requestAnimationFrame(() =>
+			visibleTreeRoot()?.querySelector<HTMLElement>(target)?.focus()
+		);
+		return () => cancelAnimationFrame(frame);
+	}, [view]);
 }

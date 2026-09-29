@@ -8,6 +8,7 @@ import {
 import { isSafeExternalUrl, toAbsoluteUrl } from "@/lib/site/url";
 import {
 	childDirectories,
+	type Directory,
 	type DirectoryOutcome,
 	displayPath,
 	resolveDirectory,
@@ -39,9 +40,7 @@ import type {
 	CommandResult,
 	CompleteContext,
 	Completion,
-	CurrentPages,
 	ExecuteContext,
-	PageCatalog,
 	ParsedLine,
 	ResolveOutcome,
 	TerminalOutput,
@@ -166,13 +165,10 @@ function descriptorFor(
 }
 
 export function completeLine(
-	parsed: ParsedLine,
-	catalog: PageCatalog,
-	current: CurrentPages,
-	cwd: string,
 	registry: CommandRegistry,
-	graph: CompleteContext["graph"]
+	ctx: CompleteContext
 ): Completion[] {
+	const { parsed } = ctx;
 	if (parsed.tokens.length === 0) {
 		return commandCompletions("", registry);
 	}
@@ -181,41 +177,36 @@ export function completeLine(
 		return commandCompletions(parsed.partial, registry);
 	}
 
-	return (
-		descriptorFor(parsed, registry)?.complete?.({
-			catalog,
-			current,
-			cwd,
-			graph,
-			parsed,
-		}) ?? []
-	);
+	return descriptorFor(parsed, registry)?.complete?.(ctx) ?? [];
 }
 
 function executeCd(ctx: ExecuteContext): CommandResult {
-	const query = argumentText(ctx.parsed);
-	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query);
-	if (resolved.kind !== "dir") {
-		return done(directoryError("cd", query, resolved, ctx.cwd));
-	}
-
-	return done(null, {
-		announce: `In ${displayPath(resolved.dir.url)}.`,
-		cwd: resolved.dir.url,
-	});
+	return inDirectory(ctx, "cd", argumentText(ctx.parsed), (dir) =>
+		done(null, { announce: `In ${displayPath(dir.url)}.`, cwd: dir.url })
+	);
 }
 
 function executeLs(ctx: ExecuteContext): CommandResult {
-	const query = argumentText(ctx.parsed);
-	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query || ".");
-	if (resolved.kind !== "dir") {
-		return done(directoryError("ls", query, resolved, ctx.cwd));
+	return inDirectory(ctx, "ls", argumentText(ctx.parsed) || ".", (dir) =>
+		done(null, {
+			announce: `Listing ${displayPath(dir.url)}.`,
+			view: { dir: dir.url, kind: "list" },
+		})
+	);
+}
+
+function inDirectory(
+	ctx: ExecuteContext,
+	name: string,
+	query: string,
+	run: (dir: Directory) => CommandResult
+): CommandResult {
+	const resolved = resolveDirectory(ctx.catalog, ctx.cwd, query);
+	if (resolved.kind === "dir") {
+		return run(resolved.dir);
 	}
 
-	return done(null, {
-		announce: `Listing ${displayPath(resolved.dir.url)}.`,
-		view: { dir: resolved.dir.url, kind: "list" },
-	});
+	return done(directoryError(name, query, resolved, ctx.cwd));
 }
 
 function directoryError(
@@ -262,13 +253,10 @@ function executeOpen(ctx: ExecuteContext): CommandResult {
 		return done(ambiguousOutput(query, resolved.pages));
 	}
 
-	if (resolved.page.url === ctx.current.route.url) {
-		return done(messageOutput(`${resolved.page.url}`), { closeDrawer: true });
-	}
-
-	return done(messageOutput(`${resolved.page.url}`), {
+	const { url } = resolved.page;
+	return done(messageOutput(url), {
 		closeDrawer: true,
-		navigate: resolved.page.url,
+		navigate: url === ctx.current.route.url ? undefined : url,
 	});
 }
 

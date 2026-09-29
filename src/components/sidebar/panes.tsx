@@ -6,12 +6,8 @@ import type { ReactNode } from "react";
 import { TerminalOutputPane } from "@/components/terminal/output";
 import { useTerminalScreen } from "@/components/terminal/provider";
 import { SearchPreview } from "./search-preview";
-import {
-	SidebarLinkItem,
-	SidebarPageTree,
-	SidebarSearchTree,
-	SidebarTreeViewport,
-} from "./tree";
+import { SidebarSearchTree } from "./search-tree";
+import { SidebarLinkItem, SidebarPageTree, SidebarTreeViewport } from "./tree";
 
 export function SidebarPanes({
 	active,
@@ -55,7 +51,9 @@ export function SidebarPanes({
 					{banner}
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col" data-terminal-cascade="3">
-					<SidebarTreeViewport dir={search ? `?${search.query}` : dir}>
+					<SidebarTreeViewport
+						scrollKey={search ? `search:${search.query}` : dir}
+					>
 						{search ? (
 							<SidebarSearchTree
 								query={search.query}

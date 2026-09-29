@@ -210,14 +210,13 @@ export function TerminalProvider({
 			return frozenCompletions.current;
 		}
 
-		return completeLine(
-			parsed,
+		return completeLine(registryRef.current, {
 			catalog,
 			current,
-			location.cwd,
-			registryRef.current,
-			graphRef.current
-		);
+			cwd: location.cwd,
+			graph: graphRef.current,
+			parsed,
+		});
 	}, [catalog, current, location.cwd, parsed, surface.completionsOpen]);
 
 	useEffect(() => {
@@ -282,6 +281,7 @@ export function TerminalProvider({
 		if (options?.expand !== false) {
 			sidebarRef.current?.reveal();
 			setFocusEpoch((epoch) => epoch + 1);
+			requestAnimationFrame(() => inputRef.current?.focus());
 		}
 
 		setSurface((currentSurface) => {

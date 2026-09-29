@@ -1,9 +1,12 @@
 import { isModifiedKey } from "@/lib/client/actions";
 
-const ROW = "[data-tree-row]";
-const FOLDER = "[data-tree-folder]";
-const HEADER_ROW = ":scope > [data-tree-header] [data-tree-row]";
-const TOGGLE = ":scope > [data-tree-header] [data-tree-toggle]";
+export const TREE = {
+	folder: "[data-tree-folder]",
+	headerRow: ":scope > [data-tree-header] [data-tree-row]",
+	root: "[data-tree-root]",
+	row: "[data-tree-row]",
+	toggle: ":scope > [data-tree-header] [data-tree-toggle]",
+} as const;
 
 const MOVES: Record<string, "up" | "down" | "out" | "in"> = {
 	ArrowDown: "down",
@@ -24,7 +27,7 @@ export function handleTreeKey(
 		return;
 	}
 
-	const row = (event.target as HTMLElement).closest<HTMLElement>(ROW);
+	const row = (event.target as HTMLElement).closest<HTMLElement>(TREE.row);
 	if (!(row && root.contains(row))) {
 		return;
 	}
@@ -80,7 +83,7 @@ function resolveMove(
 		}
 
 		const content = row
-			.closest(FOLDER)
+			.closest(TREE.folder)
 			?.querySelector(":scope > [data-tree-content]");
 		return content ? (visibleRows(content)[0] ?? null) : null;
 	}
@@ -89,17 +92,17 @@ function resolveMove(
 		return "toggle";
 	}
 
-	const own = row.closest(FOLDER);
-	const parent = isHeader ? own?.parentElement?.closest(FOLDER) : own;
-	return parent?.querySelector<HTMLElement>(HEADER_ROW) ?? null;
+	const own = row.closest(TREE.folder);
+	const parent = isHeader ? own?.parentElement?.closest(TREE.folder) : own;
+	return parent?.querySelector<HTMLElement>(TREE.headerRow) ?? null;
 }
 
 function toggleFolder(header: HTMLElement): void {
-	header.closest(FOLDER)?.querySelector<HTMLElement>(TOGGLE)?.click();
+	header.closest(TREE.folder)?.querySelector<HTMLElement>(TREE.toggle)?.click();
 }
 
 function visibleRows(scope: Element): HTMLElement[] {
-	return [...scope.querySelectorAll<HTMLElement>(ROW)].filter((row) =>
+	return [...scope.querySelectorAll<HTMLElement>(TREE.row)].filter((row) =>
 		row.checkVisibility({ visibilityProperty: true })
 	);
 }
@@ -114,18 +117,30 @@ export function sectionHeader(
 
 	const groups = root.querySelectorAll<HTMLElement>("[data-tree-group]");
 	if (groups.length > 0) {
-		return groups[index]?.querySelector<HTMLElement>(ROW) ?? undefined;
+		return groups[index]?.querySelector<HTMLElement>(TREE.row) ?? undefined;
 	}
 
-	const sections = [...root.querySelectorAll<HTMLElement>(FOLDER)].filter(
-		(folder) => !folder.parentElement?.closest(FOLDER)
+	const sections = [...root.querySelectorAll<HTMLElement>(TREE.folder)].filter(
+		(folder) => !folder.parentElement?.closest(TREE.folder)
 	);
 	if (sections.length > 0) {
-		return sections[index]?.querySelector<HTMLElement>(HEADER_ROW) ?? undefined;
+		return (
+			sections[index]?.querySelector<HTMLElement>(TREE.headerRow) ?? undefined
+		);
 	}
 
-	const rows = [...root.querySelectorAll<HTMLElement>(ROW)].filter(
-		(row) => row.dataset.treeUp === undefined && !row.closest(FOLDER)
+	const rows = [...root.querySelectorAll<HTMLElement>(TREE.row)].filter(
+		(row) => row.dataset.treeUp === undefined && !row.closest(TREE.folder)
 	);
 	return rows[index];
+}
+
+export function visibleTreeRoot(): HTMLElement | null {
+	for (const root of document.querySelectorAll<HTMLElement>(TREE.root)) {
+		if (root.checkVisibility()) {
+			return root;
+		}
+	}
+
+	return document.querySelector<HTMLElement>(TREE.root);
 }

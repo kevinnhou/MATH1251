@@ -1,4 +1,9 @@
-import type { CatalogPage, PageCatalog, TerminalLocation } from "./types";
+import type {
+	CatalogPage,
+	CommandResult,
+	PageCatalog,
+	TerminalLocation,
+} from "./types";
 
 export interface Directory {
 	name: string;
@@ -18,7 +23,7 @@ const LEADING_SLASH = /^\//;
 
 const directoriesByCatalog = new WeakMap<PageCatalog, Map<string, Directory>>();
 
-export function directories(catalog: PageCatalog): Map<string, Directory> {
+function directories(catalog: PageCatalog): Map<string, Directory> {
 	const cached = directoriesByCatalog.get(catalog);
 	if (cached) {
 		return cached;
@@ -54,7 +59,7 @@ export function rootOf(url: string): string {
 	return first ? `/${first}` : "/";
 }
 
-export function isWithin(url: string, dir: string): boolean {
+function isWithin(url: string, dir: string): boolean {
 	return url === dir || url.startsWith(`${dir}/`);
 }
 
@@ -165,6 +170,17 @@ export function parentDirectory(url: string): string | null {
 
 export function initialLocation(route: string): TerminalLocation {
 	return { cwd: rootOf(route), view: null };
+}
+
+export function applyCommandLocation(
+	location: TerminalLocation,
+	{ cwd, view }: Pick<CommandResult, "cwd" | "view">
+): TerminalLocation {
+	if (cwd === undefined && view === undefined) {
+		return location;
+	}
+
+	return { cwd: cwd ?? location.cwd, view: view ?? null };
 }
 
 export function followRoute(
