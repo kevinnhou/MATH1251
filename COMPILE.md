@@ -31,12 +31,12 @@ flowchart TD
         content["site/content.ts"]
         chunks["import('…/page.mdx?collection=docs')<br/>full compile, one chunk per page"]
         light["sidebar, search, llms.txt"]
-        derived["graph, catalog, tenets, OG,<br/>llms-full.txt, content.md"]
+        derived["graph, catalog, routes, tenets, OG,<br/>llms-full.txt, content.md"]
         page["(docs)/[...slug]/page.tsx<br/>ONLY body consumer"]
     end
 
     subgraph P3["Static generation · 7 workers"]
-        out["76 pages + 76 OG images + 76 content.md<br/>+ graph/llms/icons ≈ 245 outputs"]
+        out["76 pages + 76 OG images + 76 content.md<br/>+ graph/catalog/llms/icons/sw.js ≈ 245 outputs"]
     end
 
     src --> meta
@@ -129,7 +129,7 @@ fumadocs API work without importing a single MDX module. Search, the sidebar and
 ### 6. Derived data is computed once per worker
 
 `getCorpus()` in `src/lib/site/corpus.ts` builds the page index, kind views,
-catalog, graph and tenet index. It's memoised per process in production
+catalog, routes, graph and tenet index. It's memoised per process in production
 (`memoInProduction`) and wrapped in React `cache` in dev.
 
 **Effect:** static generation runs in 7 workers. Each builds the corpus once, and
@@ -170,6 +170,41 @@ first request, and `revalidate = false` caches them forever.
 
 **Effect:** the number of static outputs grows with the page count, not with pages
 × kinds.
+
+### 10. Client data is split by when it's needed
+
+The docs layout renders client components (sidebar, terminal, graph) that need
+course data. Their props are serialised into the RSC payload, which is inlined
+into every prerendered page, so the data is split in two:
+
+- **Render time:** `routes` (`src/lib/course/routes.ts`): page URLs and each
+  page's kind views, about 10 KB. `(docs)/layout.tsx` passes it to
+  `CourseRoutesProvider`; it drives the current page, sidebar sections and
+  kind-view tree entries.
+- **Interaction time:** the full catalog (titles, descriptions, aliases) and the
+  graph document, served as static JSON (`/catalog.json`, `/graph-data.json`) and
+  loaded once per page load with `jsonResource` (`src/lib/client/resource.ts`).
+
+**Effect:** each page carries about 10 KB of course data instead of about
+400 KB, and the JSON is downloaded once, then served from the HTTP cache or the
+service worker.
+
+### 11. The service worker is built by a route handler
+
+`src/app/serwist/[path]/route.ts` (`createSerwistRoute`) is a static route. During
+static generation it globs `.next/static/**/*.{js,css,woff2}`, injects the list
+into `src/app/sw.ts` as `self.__SW_MANIFEST`, and bundles the worker with
+esbuild into `/serwist/sw.js`. `/~offline` is added with `BUILD_REVISION` as
+its revision: a UUID that `next.config.mjs` generates once per build and inlines
+through `env`. It can't be the commit SHA, because a build with uncommitted
+changes would keep serving the old offline page, and it can't be read from
+`.next/BUILD_ID`, because route modules are first evaluated while collecting
+page data, before that file is written.
+
+**Effect:** the worker ships with this build's exact list of hashed assets and
+is rebuilt on every build without a separate step. It is type-checked on its own
+(`tsconfig.sw.json`; the main `tsconfig.json` excludes it). Runtime behaviour is
+in [PWA.md](PWA.md).
 
 ## Intentional limitations
 
@@ -228,8 +263,17 @@ gets bigger, or metadata quietly disagrees with bodies.
 2. Setting `docs.async: false`. fumadocs would import every compiled body eagerly 
   into `collections/server`, and `entry.load()` in `content.ts` would no longer exist.
 3. Importing `source` or `corpus` from a `"use client"` component. That ships the 
-  ~1.75 MB JSON to the browser. Pass derived data (e.g. `catalog`) as props, the 
-  way `(docs)/layout.tsx` does.
+  ~1.75 MB JSON to the browser. Pass render-time data as props, the way
+  `(docs)/layout.tsx` passes `routes`, and serve the rest as static JSON.
+4. Passing large data as layout props. It is serialised into every prerendered
+  page: the full catalog as props added ~400 KB to each of the 76 pages. Keep
+  props to what the first render needs; anything used only on interaction
+  belongs in a JSON route loaded with `jsonResource`, listed in `DATA_ROUTES` in
+  `sw.ts` so it works offline.
+5. Importing anything that isn't worker-safe into `sw.ts`. esbuild bundles
+  whatever it imports, so React, DOM or `server-only` code fails in the worker or
+  bloats it. It imports `src/lib/site/config.ts` and `src/lib/pwa/protocol.ts`
+  by relative path; keep both free of React, DOM and server imports.
 
 ### Metadata/body consistency
 
