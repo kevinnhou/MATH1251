@@ -3,6 +3,7 @@ import type {
 	CurrentPages,
 	PageCatalog,
 } from "@/lib/course/catalog";
+import type { OpenPromptRequest, OpenPromptResult } from "@/lib/export/client";
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 
@@ -103,7 +104,7 @@ export type TerminalOutput =
 
 export interface CommandRuntime {
 	fetchMarkdown: (url: string, signal: AbortSignal) => Promise<string>;
-	openExternal: (url: string) => boolean;
+	openPrompt: (request: OpenPromptRequest) => Promise<OpenPromptResult>;
 	origin: string;
 	searchNotes: (query: string, signal: AbortSignal) => Promise<SearchHit[]>;
 }

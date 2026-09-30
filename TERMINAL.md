@@ -64,7 +64,7 @@ The terminal works from two sources of course data (see COMPILE.md §10):
 | `switch <root>`, `checkout` | Moves to another root (`core`, `algebra`, `calculus`) |
 | `pwd` | Prints the working directory |
 | `md <page\|.>` | Shows the page's Markdown source |
-| `gpt`, `claude`, `cursor <page\|.>` | Opens the page in that assistant |
+| `gpt`, `claude`, `cursor [explain\|proof\|quiz\|check] <page\|.>` | Opens the page in that assistant with that prompt (default `explain`); Tab offers the intents first |
 | `graph <depth\|strand\|focus\|find\|immerse\|collapse\|reset>` | Drives the course graph |
 | `help` | Lists commands |
 | `clear` | Clears output |

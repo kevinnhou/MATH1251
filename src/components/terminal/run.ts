@@ -1,8 +1,8 @@
 import type { RefObject } from "react";
-import { fetchText, openExternal } from "@/lib/client/actions";
+import { fetchText } from "@/lib/client/actions";
 import { currentPagesFromUrl, type PageCatalog } from "@/lib/course/catalog";
 import { catalogResource } from "@/lib/course/client";
-import { isSafeExternalUrl } from "@/lib/site/url";
+import { openPrompt } from "@/lib/export/client";
 import { lookupCommand } from "@/lib/terminal/commands";
 import { pushHistory, saveHistory } from "@/lib/terminal/history";
 import {
@@ -34,7 +34,7 @@ export interface RunContext
 
 const browserRuntime: CommandRuntime = {
 	fetchMarkdown: fetchText,
-	openExternal: (url) => isSafeExternalUrl(url) && openExternal(url),
+	openPrompt,
 	get origin() {
 		return window.location.origin;
 	},

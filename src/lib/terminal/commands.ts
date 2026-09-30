@@ -1,13 +1,15 @@
 import type { CatalogPage } from "@/lib/course/catalog";
 import { findPageByUrl } from "@/lib/course/catalog";
-import { formatPageRelated, selectPageRelated } from "@/lib/graph/related";
-import { formatRefLink } from "@/lib/math-env/export-markdown";
 import {
-	formatAskPrompt,
+	DEFAULT_INTENT,
+	intentsFor,
 	LLM_PROVIDER_LABELS,
-	llmUrls,
-} from "@/lib/site/llm-ask";
-import { isSafeExternalUrl, toAbsoluteUrl } from "@/lib/site/url";
+	LLM_PROVIDERS,
+	type LlmProvider,
+	PROMPT_INTENT_LABELS,
+	PROMPT_INTENTS,
+	type PromptIntent,
+} from "@/lib/export/prompt";
 import {
 	childDirectories,
 	type Directory,
@@ -28,7 +30,13 @@ import {
 	searchHitsOutput,
 	usageOutput,
 } from "./output";
-import { argumentText, commandToken, parseLine, quoteIfNeeded } from "./parse";
+import {
+	argumentText,
+	commandToken,
+	parseLine,
+	quoteIfNeeded,
+	tokenValues,
+} from "./parse";
 import { rankPages, resolvePage } from "./resolve";
 import { searchResults } from "./search";
 import type {
@@ -43,6 +51,15 @@ import type {
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
+const ASK_USAGE = `[${PROMPT_INTENTS.join("|")}] <page|.>`;
+
+// Terminal names for each provider; the first is the one `help` shows.
+const ASK_COMMANDS: Record<LlmProvider, readonly [string, ...string[]]> = {
+	chatgpt: ["gpt", "chatgpt"],
+	claude: ["claude"],
+	cursor: ["cursor"],
+};
+
 function coreDescriptors(): CommandDescriptor[] {
 	return [
 		command(["cd"], executeCd, completeDirectoryArgument, "cd [dir|..]"),
@@ -55,23 +72,13 @@ function coreDescriptors(): CommandDescriptor[] {
 			"switch <root>"
 		),
 		command(["md"], executeMarkdown, completePageArgument, "md <page|.>"),
-		command(
-			["gpt", "chatgpt"],
-			(ctx) => executeAsk(ctx, "gpt"),
-			completePageArgument,
-			"gpt <page|.>"
-		),
-		command(
-			["claude"],
-			(ctx) => executeAsk(ctx, "claude"),
-			completePageArgument,
-			"claude <page|.>"
-		),
-		command(
-			["cursor"],
-			(ctx) => executeAsk(ctx, "cursor"),
-			completePageArgument,
-			"cursor <page|.>"
+		...LLM_PROVIDERS.map((provider) =>
+			command(
+				ASK_COMMANDS[provider],
+				(ctx) => executeAsk(ctx, provider),
+				completeAskArgument,
+				`${ASK_COMMANDS[provider][0]} ${ASK_USAGE}`
+			)
 		),
 		graphCommand(),
 		command(["help"], () => done(helpOutput()), undefined, "help"),
@@ -156,6 +163,10 @@ function descriptorFor(parsed: ParsedLine): CommandDescriptor {
 	return registry.byName.get(name) ?? registry.fallback;
 }
 
+function commandUsage(parsed: ParsedLine): TerminalOutput {
+	return usageOutput(descriptorFor(parsed).usage);
+}
+
 export function completeLine(ctx: CompleteContext): Completion[] {
 	const { parsed } = ctx;
 	if (parsed.tokens.length === 0) {
@@ -227,7 +238,7 @@ function directoryError(
 function executeOpen(ctx: ExecuteContext): CommandResult {
 	const query = argumentText(ctx.parsed);
 	if (query === "") {
-		return done(usageOutput("open <page|dir>"));
+		return done(commandUsage(ctx.parsed));
 	}
 
 	const page = pageInCwd(ctx, query);
@@ -307,9 +318,10 @@ async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
 }
 
 async function executeMarkdown(ctx: ExecuteContext): Promise<CommandResult> {
-	const resolved = notesPage(ctx);
+	const query = argumentText(ctx.parsed);
+	const resolved = notesPage(ctx, query);
 	if (resolved.kind !== "match") {
-		return done(resolveToOutput(ctx, resolved));
+		return done(resolveToOutput(ctx, resolved, query));
 	}
 
 	const { page } = resolved;
@@ -334,53 +346,70 @@ async function executeMarkdown(ctx: ExecuteContext): Promise<CommandResult> {
 	}
 }
 
-function executeAsk(
+async function executeAsk(
 	ctx: ExecuteContext,
-	provider: "gpt" | "claude" | "cursor"
-): CommandResult {
-	const resolved = notesPage(ctx);
+	provider: LlmProvider
+): Promise<CommandResult> {
+	const [name] = ASK_COMMANDS[provider];
+	const { intent = DEFAULT_INTENT, query } = askArguments(ctx.parsed);
+	const resolved = notesPage(ctx, query);
 	if (resolved.kind !== "match") {
-		return done(resolveToOutput(ctx, resolved));
+		return done(resolveToOutput(ctx, resolved, query));
 	}
 
 	const { page } = resolved;
-	if (page.markdownUrl === "") {
-		return done(errorOutput(`${provider}: not a notes page.`));
+	if (page.prompt === null) {
+		return done(errorOutput(`${name}: not a notes page.`));
 	}
 
-	const markdownUrl = toAbsoluteUrl(page.markdownUrl, ctx.runtime.origin);
-	const prompt = formatAskPrompt({
-		related: askRelatedLines(ctx, page),
-		source: {
-			type: page.kindView ? "kind-view" : "page",
-			url: markdownUrl,
-		},
-		task: page.kindView ? "kind-view" : "page",
+	const allowed = intentsFor(page.prompt);
+	if (!allowed.includes(intent)) {
+		return done(
+			errorOutput(
+				`${name}: "${intent}" is not available here; try ${allowed.join(", ")}.`
+			)
+		);
+	}
+
+	const label = LLM_PROVIDER_LABELS[provider];
+	const result = await ctx.runtime.openPrompt({
+		intent,
+		provider,
+		target: page.prompt,
 	});
-	const key = provider === "gpt" ? "chatgpt" : provider;
-	const href = llmUrls(prompt)[key];
-	if (!isSafeExternalUrl(href)) {
-		return done(errorOutput(`${provider}: blocked an unsupported URL.`));
-	}
-
-	const opened = ctx.runtime.openExternal(href);
-	const label = LLM_PROVIDER_LABELS[key];
-	if (opened) {
-		return done(messageOutput(`Opened ${page.title.plain} in ${label}.`), {
-			closeDrawer: true,
-		});
+	if (result.status === "opened") {
+		return done(
+			messageOutput(
+				`Opened ${page.title.plain} in ${label} (${PROMPT_INTENT_LABELS[intent]}).`
+			),
+			{ closeDrawer: true }
+		);
 	}
 
 	return done(
 		messageOutput(`Pop-up blocked. Open ${label} from the link below.`, {
 			label: `Open ${label}`,
-			url: href,
+			url: result.url,
 		})
 	);
 }
 
-function notesPage(ctx: ExecuteContext): ResolveOutcome {
-	const query = argumentText(ctx.parsed);
+function askArguments(parsed: ParsedLine): {
+	intent?: PromptIntent;
+	query: string;
+} {
+	const [first = "", ...rest] = tokenValues(parsed).slice(1);
+	const intent = parseIntent(first);
+	return intent === undefined
+		? { query: argumentText(parsed) }
+		: { intent, query: rest.join(" ").trim() };
+}
+
+function parseIntent(value: string): PromptIntent | undefined {
+	return PROMPT_INTENTS.find((intent) => intent === value.toLowerCase());
+}
+
+function notesPage(ctx: ExecuteContext, query: string): ResolveOutcome {
 	if (!ctx.current.inCatalog && (query === "" || query === ".")) {
 		return { kind: "none", query: query === "" ? "." : query };
 	}
@@ -392,40 +421,13 @@ function notesPage(ctx: ExecuteContext): ResolveOutcome {
 	);
 }
 
-function askRelatedLines(ctx: ExecuteContext, page: CatalogPage): string[] {
-	const { origin } = ctx.runtime;
-	if (page.kindView) {
-		if (page.parentUrl === null) {
-			return [];
-		}
-
-		const parent = findPageByUrl(ctx.catalog, page.parentUrl);
-		return [
-			formatRefLink({
-				href: page.parentUrl,
-				label: "Notes",
-				origin,
-				title: parent?.title.source ?? page.parentUrl,
-			}),
-		];
-	}
-
-	if (ctx.graph.status !== "ready") {
-		return [];
-	}
-
-	return formatPageRelated(selectPageRelated(ctx.graph.document, page.url), {
-		origin,
-	});
-}
-
 function resolveToOutput(
 	ctx: ExecuteContext,
-	resolved: Exclude<ResolveOutcome, { kind: "match" }>
+	resolved: Exclude<ResolveOutcome, { kind: "match" }>,
+	query: string
 ): TerminalOutput {
-	const query = argumentText(ctx.parsed);
 	if (resolved.kind === "empty") {
-		return usageOutput(`${commandToken(ctx.parsed)} <page|.>`);
+		return commandUsage(ctx.parsed);
 	}
 
 	if (resolved.kind === "ambiguous") {
@@ -484,7 +486,36 @@ function completeRootArgument(ctx: CompleteContext): Completion[] {
 }
 
 function completePageArgument(ctx: CompleteContext): Completion[] {
-	const partial = argumentPartial(ctx.parsed);
+	return pageCompletions(ctx, argumentPartial(ctx.parsed));
+}
+
+function completeAskArgument(ctx: CompleteContext): Completion[] {
+	const { parsed } = ctx;
+	const args = tokenValues(parsed).slice(1);
+	if (args.length === 0 || (args.length === 1 && !parsed.trailingSpace)) {
+		const partial = args[0] ?? "";
+		return [
+			...intentCompletions(partial),
+			...pageCompletions(ctx, partial),
+		].slice(0, TERMINAL_COMPLETION_LIMIT);
+	}
+
+	const { query } = askArguments(parsed);
+	return pageCompletions(ctx, parsed.trailingSpace ? "" : query);
+}
+
+function intentCompletions(partial: string): Completion[] {
+	const needle = partial.toLowerCase();
+	return PROMPT_INTENTS.filter((intent) => intent.startsWith(needle)).map(
+		(intent) => ({
+			detail: PROMPT_INTENT_LABELS[intent],
+			label: intent,
+			replace: intent,
+		})
+	);
+}
+
+function pageCompletions(ctx: CompleteContext, partial: string): Completion[] {
 	const current = ctx.current.route;
 	if (partial === "." || partial.startsWith(".")) {
 		const parent = current.parentUrl
