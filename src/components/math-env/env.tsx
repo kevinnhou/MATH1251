@@ -62,13 +62,12 @@ export function Env({ children, env, markHref, markLinkLabel }: EnvProps) {
 		);
 	}
 
-	const { id } = env;
-	if (id === undefined) {
+	if (env.prompt === undefined) {
 		return renderEnv();
 	}
 
 	return (
-		<EnvShare env={{ ...env, id }}>
+		<EnvShare target={env.prompt}>
 			{(rightClickHint) => renderEnv(rightClickHint)}
 		</EnvShare>
 	);

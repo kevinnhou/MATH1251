@@ -42,14 +42,27 @@ export async function copyText(text: string): Promise<boolean> {
 	}
 }
 
-export function openExternal(url: string): boolean {
-	const popup = window.open(url, "_blank");
-	if (!popup) {
-		return false;
+export async function copyPendingText(text: Promise<string>): Promise<boolean> {
+	if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+		try {
+			await navigator.clipboard.write([
+				new ClipboardItem({
+					"text/plain": text.then(
+						(value) => new Blob([value], { type: "text/plain" })
+					),
+				}),
+			]);
+			return true;
+		} catch {
+			//
+		}
 	}
 
-	popup.opener = null;
-	return true;
+	try {
+		return await copyText(await text);
+	} catch {
+		return false;
+	}
 }
 
 export async function fetchText(

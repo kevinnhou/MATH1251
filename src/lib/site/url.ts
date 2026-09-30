@@ -1,6 +1,5 @@
 const ABSOLUTE_URL = /^https?:\/\//;
 const PROTOCOL = /^[a-z][a-z0-9+.-]*:/i;
-const SAFE_PROTOCOL = /^https?:$/i;
 const TRAILING_SLASHES = /\/+$/;
 
 export function toAbsoluteUrl(href: string, origin: string): string {
@@ -10,15 +9,6 @@ export function toAbsoluteUrl(href: string, origin: string): string {
 
 	const path = href.startsWith("/") ? href : `/${href}`;
 	return `${origin.replace(TRAILING_SLASHES, "")}${path}`;
-}
-
-export function isSafeExternalUrl(value: string): boolean {
-	try {
-		const url = new URL(value);
-		return SAFE_PROTOCOL.test(url.protocol);
-	} catch {
-		return false;
-	}
 }
 
 export function isSafeInternalUrl(value: string): boolean {

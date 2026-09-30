@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import {
+	type PromptTargetLookup,
 	pageEnvContext,
 	resolveEnv,
 	resolveRecall,
@@ -24,6 +25,7 @@ import { Statement } from "./statement";
 export type MathEnvMdxOptions = KindViewRenderOptions & {
 	pageEnvs?: PageEnvs;
 	pageTitle?: string;
+	promptTarget?: PromptTargetLookup;
 	tenetIndex?: TenetIndex;
 };
 
@@ -34,6 +36,7 @@ export function getMathEnvMdxComponents(
 		envs: options.pageEnvs,
 		pageTitle: options.pageTitle,
 		pageUrl: options.pageUrl,
+		promptTarget: options.promptTarget,
 		tenetIndex: options.tenetIndex,
 	});
 	const kindViewHref = (kind: MathEnvKind) =>

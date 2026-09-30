@@ -1,3 +1,4 @@
+import type { PromptTarget } from "@/lib/export/model";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import type { ExampleDifficulty, MathEnvKind } from "./kinds";
 import type { EnvOccurrence, PageEnvs } from "./page-envs";
@@ -13,11 +14,11 @@ export interface EnvView {
 	citedBy: ResolvedRef[];
 	difficulty?: ExampleDifficulty;
 	id?: string;
-	isRecall?: boolean;
 	kind: MathEnvKind;
 	originalHref?: string;
 	pageTitle: string;
 	pageUrl: string;
+	prompt?: PromptTarget;
 	relatedSee: ResolvedRef[];
 	relatedUses: ResolvedRef[];
 	statement?: string;
@@ -32,10 +33,13 @@ export interface RecallView<
 	title: MarkdownFragment<"inline">;
 }
 
+export type PromptTargetLookup = (id: string) => PromptTarget | undefined;
+
 export interface PageEnvContext {
 	entriesById: ReadonlyMap<string, EnvOccurrence>;
 	pageTitle: string;
 	pageUrl: string;
+	promptTarget?: PromptTargetLookup;
 	tenetIndex?: TenetIndex;
 }
 
@@ -43,6 +47,7 @@ export function pageEnvContext(options: {
 	envs?: PageEnvs;
 	pageTitle?: string;
 	pageUrl?: string;
+	promptTarget?: PromptTargetLookup;
 	tenetIndex?: TenetIndex;
 }): PageEnvContext {
 	return {
@@ -51,6 +56,7 @@ export function pageEnvContext(options: {
 		),
 		pageTitle: options.pageTitle ?? "",
 		pageUrl: options.pageUrl ?? "",
+		promptTarget: options.promptTarget,
 		tenetIndex: options.tenetIndex,
 	};
 }
@@ -62,15 +68,17 @@ export function resolveEnv<Id extends string | undefined>(
 ): EnvView & { id: Id } {
 	const occurrence = id === undefined ? undefined : context.entriesById.get(id);
 	const index = context.tenetIndex;
+	const self = selfHref(context, id);
 
 	return {
-		citedBy: citedByFor(occurrence?.slug, index, selfHref(context, id)),
+		citedBy: citedByFor(occurrence?.slug, index, self),
 		id,
 		kind,
 		pageTitle: context.pageTitle,
 		pageUrl: context.pageUrl,
 		relatedSee: occurrence && index ? resolveSlugs(occurrence.see, index) : [],
 		relatedUses: occurrence && index ? resolveSlugs(occurrence.of, index) : [],
+		...promptFor(context, self),
 		...(occurrence?.body ? { body: occurrence.body } : {}),
 		...(occurrence?.difficulty ? { difficulty: occurrence.difficulty } : {}),
 		...(occurrence?.statement ? { statement: occurrence.statement } : {}),
@@ -89,15 +97,16 @@ export function resolveRecall<Id extends string | undefined>(
 		return;
 	}
 
+	const originalHref = getTenetHref(tenet);
 	return {
 		env: {
 			citedBy: citedByFor(tenet.slug, index, selfHref(context, id)),
 			id,
-			isRecall: true,
 			kind: tenet.kind,
-			originalHref: getTenetHref(tenet),
+			originalHref,
 			pageTitle: context.pageTitle,
 			pageUrl: context.pageUrl,
+			...promptFor(context, id === undefined ? undefined : originalHref),
 			relatedSee: resolveSlugs(tenet.see, index),
 			relatedUses: resolveSlugs(tenet.of, index),
 			title: tenet.title.source,
@@ -115,6 +124,15 @@ function selfHref(
 	id: string | undefined
 ): string | undefined {
 	return context.pageUrl && id ? `${context.pageUrl}#${id}` : undefined;
+}
+
+function promptFor(
+	context: PageEnvContext,
+	nodeId: string | undefined
+): { prompt?: PromptTarget } {
+	const prompt =
+		nodeId === undefined ? undefined : context.promptTarget?.(nodeId);
+	return prompt === undefined ? {} : { prompt };
 }
 
 function citedByFor(
