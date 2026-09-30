@@ -137,7 +137,8 @@ every page, OG image and `content.md` in that worker reuses it.
 
 ### 7. Non-body exports are rebuilt from remark output
 
-`content.md` and `llms-full.txt` (`export-page.ts`) are rebuilt from
+`content.md`, per-environment `.md` files and `llms-full.txt` (`src/lib/export/`,
+see EXPORT.md) are rebuilt from
 `envs.segments`. `remarkMathEnv` serialises prose back to markdown at compile time,
 so exporting a page never needs its compiled body. OG images use the title,
 description, `ideas` and an environment census from `envs`.
@@ -160,12 +161,15 @@ once per worker, not four times.
 
 ### 9. Only canonical pages are prerendered
 
-`/[...slug]`, `/og/docs/[...slug]/image.png` and
-`/llms.mdx/docs/[[...slug]]/content.md` each use `generateStaticParams` →
-`docsStaticParams(suffix)` with `revalidate = false`. That's 76 of each.
+`/[...slug]` and `/og/docs/[...slug]/image.png` each use `generateStaticParams`
+→ `docsStaticParams(suffix)` with `revalidate = false`. That's 76 of each.
 
-Kind-view URLs (e.g. `/algebra/eigenvalues/theorems`) and their OG images and
-`content.md` files are **not** prerendered. `dynamicParams = true` renders them on
+The export routes under `/llms.mdx/` are the exception: they prerender every
+page, environment and kind view (938 files each) with `dynamicParams = false`
+(see EXPORT.md).
+
+Kind-view URLs (e.g. `/algebra/eigenvalues/theorems`) and their OG images are
+**not** prerendered. `dynamicParams = true` renders them on
 first request, and `revalidate = false` caches them forever.
 
 **Effect:** the number of static outputs grows with the page count, not with pages
