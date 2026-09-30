@@ -5,7 +5,7 @@ import { cache } from "react";
 import { type GraphModule, getStrand } from "@/lib/course/strands";
 import { getKindViewSlug, type MathEnvKind } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
-import { docsContentRoute, docsImageRoute, docsRoute } from "./config";
+import { docsImageRoute, docsRoute } from "./config";
 import type { CorpusMetaPage, DocsMeta } from "./corpus-meta/types";
 
 type PageData = CorpusMetaPage["frontmatter"] &
@@ -63,31 +63,6 @@ export function getPageImageUrl(
 		url:
 			"/" +
 			[page.locale, ...docsImageRoute.split("/"), ...segments]
-				.filter(Boolean)
-				.join("/"),
-	};
-}
-
-export function getPageMarkdownUrl(page: { locale?: string; slugs: string[] }) {
-	return markdownContentUrl(page.slugs, page.locale);
-}
-
-export function getKindViewMarkdownUrl(view: {
-	locale?: string;
-	pageSlugs: string[];
-	slug: string;
-}) {
-	return markdownContentUrl([...view.pageSlugs, view.slug], view.locale);
-}
-
-function markdownContentUrl(slugs: string[], locale?: string) {
-	const segments = [...slugs, "content.md"];
-
-	return {
-		segments,
-		url:
-			"/" +
-			[locale, ...docsContentRoute.split("/"), ...segments]
 				.filter(Boolean)
 				.join("/"),
 	};

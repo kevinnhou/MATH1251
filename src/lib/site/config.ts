@@ -5,6 +5,7 @@ export const homeRoute = "/core";
 export const docsRoute = "/";
 export const docsImageRoute = "/og/docs";
 export const docsContentRoute = "/llms.mdx/docs";
+export const docsContextRoute = "/llms.mdx/context";
 
 export const themeBackground = {
 	dark: "#121212",
@@ -20,3 +21,5 @@ export const gitConfig = {
 export const offlineRoute = "/~offline";
 export const graphDataRoute = "/graph-data.json";
 export const catalogRoute = "/catalog.json";
+export const exportGraphRoute = "/graph.json";
+export const llmsFullRoute = "/llms-full.txt";

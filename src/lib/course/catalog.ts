@@ -1,3 +1,4 @@
+import type { PromptTarget } from "@/lib/export/model";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import { literalInlineFragment } from "@/lib/markdown/types";
 import { homeRoute } from "@/lib/site/config";
@@ -10,6 +11,7 @@ export interface CatalogPage {
 	kindView: boolean;
 	markdownUrl: string;
 	parentUrl: string | null;
+	prompt: PromptTarget | null;
 	strand?: GraphModule;
 	title: MarkdownFragment<"inline">;
 	url: string;
@@ -57,6 +59,7 @@ function placeholderPage(url: string): CatalogPage {
 		kindView: false,
 		markdownUrl: "",
 		parentUrl: parentPath(normalised),
+		prompt: null,
 		title: literalInlineFragment(normalised),
 		url: normalised,
 	};
