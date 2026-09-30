@@ -11,7 +11,6 @@ export interface GraphTheme {
 	modules: Record<GraphModule, string>;
 }
 
-/** What the canvas callbacks paint against; refreshed every render. */
 export interface PaintState {
 	focusedId: string | null;
 	hover: SimNode | null;
@@ -40,7 +39,6 @@ export function readGraphTheme(container: HTMLElement): GraphTheme {
 	};
 }
 
-/** Locating dims everything but its matches. */
 export function isDimmed(locateIds: Set<string> | null, id: string): boolean {
 	return locateIds !== null && locateIds.size > 0 && !locateIds.has(id);
 }
@@ -144,7 +142,6 @@ export function linkDash(link: { kind: GraphEdgeKind }): number[] | null {
 	return null;
 }
 
-/** Links touching the hovered, selected or focused node stand out. */
 function isEmphasisedLink(link: SimLink, state: PaintState): boolean {
 	const ends = [endId(link.source), endId(link.target)];
 	return [state.hover?.id, state.selectedId, state.focusedId].some(

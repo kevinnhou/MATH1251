@@ -10,7 +10,6 @@ interface LabelSize {
 	width: number;
 }
 
-/** Label sizes, measured once per layout pass rather than on every tick. */
 export type LabelSizes = WeakMap<HTMLElement, LabelSize>;
 
 export function measureLabels(root: HTMLElement): LabelSizes {
@@ -23,7 +22,6 @@ export function measureLabels(root: HTMLElement): LabelSizes {
 	return sizes;
 }
 
-/** Moves each HTML title under its node, hiding those off-canvas. */
 export function placeLabels(
 	root: HTMLElement,
 	graph: ForceGraph,

@@ -19,11 +19,6 @@ export function isSizeAnimating(element: HTMLElement): boolean {
 		.some((animation) => animation.playState === "running");
 }
 
-/**
- * The container's size. While its height transitions (immersing), only the
- * width follows along; the height commits when the transition ends, so the
- * canvas resizes once rather than every frame.
- */
 export function useCanvasSize(
 	containerRef: RefObject<HTMLDivElement | null>
 ): Size {
@@ -79,7 +74,6 @@ export function useCanvasSize(
 	return size;
 }
 
-/** Graph colours from CSS, re-read whenever the theme class flips. */
 export function useGraphTheme(
 	containerRef: RefObject<HTMLDivElement | null>
 ): GraphTheme | null {
@@ -110,10 +104,6 @@ interface Transform {
 	y: number;
 }
 
-/**
- * Zooms to fit whenever `fitKey` changes, once the size has settled, unless
- * the reader has since dragged a node or panned the camera themselves.
- */
 export function useAutoFit(
 	graphRef: RefObject<ForceGraph | undefined>,
 	containerRef: RefObject<HTMLDivElement | null>,
