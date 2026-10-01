@@ -1,11 +1,13 @@
 import type { GraphModule } from "@/lib/course/strands";
 import type { GraphDocument } from "@/lib/graph/types";
+import type { KindViewRef } from "@/lib/math-env/kind-view";
 import { getKindLabel } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
 import {
 	type ExportEdge,
 	type ExportGraph,
+	type ExportKindView,
 	type ExportNode,
 	type ExportSegment,
 	envId,
@@ -28,7 +30,8 @@ export interface ExportPageInput {
 export function buildExportGraph(
 	pages: readonly ExportPageInput[],
 	tenets: TenetIndex,
-	graph: Pick<GraphDocument, "edges">
+	graph: Pick<GraphDocument, "edges">,
+	kindViews: readonly KindViewRef[]
 ): ExportGraph {
 	const nodes = new Map(
 		pages.flatMap(pageNodes).map((node) => [node.id, node])
@@ -46,6 +49,9 @@ export function buildExportGraph(
 	return {
 		edges,
 		incoming: Map.groupBy(edges, (edge) => edge.target),
+		kindViews: new Map(
+			exportKindViews(kindViews, nodes).map((view) => [view.id, view])
+		),
 		nodes,
 		outgoing: Map.groupBy(edges, (edge) => edge.source),
 		position: new Map([...nodes.keys()].map((id, index) => [id, index])),
@@ -93,6 +99,25 @@ function pageNodes({ envs, module, page }: ExportPageInput): ExportNode[] {
 			})
 		),
 	];
+}
+
+function exportKindViews(
+	views: readonly KindViewRef[],
+	nodes: ReadonlyMap<string, ExportNode>
+): ExportKindView[] {
+	return views.flatMap((view) => {
+		const parent = nodes.get(view.parentUrl);
+		return parent?.type === "page"
+			? [
+					{
+						id: view.url,
+						kind: view.kind,
+						label: `${getKindLabel(view.kind, true)} from ${parent.label}`,
+						parentId: parent.id,
+					},
+				]
+			: [];
+	});
 }
 
 function pageEdges(

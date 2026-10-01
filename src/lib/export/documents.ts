@@ -1,5 +1,4 @@
 import { GRAPH_MODULES, STRAND_LABELS } from "@/lib/course/strands";
-import type { KindView } from "@/lib/math-env/kind-view";
 import { getKindLabel, type MathEnvKind } from "@/lib/math-env/kinds";
 import {
 	catalogRoute,
@@ -21,6 +20,7 @@ import {
 	COURSE,
 	EXPORT_EDGE_KINDS,
 	type ExportGraph,
+	type ExportKindView,
 	type ExportNode,
 	RELATION_NAMES,
 	RELATION_ORDER,
@@ -76,8 +76,11 @@ export function pageDocument(node: ExportNode, graph: ExportGraph): string {
 	});
 }
 
-export function kindViewDocument(view: KindView, graph: ExportGraph): string {
-	const page = requireNode(graph, view.parentUrl);
+export function kindViewDocument(
+	view: ExportKindView,
+	graph: ExportGraph
+): string {
+	const page = requireNode(graph, view.parentId);
 	const kindLabel = getKindLabel(view.kind, true);
 	const title = `${kindLabel}: ${page.title}`;
 
@@ -96,7 +99,7 @@ export function kindViewDocument(view: KindView, graph: ExportGraph): string {
 			type: "kind-view",
 		},
 		heading: title,
-		id: view.url,
+		id: view.id,
 		prerequisites: [],
 		relations: [],
 	});

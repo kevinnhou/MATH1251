@@ -51,7 +51,9 @@ A node ID is the node's site path:
 
 Pages and environments are graph nodes (`ExportNode`). Kind views are not.
 They are a filter over one page's environments, but they do get their own
-Markdown file, context file and prompt target.
+Markdown file, context file and prompt target. The graph keeps them in a side
+map, `kindViews` (`ExportKindView`: `id`, `kind`, `label`, `parentId`), keyed
+by view URL, so traversal, `pagesOf` and `graph.json` never meet them.
 
 Every link inside an export points at a node ID, so any link can be looked up
 in `graph.json`.
@@ -90,7 +92,8 @@ so every export, page documents included, renders from the graph alone.
 `buildExportGraph` drops edges whose ends are not both nodes, as well as
 self-loops and duplicates (same kind, source and target). It also indexes
 `outgoing`, `incoming` and `position` (reading order: each page, then its
-environments), so relations sort stably.
+environments), so relations sort stably. It registers every kind view whose
+parent page is a node and drops the rest.
 
 `RELATION_NAMES`, `RELATION_LABELS` and `RELATION_ORDER` in `model.ts` are the
 only place relation names are spelled. The documents, the context and
@@ -143,8 +146,8 @@ paths yourself.
 (`a-b-thm-x.md`).
 
 The routes resolve a request with `resolveExportTarget(segments, format)`. It
-checks the export graph for an environment ID first, then falls back to the
-page index for a page or kind view.
+looks the ID up in the export graph's `nodes`, then in its `kindViews`. Both
+are built together, so an ID that resolves always renders.
 
 ### Markdown documents
 

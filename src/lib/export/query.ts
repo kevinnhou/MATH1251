@@ -2,6 +2,7 @@ import type { MathEnvKind } from "@/lib/math-env/kinds";
 import {
 	type ExportEdgeKind,
 	type ExportGraph,
+	type ExportKindView,
 	type ExportNode,
 	RELATION_NAMES,
 	RELATION_ORDER,
@@ -18,6 +19,18 @@ export function requireNode(graph: ExportGraph, id: string): ExportNode {
 	}
 
 	return node;
+}
+
+export function requireKindView(
+	graph: ExportGraph,
+	id: string
+): ExportKindView {
+	const view = graph.kindViews.get(id);
+	if (view === undefined) {
+		throw new Error(`Unknown kind view "${id}".`);
+	}
+
+	return view;
 }
 
 function requirePosition(graph: ExportGraph, id: string): number {

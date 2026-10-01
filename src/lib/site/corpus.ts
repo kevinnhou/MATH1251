@@ -11,7 +11,7 @@ import { getStrand } from "@/lib/course/strands";
 import { buildExportGraph } from "@/lib/export/build";
 import { kindViewTarget, pageTarget } from "@/lib/export/context";
 import type { ExportGraph } from "@/lib/export/model";
-import { requireNode } from "@/lib/export/query";
+import { requireKindView, requireNode } from "@/lib/export/query";
 import { assembleGraphDocument } from "@/lib/graph/assemble";
 import type { GraphDocument } from "@/lib/graph/types";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
@@ -77,7 +77,12 @@ export const getCorpus = memoInProduction((): Corpus => {
 	assertTenetIndex(tenets);
 
 	const graph = assembleGraphDocument(index.pages, tenets, resolvePageHref);
-	const exportGraph = buildExportGraph(index.pages, tenets, graph);
+	const exportGraph = buildExportGraph(
+		index.pages,
+		tenets,
+		graph,
+		index.kindViews
+	);
 
 	return {
 		...index,
@@ -184,7 +189,7 @@ function catalogPage(resolved: ResolvedDocs, graph: ExportGraph): CatalogPage {
 			description: compileMarkdownFragment(resolved.description, "inline"),
 			kindView: true,
 			parentUrl: view.parentUrl,
-			prompt: kindViewTarget(view, graph),
+			prompt: kindViewTarget(requireKindView(graph, view.url)),
 			url: view.url,
 		};
 	}

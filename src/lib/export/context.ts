@@ -1,11 +1,11 @@
 import { STRAND_LABELS } from "@/lib/course/strands";
-import type { KindView } from "@/lib/math-env/kind-view";
-import { type ExampleDifficulty, getKindLabel } from "@/lib/math-env/kinds";
+import type { ExampleDifficulty } from "@/lib/math-env/kinds";
 import {
 	bodyRole,
 	type ContextBlock,
 	type ContextTier,
 	type ExportGraph,
+	type ExportKindView,
 	type ExportNode,
 	type PromptContext,
 	type PromptTarget,
@@ -19,7 +19,6 @@ import {
 	pageOf,
 	prerequisites,
 	relationsOf,
-	requireNode,
 } from "./query";
 
 const OUTGOING: readonly RelationName[] = [
@@ -56,16 +55,12 @@ export function pageTarget(node: ExportNode): PromptTarget {
 	};
 }
 
-export function kindViewTarget(
-	view: KindView,
-	graph: ExportGraph
-): PromptTarget {
-	const page = requireNode(graph, view.parentUrl);
+export function kindViewTarget(view: ExportKindView): PromptTarget {
 	return {
 		hasProof: view.kind === "proof",
-		id: view.url,
+		id: view.id,
 		kind: view.kind,
-		label: `${getKindLabel(view.kind, true)} from ${page.label}`,
+		label: view.label,
 		type: "kind-view",
 	};
 }
@@ -115,15 +110,14 @@ export function pageContext(
 }
 
 export function kindViewContext(
-	view: KindView,
+	view: ExportKindView,
 	graph: ExportGraph
 ): PromptContext {
-	const target = kindViewTarget(view, graph);
-	const envs = envsOfKind(graph, view.parentUrl, view.kind);
+	const envs = envsOfKind(graph, view.parentId, view.kind);
 
-	return promptContext(target, [
+	return promptContext(kindViewTarget(view), [
 		...tier("core", [
-			`${target.label} (${view.parentUrl}), without the surrounding lecture prose.`,
+			`${view.label} (${view.parentId}), without the surrounding lecture prose.`,
 			outline(envs),
 		]),
 		...tier(
@@ -132,7 +126,7 @@ export function kindViewContext(
 				[statementBlock(env), bodyBlock(env)].filter(Boolean).join("\n")
 			)
 		),
-		...prerequisiteBlocks(graph, view.parentUrl),
+		...prerequisiteBlocks(graph, view.parentId),
 	]);
 }
 

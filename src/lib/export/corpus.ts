@@ -1,7 +1,6 @@
 import "server-only";
 
-import type { KindView } from "@/lib/math-env/kind-view";
-import { getCorpus, resolveDocsUrl } from "@/lib/site/corpus";
+import { getCorpus } from "@/lib/site/corpus";
 import {
 	envContext,
 	envTarget,
@@ -20,6 +19,7 @@ import {
 	COURSE,
 	type ExportEdge,
 	type ExportGraph,
+	type ExportKindView,
 	type ExportNode,
 	type PromptContext,
 	type PromptTarget,
@@ -39,7 +39,7 @@ function exportGraph(): ExportGraph {
 
 export type ExportTarget = { id: string } & (
 	| { node: ExportNode; type: ExportNode["type"] }
-	| { type: "kind-view"; view: KindView }
+	| { type: "kind-view"; view: ExportKindView }
 );
 
 export function resolveExportTarget(
@@ -51,15 +51,14 @@ export function resolveExportTarget(
 }
 
 function resolveNode(id: string): ExportTarget | undefined {
-	const node = exportGraph().nodes.get(id);
+	const graph = exportGraph();
+	const node = graph.nodes.get(id);
 	if (node !== undefined) {
 		return { id, node, type: node.type };
 	}
 
-	const resolved = resolveDocsUrl(id);
-	return resolved?.kind === "kind-view"
-		? { id, type: "kind-view", view: resolved.view }
-		: undefined;
+	const view = graph.kindViews.get(id);
+	return view === undefined ? undefined : { id, type: "kind-view", view };
 }
 
 export function renderMarkdown(target: ExportTarget): string {
@@ -87,7 +86,7 @@ export function promptTargetFor(id: string): PromptTarget | undefined {
 		case "page":
 			return pageTarget(target.node);
 		case "kind-view":
-			return kindViewTarget(target.view, graph);
+			return kindViewTarget(target.view);
 		default:
 			return target satisfies never;
 	}
@@ -108,10 +107,8 @@ export function renderPromptContext(target: ExportTarget): PromptContext {
 }
 
 export function exportStaticParams(format: ExportFormat): { slug: string[] }[] {
-	const ids = [
-		...exportGraph().nodes.keys(),
-		...getCorpus().kindViews.map((view) => view.url),
-	];
+	const graph = exportGraph();
+	const ids = [...graph.nodes.keys(), ...graph.kindViews.keys()];
 	return ids.map((id) => ({ slug: nodeFileSegments(id, format) }));
 }
 

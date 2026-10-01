@@ -103,9 +103,17 @@ export type ExportSegment =
 	| { markdown: string; type: "prose" }
 	| { id: string; type: "env" | "recall" };
 
+export interface ExportKindView {
+	id: string;
+	kind: MathEnvKind;
+	label: string;
+	parentId: string;
+}
+
 export interface ExportGraph {
 	edges: readonly ExportEdge[];
 	incoming: ReadonlyMap<string, readonly ExportEdge[]>;
+	kindViews: ReadonlyMap<string, ExportKindView>;
 	nodes: ReadonlyMap<string, ExportNode>;
 	outgoing: ReadonlyMap<string, readonly ExportEdge[]>;
 	position: ReadonlyMap<string, number>;
