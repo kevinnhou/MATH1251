@@ -283,8 +283,8 @@ Targets reach each surface without a fetch:
   `Env` renders `EnvShare` only when it is set. A recall's target is the
   original environment. Only anchored environments get one, and no recall in
   the content currently has an anchor.
-- **Terminal:** every `CatalogPage` has a `prompt`, which is `null` only for the
-  placeholder standing in for a route outside the catalog.
+- **Terminal:** every `CatalogPage` has a `prompt`. A route outside the catalog
+  is a `RoutePage`, which has none.
 
 ### Context tiers
 
@@ -453,9 +453,9 @@ After an intent, Tab completes pages against the rest of the line. Usage errors
 print the descriptor's usage line, the same one `help` shows. `md <page|.>`
 prints the page's Markdown export through `loadMarkdown`, so it shares the
 cache and timeout with "Copy Markdown". Both commands resolve their page with
-`notesTarget`, which yields the catalog page's `PromptTarget`
-(`CatalogPage.prompt`, `null` only for the placeholder of a route outside the
-catalog); its ID is all they need.
+`notesPage` and use the catalog page's `prompt`; its ID is all `md` needs.
+`resolvePage` matches `.` only inside the catalog, so off-catalog routes report
+"not a notes page."
 
 `run.ts` awaits `catalogResource.load()` before running a command. With the
 catalog cached this adds only a microtask, and the gesture survives. On a cold,

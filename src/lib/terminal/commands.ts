@@ -1,6 +1,5 @@
 import type { CatalogPage } from "@/lib/course/catalog";
 import { findPageByUrl } from "@/lib/course/catalog";
-import type { PromptTarget } from "@/lib/export/model";
 import {
 	DEFAULT_INTENT,
 	intentsFor,
@@ -245,7 +244,7 @@ function executeOpen(ctx: ExecuteContext): CommandResult {
 	const page = pageInCwd(ctx, query);
 	const resolved: ResolveOutcome = page
 		? { kind: "match", page }
-		: resolvePage(ctx.catalog, query, ctx.current.route);
+		: resolvePage(ctx.catalog, query, ctx.current);
 	if (resolved.kind === "none" || resolved.kind === "empty") {
 		return done(errorOutput(`open: no such page: ${query}`));
 	}
@@ -319,16 +318,16 @@ async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
 }
 
 async function executeMarkdown(ctx: ExecuteContext): Promise<CommandResult> {
-	const found = notesTarget(ctx, "md", argumentText(ctx.parsed));
-	if ("output" in found) {
+	const found = notesPage(ctx, argumentText(ctx.parsed));
+	if (found.kind === "error") {
 		return done(found.output);
 	}
 
-	const { page, target } = found;
+	const { page } = found;
 	try {
-		const markdown = await ctx.runtime.loadMarkdown(target.id);
+		const markdown = await ctx.runtime.loadMarkdown(page.prompt.id);
 		return done(
-			markdownOutput({ id: target.id, markdown, title: page.title.plain })
+			markdownOutput({ id: page.prompt.id, markdown, title: page.title.plain })
 		);
 	} catch {
 		return done(errorOutput(`md: unable to fetch Markdown for ${page.url}.`));
@@ -341,12 +340,13 @@ async function executeAsk(
 ): Promise<CommandResult> {
 	const [name] = ASK_COMMANDS[provider];
 	const { intent, query } = askArguments(ctx.parsed);
-	const found = notesTarget(ctx, name, query);
-	if ("output" in found) {
+	const found = notesPage(ctx, query);
+	if (found.kind === "error") {
 		return done(found.output);
 	}
 
-	const { page, target } = found;
+	const { page } = found;
+	const target = page.prompt;
 	const allowed = intentsFor(target);
 	if (!allowed.includes(intent)) {
 		return done(
@@ -386,32 +386,20 @@ function askArguments(parsed: ParsedLine): {
 		: { intent: DEFAULT_INTENT, query: argumentText(parsed) };
 }
 
-function notesTarget(
+function notesPage(
 	ctx: ExecuteContext,
-	name: string,
 	query: string
-): { page: CatalogPage; target: PromptTarget } | { output: TerminalOutput } {
-	const resolved = notesPage(ctx, query);
-	if (resolved.kind !== "match") {
-		return { output: resolveToOutput(ctx, resolved, query) };
-	}
-
-	const { page } = resolved;
-	return page.prompt === null
-		? { output: errorOutput(`${name}: not a notes page.`) }
-		: { page, target: page.prompt };
-}
-
-function notesPage(ctx: ExecuteContext, query: string): ResolveOutcome {
-	if (!ctx.current.inCatalog && (query === "" || query === ".")) {
-		return { kind: "none", query: query === "" ? "." : query };
-	}
-
-	return resolvePage(
+):
+	| { kind: "page"; page: CatalogPage }
+	| { kind: "error"; output: TerminalOutput } {
+	const resolved = resolvePage(
 		ctx.catalog,
 		query === "" ? "." : query,
-		ctx.current.route
+		ctx.current
 	);
+	return resolved.kind === "match"
+		? { kind: "page", page: resolved.page }
+		: { kind: "error", output: resolveToOutput(ctx, resolved, query) };
 }
 
 function resolveToOutput(
