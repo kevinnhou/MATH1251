@@ -2,7 +2,14 @@
 
 import { Check, Copy, LoaderCircle, X } from "lucide-react";
 import { type CopyStatus, useCopyMarkdown } from "@/lib/export/use-copy";
-import { COPY_LABELS, EXPORT_BUTTON_CLASS } from "./ask-panel";
+import { EXPORT_BUTTON_CLASS } from "./ask-panel";
+
+const COPY_LABELS: Record<CopyStatus, string> = {
+	copied: "Copied",
+	copying: "Copying…",
+	failed: "Couldn't copy. Offline?",
+	idle: "Copy Markdown",
+};
 
 export function LLMCopyButton({ id }: { id: string }) {
 	const { copy, status } = useCopyMarkdown(id);

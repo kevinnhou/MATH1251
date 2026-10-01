@@ -32,7 +32,7 @@ src/app/llms.txt/route.ts                       index
 src/app/llms-full.txt/route.ts                  every page document
 src/app/graph.json/route.ts                     nodes and edges
 
-src/components/mdx/ask-panel.tsx       the shared ask panel (sentence + reels), header button style, blocked link
+src/components/mdx/ask-panel.tsx       AskPopup: the shared ask panel (sentence + reels) in a popover; header button style, blocked link
 src/components/mdx/page-actions.tsx    page "Ask AI" popover
 src/components/mdx/copy-markdown.tsx   page "Copy Markdown" button
 src/components/math-env/share.tsx      environment popover (right click or the corner hint)
@@ -402,8 +402,9 @@ overwriting it.
 
 ### Ask panel
 
-Both surfaces open `AskPanel` (`ask-panel.tsx`) in a Base UI popover. It is one
-sentence built from the current choices:
+Both surfaces render `AskPopup` (`ask-panel.tsx`) inside their own Base UI
+`Popover.Root`, passing only where it is anchored. It is one sentence built from
+the current choices:
 
 ```
             Walk the proof of                 ChatGPT        <- ghosted neighbours

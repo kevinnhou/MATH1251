@@ -10,7 +10,7 @@ import {
 	type LlmProvider,
 } from "./prompt";
 
-export interface BlockedPrompt {
+interface BlockedPrompt {
 	provider: LlmProvider;
 	url: string;
 }
@@ -68,6 +68,8 @@ const providerPreference = storedPreference(
 	isLlmProvider
 );
 
+export type PromptState = ReturnType<typeof usePrompt>;
+
 export function usePrompt(target: PromptTarget) {
 	const intents = intentsFor(target);
 	const preferred = intentPreference.use();
@@ -75,7 +77,6 @@ export function usePrompt(target: PromptTarget) {
 	const provider = providerPreference.use();
 	const [blocked, setBlocked] = useState<BlockedPrompt>();
 
-	// Call straight from the click or keypress: `openPrompt` needs the gesture.
 	function launch() {
 		setBlocked(undefined);
 		openPrompt({ intent, provider, target }).then((result) => {
@@ -95,5 +96,6 @@ export function usePrompt(target: PromptTarget) {
 		provider,
 		setIntent: intentPreference.write,
 		setProvider: providerPreference.write,
+		target,
 	};
 }

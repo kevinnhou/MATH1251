@@ -11,6 +11,8 @@ const RESET_MS: Record<CopyStatus, number> = {
 	idle: 0,
 };
 
+export type MarkdownCopy = ReturnType<typeof useCopyMarkdown>;
+
 export function useCopyMarkdown(id: string) {
 	const [status, setStatus] = useState<CopyStatus>("idle");
 	const timer = useRef<number>(undefined);

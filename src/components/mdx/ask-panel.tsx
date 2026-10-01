@@ -1,5 +1,6 @@
 "use client";
 
+import { Popover } from "@base-ui/react/popover";
 import { ChevronsUpDown, CornerDownLeft } from "lucide-react";
 import {
 	type KeyboardEvent,
@@ -11,70 +12,87 @@ import {
 } from "react";
 import { LlmLogo } from "@/components/site/llm-logos";
 import { cn } from "@/lib/cn";
-import type { PromptTarget } from "@/lib/export/model";
 import {
 	intentPhrase,
 	LLM_PROVIDER_LABELS,
 	LLM_PROVIDERS,
 	subjectPhrase,
 } from "@/lib/export/prompt";
-import type { CopyStatus, useCopyMarkdown } from "@/lib/export/use-copy";
-import type { BlockedPrompt, usePrompt } from "@/lib/export/use-prompt";
+import { nodeMarkdownUrl } from "@/lib/export/urls";
+import type { CopyStatus, MarkdownCopy } from "@/lib/export/use-copy";
+import type { PromptState } from "@/lib/export/use-prompt";
 
 export const EXPORT_BUTTON_CLASS =
 	"inline-flex h-8 cursor-default items-center gap-2 border bg-fd-card px-2.5 font-mono text-[11px] text-fd-muted-foreground uppercase tracking-[0.08em] outline-none transition-[color,box-shadow,translate] duration-150 hover:-translate-x-px hover:-translate-y-px hover:text-fd-foreground hover:shadow-[3px_3px_0_0_var(--color-fd-border)] focus-visible:outline-1 focus-visible:outline-fd-foreground disabled:pointer-events-none data-popup-open:-translate-x-px data-popup-open:-translate-y-px data-popup-open:text-fd-foreground data-popup-open:shadow-[3px_3px_0_0_var(--color-fd-border)] motion-reduce:transition-none [&_svg]:size-3.5 [&_svg]:shrink-0";
 
-export const ASK_POPUP_CLASS =
+const ASK_POPUP_CLASS =
 	"w-max min-w-[min(22rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] origin-(--transform-origin) border bg-fd-popover text-fd-popover-foreground shadow-[3px_3px_0_0_var(--color-fd-border)] outline-hidden transition-[opacity,scale] duration-100 data-ending-style:scale-[0.98] data-starting-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none";
 
 const BRACKET_CLASS =
 	"flex h-4 items-center font-mono text-[10px] text-fd-muted-foreground uppercase leading-none outline-none hover:text-fd-foreground focus-visible:outline-1 focus-visible:outline-fd-foreground";
 
-export interface AskLink {
-	href: string;
-	label: string;
+interface AskPanelProps {
+	copy?: MarkdownCopy;
+	onDone: () => void;
+	prompt: PromptState;
+	sourceUrl?: string;
 }
 
-export function AskPanel({
+export function AskPopup({
+	finalFocus,
+	positioner,
+	...panel
+}: AskPanelProps & {
+	finalFocus?: Popover.Popup.Props["finalFocus"];
+	positioner: Pick<
+		Popover.Positioner.Props,
+		"align" | "anchor" | "side" | "sideOffset"
+	>;
+}) {
+	const reelRef = useRef<HTMLSpanElement>(null);
+
+	return (
+		<Popover.Portal>
+			<Popover.Positioner className="z-30 outline-hidden" {...positioner}>
+				<Popover.Popup
+					aria-label={`Ask AI about ${panel.prompt.target.label}`}
+					className={ASK_POPUP_CLASS}
+					finalFocus={finalFocus}
+					initialFocus={reelRef}
+				>
+					<AskPanel {...panel} reelRef={reelRef} />
+				</Popover.Popup>
+			</Popover.Positioner>
+		</Popover.Portal>
+	);
+}
+
+function AskPanel({
 	copy,
-	links,
 	onDone,
 	prompt,
 	reelRef,
-	target,
-}: {
-	copy?: ReturnType<typeof useCopyMarkdown>;
-	links: readonly AskLink[];
-	onDone: () => void;
-	prompt: ReturnType<typeof usePrompt>;
-	reelRef?: RefObject<HTMLSpanElement | null>;
-	target: PromptTarget;
-}) {
-	const { intent, intents, provider } = prompt;
+	sourceUrl,
+}: AskPanelProps & { reelRef: RefObject<HTMLSpanElement | null> }) {
+	const { intent, intents, provider, target } = prompt;
+	const links = [{ href: nodeMarkdownUrl(target.id), label: "VIEW .MD" }];
+	if (sourceUrl !== undefined) {
+		links.push({ href: sourceUrl, label: "SOURCE" });
+	}
 
 	function ask() {
 		prompt.launch();
 		onDone();
 	}
 
-	function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-		if (
-			event.key === "Enter" &&
-			event.target instanceof HTMLElement &&
-			event.target.getAttribute("role") === "spinbutton"
-		) {
-			event.preventDefault();
-			ask();
-		}
-	}
-
 	return (
-		<div className="flex flex-col" onKeyDown={handleKeyDown}>
+		<div className="flex flex-col">
 			<p className="flex flex-wrap items-center gap-x-1.5 gap-y-7 whitespace-nowrap px-4 py-7 text-[15px] leading-7">
 				<Reel
 					format={(value) => intentPhrase(value, target)}
 					label="Prompt"
 					onChange={prompt.setIntent}
+					onSubmit={ask}
 					reelRef={reelRef}
 					value={intent}
 					values={intents}
@@ -87,6 +105,7 @@ export function AskPanel({
 					icon={(value) => <LlmLogo provider={value} />}
 					label="Assistant"
 					onChange={prompt.setProvider}
+					onSubmit={ask}
 					value={provider}
 					values={LLM_PROVIDERS}
 				/>
@@ -141,6 +160,7 @@ function Reel<T extends string>({
 	icon,
 	label,
 	onChange,
+	onSubmit,
 	reelRef,
 	value,
 	values,
@@ -149,6 +169,7 @@ function Reel<T extends string>({
 	icon?: (value: T) => ReactNode;
 	label: string;
 	onChange: (value: T) => void;
+	onSubmit: () => void;
 	reelRef?: RefObject<HTMLSpanElement | null>;
 	value: T;
 	values: readonly T[];
@@ -165,7 +186,6 @@ function Reel<T extends string>({
 
 	const roll = useEffectEvent((direction: number) => select(index + direction));
 
-	// React's wheel listener is passive, so it can't stop the page scrolling.
 	useEffect(() => {
 		const element = wheelRef.current;
 		if (element === null) {
@@ -185,6 +205,12 @@ function Reel<T extends string>({
 	}, []);
 
 	function handleKeyDown(event: KeyboardEvent<HTMLSpanElement>) {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			onSubmit();
+			return;
+		}
+
 		const next = {
 			ArrowDown: index + 1,
 			ArrowUp: index - 1,
@@ -219,7 +245,6 @@ function Reel<T extends string>({
 				role="spinbutton"
 				tabIndex={0}
 			>
-				{/* Sizes the slot; the visible text is the reel below. */}
 				<span className="invisible">{render(value)}</span>
 				<ChevronsUpDown
 					aria-hidden="true"
@@ -257,22 +282,18 @@ function Reel<T extends string>({
 	);
 }
 
-export const COPY_LABELS: Record<CopyStatus, string> = {
-	copied: "Copied",
-	copying: "Copying…",
-	failed: "Couldn't copy. Offline?",
-	idle: "Copy Markdown",
-};
-
 export function BlockedLink({
-	blocked,
 	className,
-	onDismiss,
+	prompt,
 }: {
-	blocked: BlockedPrompt;
 	className?: string;
-	onDismiss: () => void;
+	prompt: PromptState;
 }) {
+	const { blocked } = prompt;
+	if (blocked === undefined) {
+		return null;
+	}
+
 	const provider = LLM_PROVIDER_LABELS[blocked.provider];
 	return (
 		<output
@@ -284,7 +305,7 @@ export function BlockedLink({
 			<a
 				className="underline underline-offset-2"
 				href={blocked.url}
-				onClick={onDismiss}
+				onClick={prompt.dismissBlocked}
 				rel="noreferrer noopener"
 				target="_blank"
 			>
