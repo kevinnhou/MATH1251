@@ -321,7 +321,9 @@ order, stable within a tier), then each is added if it fits in `URL_LIMIT`
 Percent-encoding works character by character, so encoded lengths add up and
 each block is measured once. A `core` block that doesn't fit is cut at a
 paragraph boundary (or, failing that, with a binary search that never splits a
-surrogate pair) and ends with a truncation marker. A block from another tier
+surrogate pair) and ends with a truncation marker. It is cut only while the
+remaining budget exceeds its tier heading, block break and twice the marker
+(`TRUNCATION_FLOOR`), so a heading on `core` would still fit. A block from another tier
 that doesn't fit is skipped, and packing carries on, so a shorter block after
 it (even from a later tier) can still get in.
 

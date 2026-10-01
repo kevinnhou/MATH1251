@@ -110,6 +110,8 @@ const CLOSING_TAG = new RegExp(`</(\\s*)(${TAGS.join("|")})`, "gi");
 const BLOCK_BREAK = "\n\n";
 const TRUNCATED = "\n\n[… truncated; the full text is at the markdown URL]";
 const PARAGRAPH_BREAK = /\n\s*\n/;
+const TRUNCATION_FLOOR =
+	encodedLength(BLOCK_BREAK) + encodedLength(TRUNCATED) * 2;
 
 export interface PromptRequest {
 	context: PromptContext;
@@ -144,7 +146,6 @@ function buildPrompt(request: PromptRequest): string {
 			(left, right) =>
 				CONTEXT_TIERS.indexOf(left.tier) - CONTEXT_TIERS.indexOf(right.tier)
 		);
-	// The prompt ends with either the empty note or the omission note, never both.
 	const reserve = Math.max(
 		encodedLength(emptyNote(markdownUrl)),
 		encodedLength(omissionNote(blocks.length, markdownUrl))
@@ -161,7 +162,7 @@ function buildPrompt(request: PromptRequest): string {
 		const fits =
 			prefix + encodedLength(`${block.text}${BLOCK_BREAK}`) <= remaining;
 		const truncatable =
-			block.tier === "core" && remaining > encodedLength(TRUNCATED) * 2;
+			block.tier === "core" && remaining > prefix + TRUNCATION_FLOOR;
 		if (!(fits || truncatable)) {
 			continue;
 		}
