@@ -71,6 +71,11 @@ in `graph.json`.
 `Proof of Theorem. Title`, or `Proof of Lemma. A and Lemma. B` when it proves
 several (`labelProofs` in `build.ts`).
 
+The graph also keeps each page's reading order in `segments`: prose, its own
+environments and its recalls, the last two as node IDs (a recall's ID is the
+original's). Segments whose node is missing are dropped when the graph is built,
+so every export, page documents included, renders from the graph alone.
+
 ## Edges
 
 | Edge kind | From > to | Source | Read forwards / backwards |
@@ -161,7 +166,7 @@ description / body
 Frontmatter keys always appear in `FRONTMATTER_KEYS` order, and empty keys are
 left out. Strings are quoted only when they would not parse as plain YAML.
 
-- **Page:** the page's `segments` in order. Prose stays as Markdown, and each
+- **Page:** the page's `graph.segments` in order. Prose stays as Markdown, and each
   environment becomes a level-3 *card* with its ID, difficulty, statement, body
   and at most 8 links per relation (`CARD_RELATION_LIMIT`). A recall becomes a
   `Recall:` card that links the original and quotes its statement. The page's
@@ -173,7 +178,7 @@ left out. Strings are quoted only when they would not parse as plain YAML.
 - **Kind view:** one level-2 card per environment of that kind, without the
   lecture prose, prerequisites or relations.
 
-Documents are rebuilt from `envs.segments` and never from the compiled body
+Documents are rebuilt from the graph (built from `envs`) and never from the compiled body
 (see COMPILE.md §7).
 
 Example (`/llms.mdx/docs/algebra/complex-numbers/complex-polynomials/theorem-1.md`):

@@ -189,10 +189,10 @@ function relationSummary(
 	id: string,
 	names: readonly RelationName[]
 ): string[] {
-	const relations = relationsOf(graph, id).filter((relation) =>
-		names.includes(relation.name)
+	const groups = Map.groupBy(
+		relationsOf(graph, id, names),
+		(relation) => relation.name
 	);
-	const groups = Map.groupBy(relations, (relation) => relation.name);
 
 	return [...groups].map(
 		([name, items]) =>

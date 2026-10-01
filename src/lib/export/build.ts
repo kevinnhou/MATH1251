@@ -7,6 +7,7 @@ import {
 	type ExportEdge,
 	type ExportGraph,
 	type ExportNode,
+	type ExportSegment,
 	envId,
 } from "./model";
 
@@ -48,6 +49,14 @@ export function buildExportGraph(
 		nodes,
 		outgoing: Map.groupBy(edges, (edge) => edge.source),
 		position: new Map([...nodes.keys()].map((id, index) => [id, index])),
+		segments: new Map(
+			pages.map((page) => [
+				page.page.url,
+				pageSegments(page, tenets).filter(
+					(segment) => segment.type === "prose" || nodes.has(segment.id)
+				),
+			])
+		),
 	};
 }
 
@@ -119,6 +128,27 @@ function pageEdges(
 	return edges;
 }
 
+function pageSegments(
+	{ envs, page }: ExportPageInput,
+	tenets: TenetIndex
+): ExportSegment[] {
+	return envs.segments.flatMap((segment): ExportSegment[] => {
+		switch (segment.type) {
+			case "prose":
+				return [segment];
+			case "env":
+				return [{ id: envId(page.url, segment.id), type: "env" }];
+			case "recall": {
+				const recall = envs.recalls.find((item) => item.id === segment.id);
+				const id = recall && tenetHref(recall.of, tenets);
+				return id === undefined ? [] : [{ id, type: "recall" }];
+			}
+			default:
+				return segment satisfies never;
+		}
+	});
+}
+
 function envLabel(kind: string, title: string | undefined): string {
 	return title ? `${kind}. ${title}` : kind;
 }
@@ -158,8 +188,10 @@ function uniqueEdges(edges: readonly ExportEdge[]): ExportEdge[] {
 }
 
 function tenetHrefs(slugs: readonly string[], tenets: TenetIndex): string[] {
-	return slugs.flatMap((slug) => {
-		const tenet = tenets.bySlug.get(slug);
-		return tenet === undefined ? [] : [getTenetHref(tenet)];
-	});
+	return slugs.flatMap((slug) => tenetHref(slug, tenets) ?? []);
+}
+
+function tenetHref(slug: string, tenets: TenetIndex): string | undefined {
+	const tenet = tenets.bySlug.get(slug);
+	return tenet && getTenetHref(tenet);
 }

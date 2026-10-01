@@ -20,6 +20,12 @@ export function requireNode(graph: ExportGraph, id: string): ExportNode {
 	return node;
 }
 
+export function pagesOf(graph: ExportGraph): ExportNode[] {
+	return [...graph.nodes.values()]
+		.filter((node) => node.type === "page")
+		.toSorted((left, right) => left.id.localeCompare(right.id));
+}
+
 export function pageOf(
 	graph: ExportGraph,
 	node: ExportNode
@@ -28,8 +34,8 @@ export function pageOf(
 }
 
 export function childrenOf(graph: ExportGraph, id: string): ExportNode[] {
-	return (graph.outgoing.get(id) ?? []).flatMap((edge) =>
-		edge.kind === "contains" ? nodeList(graph, edge.target) : []
+	return neighbours(graph, id, "outgoing", ["contains"]).map((child) =>
+		requireNode(graph, child)
 	);
 }
 
@@ -42,29 +48,25 @@ export function envsOfKind(
 }
 
 export function proofsOf(graph: ExportGraph, id: string): ExportNode[] {
-	return (graph.incoming.get(id) ?? []).flatMap((edge) =>
-		edge.kind === "proves" ? nodeList(graph, edge.source) : []
+	return neighbours(graph, id, "incoming", ["proves"]).map((proof) =>
+		requireNode(graph, proof)
 	);
 }
 
 export function relationsOf(
 	graph: ExportGraph,
 	id: string,
-	options: { exclude?: readonly RelationName[] } = {}
+	names: readonly RelationName[] = RELATION_ORDER
 ): Relation[] {
-	const exclude = new Set(options.exclude);
 	const relations: Relation[] = [];
 	const seen = new Set<string>();
 
 	function push(name: RelationName, other: string) {
-		const node = graph.nodes.get(other);
 		const key = `${name}\0${other}`;
-		if (node === undefined || exclude.has(name) || seen.has(key)) {
-			return;
+		if (names.includes(name) && !seen.has(key)) {
+			seen.add(key);
+			relations.push({ name, node: requireNode(graph, other) });
 		}
-
-		seen.add(key);
-		relations.push({ name, node });
 	}
 
 	for (const edge of graph.outgoing.get(id) ?? []) {
@@ -77,7 +79,7 @@ export function relationsOf(
 
 	return relations.toSorted(
 		(left, right) =>
-			RELATION_ORDER.indexOf(left.name) - RELATION_ORDER.indexOf(right.name) ||
+			names.indexOf(left.name) - names.indexOf(right.name) ||
 			(graph.position.get(left.node.id) ?? 0) -
 				(graph.position.get(right.node.id) ?? 0)
 	);
@@ -105,7 +107,7 @@ export function prerequisites(graph: ExportGraph, id: string): Prerequisite[] {
 	function visit(current: string) {
 		visited.add(current);
 		for (const next of dependencies(graph, current)) {
-			if (distances.has(next) && !visited.has(next)) {
+			if (!visited.has(next)) {
 				visit(next);
 			}
 		}
@@ -119,12 +121,10 @@ export function prerequisites(graph: ExportGraph, id: string): Prerequisite[] {
 	}
 
 	return sorted.flatMap((other) => {
-		const node = graph.nodes.get(other);
+		const node = requireNode(graph, other);
 		const distance = distances.get(other) ?? 0;
-		const local = root.type === "page" && node?.page === id;
-		return node === undefined || distance === 0 || local
-			? []
-			: [{ distance, node }];
+		const local = root.type === "page" && node.page === id;
+		return distance === 0 || local ? [] : [{ distance, node }];
 	});
 }
 
@@ -152,12 +152,20 @@ function dependencyDistances(
 }
 
 function dependencies(graph: ExportGraph, id: string): string[] {
-	return (graph.outgoing.get(id) ?? []).flatMap((edge) =>
-		DEPENDENCY_EDGES.includes(edge.kind) ? [edge.target] : []
-	);
+	return neighbours(graph, id, "outgoing", DEPENDENCY_EDGES);
 }
 
-function nodeList(graph: ExportGraph, id: string): ExportNode[] {
-	const node = graph.nodes.get(id);
-	return node === undefined ? [] : [node];
+function neighbours(
+	graph: ExportGraph,
+	id: string,
+	direction: "incoming" | "outgoing",
+	kinds: readonly ExportEdgeKind[]
+): string[] {
+	return (graph[direction].get(id) ?? []).flatMap((edge) => {
+		if (!kinds.includes(edge.kind)) {
+			return [];
+		}
+
+		return direction === "outgoing" ? [edge.target] : [edge.source];
+	});
 }

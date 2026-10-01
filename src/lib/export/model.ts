@@ -1,6 +1,5 @@
 import type { GraphModule } from "@/lib/course/strands";
 import type { ExampleDifficulty, MathEnvKind } from "@/lib/math-env/kinds";
-import type { TenetIndex } from "@/lib/math-env/tenet";
 
 export const COURSE = "MATH1251 Mathematics 1B (UNSW Sydney)";
 
@@ -100,17 +99,17 @@ export interface Relation {
 	node: ExportNode;
 }
 
+export type ExportSegment =
+	| { markdown: string; type: "prose" }
+	| { id: string; type: "env" | "recall" };
+
 export interface ExportGraph {
 	edges: readonly ExportEdge[];
 	incoming: ReadonlyMap<string, readonly ExportEdge[]>;
 	nodes: ReadonlyMap<string, ExportNode>;
 	outgoing: ReadonlyMap<string, readonly ExportEdge[]>;
 	position: ReadonlyMap<string, number>;
-}
-
-export interface ExportCorpus {
-	graph: ExportGraph;
-	tenets: TenetIndex;
+	segments: ReadonlyMap<string, readonly ExportSegment[]>;
 }
 
 export const CONTEXT_TIERS = [

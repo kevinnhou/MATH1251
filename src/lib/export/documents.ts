@@ -1,8 +1,6 @@
 import { GRAPH_MODULES, STRAND_LABELS } from "@/lib/course/strands";
 import type { KindView } from "@/lib/math-env/kind-view";
 import { getKindLabel, type MathEnvKind } from "@/lib/math-env/kinds";
-import type { PageEnvs } from "@/lib/math-env/page-envs";
-import { getTenetHref } from "@/lib/math-env/tenet";
 import {
 	catalogRoute,
 	docsContextRoute,
@@ -22,11 +20,10 @@ import {
 	bodyRole,
 	COURSE,
 	EXPORT_EDGE_KINDS,
-	type ExportCorpus,
 	type ExportGraph,
 	type ExportNode,
-	envId,
 	RELATION_NAMES,
+	RELATION_ORDER,
 	type Relation,
 } from "./model";
 import {
@@ -34,6 +31,7 @@ import {
 	envsOfKind,
 	type Prerequisite,
 	pageOf,
+	pagesOf,
 	prerequisites,
 	proofsOf,
 	relationsOf,
@@ -41,35 +39,28 @@ import {
 } from "./query";
 import { nodeContextUrl, nodeMarkdownUrl } from "./urls";
 
-interface PageSource {
-	envs: PageEnvs;
-	page: { url: string };
-}
-
 const PREREQUISITE_LIMIT = 40;
 const CARD_RELATION_LIMIT = 8;
+const LISTED_RELATIONS = RELATION_ORDER.filter(
+	(name) => name !== "contains" && name !== "part_of"
+);
 
-export function pageDocument(
-	{ envs, page }: PageSource,
-	corpus: ExportCorpus
-): string {
-	const { graph } = corpus;
-	const node = requireNode(graph, page.url);
-	const body = envs.segments.map((segment) => {
-		if (segment.type === "prose") {
-			return segment.markdown;
+export function pageDocument(node: ExportNode, graph: ExportGraph): string {
+	const body = (graph.segments.get(node.id) ?? []).map((segment) => {
+		switch (segment.type) {
+			case "prose":
+				return segment.markdown;
+			case "env":
+				return envCard(requireNode(graph, segment.id), graph, 3);
+			case "recall":
+				return recallCard(requireNode(graph, segment.id), graph);
+			default:
+				return segment satisfies never;
 		}
-
-		if (segment.type === "recall") {
-			return recallCard(segment.id, envs, corpus);
-		}
-
-		const env = graph.nodes.get(envId(page.url, segment.id));
-		return env === undefined ? "" : envCard(env, graph, 3);
 	});
 
-	return document(node, graph, {
-		body: joinBlocks(body),
+	return document(graph, {
+		body: [node.description ?? "", ...body],
 		fields: {
 			ideas: node.ideas,
 			strand: node.strand,
@@ -78,7 +69,10 @@ export function pageDocument(
 			title: node.title,
 			type: "page",
 		},
-		relations: relationsOf(graph, node.id, { exclude: ["contains"] }),
+		heading: node.label,
+		id: node.id,
+		prerequisites: prerequisites(graph, node.id),
+		relations: relationsOf(graph, node.id, LISTED_RELATIONS),
 	});
 }
 
@@ -87,36 +81,38 @@ export function kindViewDocument(view: KindView, graph: ExportGraph): string {
 	const kindLabel = getKindLabel(view.kind, true);
 	const title = `${kindLabel}: ${page.title}`;
 
-	return joinBlocks([
-		frontmatter({
-			course: COURSE,
-			id: view.url,
+	return document(graph, {
+		body: [
+			`${kindLabel} from ${nodeLink(page)}, without the surrounding lecture prose.`,
+			...envsOfKind(graph, page.id, view.kind).map((env) =>
+				envCard(env, graph, 2)
+			),
+		],
+		fields: {
 			kind: view.kind,
-			markdown: nodeMarkdownUrl(view.url),
 			page: page.id,
 			strand: page.strand,
 			title,
 			type: "kind-view",
-		}),
-		`# ${title}`,
-		`${kindLabel} from ${nodeLink(page)}, without the surrounding lecture prose.`,
-		...envsOfKind(graph, page.id, view.kind).map((env) =>
-			envCard(env, graph, 2)
-		),
-	]);
+		},
+		heading: title,
+		id: view.url,
+		prerequisites: [],
+		relations: [],
+	});
 }
 
 export function envDocument(node: ExportNode, graph: ExportGraph): string {
 	const page = pageOf(graph, node);
 
-	return document(node, graph, {
-		body: joinBlocks([
+	return document(graph, {
+		body: [
 			page === undefined ? "" : `From ${nodeLink(page)}.`,
 			envSections(node, 2),
 			...proofsOf(graph, node.id).map((proof) =>
 				joinBlocks(["## Proof", proof.body ?? ""])
 			),
-		]),
+		],
 		fields: {
 			difficulty: node.difficulty,
 			kind: node.kind,
@@ -126,14 +122,15 @@ export function envDocument(node: ExportNode, graph: ExportGraph): string {
 			title: node.title,
 			type: "env",
 		},
-		relations: relationsOf(graph, node.id, { exclude: ["part_of"] }),
+		heading: node.label,
+		id: node.id,
+		prerequisites: prerequisites(graph, node.id),
+		relations: relationsOf(graph, node.id, LISTED_RELATIONS),
 	});
 }
 
 export function indexDocument(graph: ExportGraph): string {
-	const pages = [...graph.nodes.values()]
-		.filter((node) => node.type === "page")
-		.toSorted((left, right) => left.id.localeCompare(right.id));
+	const pages = pagesOf(graph);
 	const sections = [
 		...GRAPH_MODULES.map((strand) => ({
 			pages: pages.filter((page) => page.strand === strand),
@@ -202,11 +199,17 @@ function pageIndexLine(page: ExportNode, graph: ExportGraph): string {
 }
 
 function document(
-	node: ExportNode,
 	graph: ExportGraph,
-	options: { body: string; fields: Frontmatter; relations: Relation[] }
+	parts: {
+		body: readonly string[];
+		fields: Frontmatter;
+		heading: string;
+		id: string;
+		prerequisites: readonly Prerequisite[];
+		relations: readonly Relation[];
+	}
 ): string {
-	const needs = nearest(prerequisites(graph, node.id), PREREQUISITE_LIMIT);
+	const needs = nearest(parts.prerequisites, PREREQUISITE_LIMIT);
 	const needsLines = needs.kept.map(
 		(other) => `- ${nodeLink(other)}${pageSuffix(other, graph)}`
 	);
@@ -214,18 +217,17 @@ function document(
 		needsLines.push(`- +${needs.omitted} more distant prerequisites`);
 	}
 
-	const relations = relationLines(options.relations);
+	const relations = relationLines(parts.relations);
 
 	return `${joinBlocks([
 		frontmatter({
-			...options.fields,
+			...parts.fields,
 			course: COURSE,
-			id: node.id,
-			markdown: nodeMarkdownUrl(node.id),
+			id: parts.id,
+			markdown: nodeMarkdownUrl(parts.id),
 		}),
-		`# ${node.label}`,
-		node.description ?? "",
-		options.body,
+		`# ${parts.heading}`,
+		...parts.body,
 		needsLines.length === 0
 			? ""
 			: `## Prerequisites\n\nTransitive \`uses\`/\`proves\` dependencies defined elsewhere, foundations first.\n\n${needsLines.join("\n")}`,
@@ -255,7 +257,7 @@ function envCard(node: ExportNode, graph: ExportGraph, level: 2 | 3): string {
 		node.difficulty === undefined ? "" : `Difficulty: ${node.difficulty}`,
 	].filter(Boolean);
 	const relations = relationLines(
-		relationsOf(graph, node.id, { exclude: ["part_of"] }),
+		relationsOf(graph, node.id, LISTED_RELATIONS),
 		CARD_RELATION_LIMIT
 	);
 
@@ -281,18 +283,7 @@ function envSections(node: ExportNode, level: number): string {
 	]);
 }
 
-function recallCard(
-	id: string,
-	envs: PageEnvs,
-	{ graph, tenets }: ExportCorpus
-): string {
-	const recall = envs.recalls.find((item) => item.id === id);
-	const tenet = recall && tenets.bySlug.get(recall.of);
-	const original = tenet && graph.nodes.get(getTenetHref(tenet));
-	if (original === undefined) {
-		return "";
-	}
-
+function recallCard(original: ExportNode, graph: ExportGraph): string {
 	return joinBlocks([
 		`### Recall: ${original.label}`,
 		`Recalls ${nodeLink(original)}${pageSuffix(original, graph)}.`,
