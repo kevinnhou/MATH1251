@@ -3,7 +3,6 @@ import { toAbsoluteUrl } from "@/lib/site/url";
 import {
 	CONTEXT_TIERS,
 	COURSE,
-	type ContextBlock,
 	type ContextTier,
 	type PromptContext,
 } from "./model";
@@ -152,47 +151,33 @@ function buildPrompt(request: PromptRequest): string {
 	);
 	let remaining =
 		URL_LIMIT - providerUrl(provider, frame("", 0)).length - reserve;
-	const kept: ContextBlock[] = [];
+	const sections: string[] = [];
+	let kept = 0;
+	let openTier: ContextTier | undefined;
 
 	for (const block of blocks) {
-		const opensTier = !kept.some((item) => item.tier === block.tier);
-		const heading = opensTier ? TIER_HEADINGS[block.tier] : "";
+		const heading = block.tier === openTier ? "" : TIER_HEADINGS[block.tier];
 		const prefix = encodedLength(heading ? `${heading}${BLOCK_BREAK}` : "");
-		const cost = prefix + encodedLength(`${block.text}${BLOCK_BREAK}`);
-		if (cost <= remaining) {
-			kept.push(block);
-			remaining -= cost;
-		} else if (
-			block.tier === "core" &&
-			remaining > encodedLength(TRUNCATED) * 2
-		) {
-			const text = truncate(
-				block.text,
-				remaining - prefix - encodedLength(BLOCK_BREAK)
-			);
-			kept.push({ ...block, text });
-			remaining -= prefix + encodedLength(`${text}${BLOCK_BREAK}`);
+		const fits =
+			prefix + encodedLength(`${block.text}${BLOCK_BREAK}`) <= remaining;
+		const truncatable =
+			block.tier === "core" && remaining > encodedLength(TRUNCATED) * 2;
+		if (!(fits || truncatable)) {
+			continue;
 		}
+
+		const text = fits
+			? block.text
+			: truncate(block.text, remaining - prefix - encodedLength(BLOCK_BREAK));
+		remaining -= prefix + encodedLength(`${text}${BLOCK_BREAK}`);
+		sections.push(...(heading ? [heading] : []), text);
+		openTier = block.tier;
+		kept += 1;
 	}
 
-	const rendered = renderBlocks(kept);
-	return rendered === ""
+	return kept === 0
 		? frame(emptyNote(markdownUrl), 0)
-		: frame(rendered, blocks.length - kept.length);
-}
-
-function renderBlocks(blocks: readonly ContextBlock[]): string {
-	const sections: string[] = [];
-	let previous: ContextTier | undefined;
-	for (const { text, tier } of blocks) {
-		if (tier !== previous && TIER_HEADINGS[tier] !== "") {
-			sections.push(TIER_HEADINGS[tier]);
-		}
-		previous = tier;
-		sections.push(text);
-	}
-
-	return sections.join(BLOCK_BREAK);
+		: frame(sections.join(BLOCK_BREAK), blocks.length - kept);
 }
 
 function taskText(intent: PromptIntent, context: PromptContext): string {
