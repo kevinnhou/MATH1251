@@ -240,8 +240,9 @@ API key or backend is needed. There are three pieces:
 1. **Target** (`PromptTarget`): `id`, `label`, `kind`, `type` and `hasProof`.
    It is small, computed on the server, and available before anything is
    fetched. It decides which intents are offered.
-2. **Context** (`PromptContext`): the target plus `markdownUrl`, `difficulty`
-   and ranked `blocks`. It is fetched from `/llms.mdx/context/…` when the prompt
+2. **Context** (`PromptContext`): the target plus `difficulty` and ranked
+   `blocks`. The Markdown URL is not stored: `prompt.ts` derives it from the
+   ID with `nodeMarkdownUrl`. It is fetched from `/llms.mdx/context/…` when the prompt
    is opened.
 3. **Prompt** (`prompt.ts`): the context, an intent and a provider, packed into
    a URL of at most 8000 characters.
@@ -352,7 +353,9 @@ the target with `subjectPhrase`.
 
 ## Client
 
-`client.ts` is the only browser module that fetches exports.
+`client.ts` is the only browser module that fetches exports. The surfaces and
+the terminal (`md`, `gpt`, `claude`, `cursor`, through `CommandRuntime`) pass it
+node IDs, never URLs.
 
 - **Caching:** `loadMarkdown(id)` and the context loader keep one promise per
   ID. A failed load is evicted, so the next attempt retries.
@@ -440,7 +443,11 @@ Otherwise the whole argument is the page query and the intent is `explain`.
 Pressing Tab on the first argument offers matching intents first, then pages.
 After an intent, Tab completes pages against the rest of the line. Usage errors
 print the descriptor's usage line, the same one `help` shows. `md <page|.>`
-prints the page's Markdown export.
+prints the page's Markdown export through `loadMarkdown`, so it shares the
+cache and timeout with "Copy Markdown". Both commands resolve their page with
+`notesTarget`, which yields the catalog page's `PromptTarget`
+(`CatalogPage.prompt`, `null` only for the placeholder of a route outside the
+catalog); its ID is all they need.
 
 `run.ts` awaits `catalogResource.load()` before running a command. With the
 catalog cached this adds only a microtask, and the gesture survives. On a cold,
@@ -485,6 +492,8 @@ prompt, but a client with stale code may send links only until it reloads.
 ## Invariants
 
 - Every export URL comes from `urls.ts`, and every link in an export is a node ID.
+  No model stores an export URL: `PromptContext`, `CatalogPage` and terminal
+  output carry the node ID, and the URL is derived where it is used.
 - `hasProof` and the other intent facts are decided only in `context.ts`.
 - The export graph is built once per worker, in `getCorpus()` (see COMPILE.md §6).
 - `openPrompt` is called before any `await` in a user-triggered handler.

@@ -10,6 +10,7 @@ import {
 } from "@/components/markdown/html";
 import { copyText } from "@/lib/client/actions";
 import { cn } from "@/lib/cn";
+import { nodeMarkdownUrl } from "@/lib/export/urls";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import { plainInlineLabel } from "@/lib/markdown/types";
 import { groupSearchHits } from "@/lib/terminal/search";
@@ -361,7 +362,7 @@ function MarkdownBlock({
 				>
 					[{copyState === "copied" ? "copied" : "COPY"}]
 				</button>
-				<BracketLink href={output.markdownUrl} label="OPEN SOURCE" />
+				<BracketLink href={nodeMarkdownUrl(output.id)} label="OPEN SOURCE" />
 			</div>
 			{copyState === "failed" ? (
 				<p className="text-fd-muted-foreground">

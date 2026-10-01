@@ -7,6 +7,7 @@ import {
 	type ContextTier,
 	type PromptContext,
 } from "./model";
+import { nodeMarkdownUrl } from "./urls";
 
 export const LLM_PROVIDERS = ["chatgpt", "claude", "cursor"] as const;
 
@@ -129,7 +130,7 @@ function providerUrl(provider: LlmProvider, prompt: string): string {
 
 function buildPrompt(request: PromptRequest): string {
 	const { context, intent, origin, provider } = request;
-	const markdownUrl = toAbsoluteUrl(context.markdownUrl, origin);
+	const markdownUrl = toAbsoluteUrl(nodeMarkdownUrl(context.id), origin);
 	const source = toAbsoluteUrl(context.id, origin);
 	const frame = (body: string, omitted: number) =>
 		[

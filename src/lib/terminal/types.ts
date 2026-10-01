@@ -87,9 +87,9 @@ export type TerminalOutput =
 			query: string;
 	  }
 	| {
+			id: string;
 			kind: "markdown";
 			markdown: string;
-			markdownUrl: string;
 			title: string;
 	  }
 	| {
@@ -103,9 +103,8 @@ export type TerminalOutput =
 	  };
 
 export interface CommandRuntime {
-	fetchMarkdown: (url: string, signal: AbortSignal) => Promise<string>;
+	loadMarkdown: (id: string) => Promise<string>;
 	openPrompt: (request: OpenPromptRequest) => Promise<OpenPromptResult>;
-	origin: string;
 	searchNotes: (query: string, signal: AbortSignal) => Promise<SearchHit[]>;
 }
 

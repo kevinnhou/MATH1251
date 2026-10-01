@@ -1,8 +1,10 @@
 import type { CatalogPage } from "@/lib/course/catalog";
 import { findPageByUrl } from "@/lib/course/catalog";
+import type { PromptTarget } from "@/lib/export/model";
 import {
 	DEFAULT_INTENT,
 	intentsFor,
+	isPromptIntent,
 	LLM_PROVIDER_LABELS,
 	LLM_PROVIDERS,
 	type LlmProvider,
@@ -53,7 +55,6 @@ import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
 const ASK_USAGE = `[${PROMPT_INTENTS.join("|")}] <page|.>`;
 
-// Terminal names for each provider; the first is the one `help` shows.
 const ASK_COMMANDS: Record<LlmProvider, readonly [string, ...string[]]> = {
 	chatgpt: ["gpt", "chatgpt"],
 	claude: ["claude"],
@@ -318,28 +319,16 @@ async function executeNotesSearch(ctx: ExecuteContext): Promise<CommandResult> {
 }
 
 async function executeMarkdown(ctx: ExecuteContext): Promise<CommandResult> {
-	const query = argumentText(ctx.parsed);
-	const resolved = notesPage(ctx, query);
-	if (resolved.kind !== "match") {
-		return done(resolveToOutput(ctx, resolved, query));
+	const found = notesTarget(ctx, "md", argumentText(ctx.parsed));
+	if ("output" in found) {
+		return done(found.output);
 	}
 
-	const { page } = resolved;
-	if (page.markdownUrl === "") {
-		return done(errorOutput("md: not a notes page."));
-	}
-
+	const { page, target } = found;
 	try {
-		const markdown = await ctx.runtime.fetchMarkdown(
-			page.markdownUrl,
-			ctx.signal
-		);
+		const markdown = await ctx.runtime.loadMarkdown(target.id);
 		return done(
-			markdownOutput({
-				markdown,
-				markdownUrl: page.markdownUrl,
-				title: page.title.plain,
-			})
+			markdownOutput({ id: target.id, markdown, title: page.title.plain })
 		);
 	} catch {
 		return done(errorOutput(`md: unable to fetch Markdown for ${page.url}.`));
@@ -351,18 +340,14 @@ async function executeAsk(
 	provider: LlmProvider
 ): Promise<CommandResult> {
 	const [name] = ASK_COMMANDS[provider];
-	const { intent = DEFAULT_INTENT, query } = askArguments(ctx.parsed);
-	const resolved = notesPage(ctx, query);
-	if (resolved.kind !== "match") {
-		return done(resolveToOutput(ctx, resolved, query));
+	const { intent, query } = askArguments(ctx.parsed);
+	const found = notesTarget(ctx, name, query);
+	if ("output" in found) {
+		return done(found.output);
 	}
 
-	const { page } = resolved;
-	if (page.prompt === null) {
-		return done(errorOutput(`${name}: not a notes page.`));
-	}
-
-	const allowed = intentsFor(page.prompt);
+	const { page, target } = found;
+	const allowed = intentsFor(target);
 	if (!allowed.includes(intent)) {
 		return done(
 			errorOutput(
@@ -372,11 +357,7 @@ async function executeAsk(
 	}
 
 	const label = LLM_PROVIDER_LABELS[provider];
-	const result = await ctx.runtime.openPrompt({
-		intent,
-		provider,
-		target: page.prompt,
-	});
+	const result = await ctx.runtime.openPrompt({ intent, provider, target });
 	if (result.status === "opened") {
 		return done(
 			messageOutput(
@@ -395,18 +376,30 @@ async function executeAsk(
 }
 
 function askArguments(parsed: ParsedLine): {
-	intent?: PromptIntent;
+	intent: PromptIntent;
 	query: string;
 } {
 	const [first = "", ...rest] = tokenValues(parsed).slice(1);
-	const intent = parseIntent(first);
-	return intent === undefined
-		? { query: argumentText(parsed) }
-		: { intent, query: rest.join(" ").trim() };
+	const intent = first.toLowerCase();
+	return isPromptIntent(intent)
+		? { intent, query: rest.join(" ").trim() }
+		: { intent: DEFAULT_INTENT, query: argumentText(parsed) };
 }
 
-function parseIntent(value: string): PromptIntent | undefined {
-	return PROMPT_INTENTS.find((intent) => intent === value.toLowerCase());
+function notesTarget(
+	ctx: ExecuteContext,
+	name: string,
+	query: string
+): { page: CatalogPage; target: PromptTarget } | { output: TerminalOutput } {
+	const resolved = notesPage(ctx, query);
+	if (resolved.kind !== "match") {
+		return { output: resolveToOutput(ctx, resolved, query) };
+	}
+
+	const { page } = resolved;
+	return page.prompt === null
+		? { output: errorOutput(`${name}: not a notes page.`) }
+		: { page, target: page.prompt };
 }
 
 function notesPage(ctx: ExecuteContext, query: string): ResolveOutcome {

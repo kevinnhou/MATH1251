@@ -29,14 +29,12 @@ function loadContext(id: string): Promise<PromptContext> {
 	);
 }
 
-export function loadPromptContext(
-	target: PromptTarget
-): Promise<PromptContext> {
+function loadPromptContext(target: PromptTarget): Promise<PromptContext> {
 	return loadContext(target.id).catch(() => fallbackContext(target));
 }
 
 function fallbackContext(target: PromptTarget): PromptContext {
-	return { ...target, blocks: [], markdownUrl: nodeMarkdownUrl(target.id) };
+	return { ...target, blocks: [] };
 }
 
 export function prefetchContext(id: string) {
@@ -89,8 +87,6 @@ export async function openPrompt(
 	return { status: "opened" };
 }
 
-// The new tab starts on the opener's origin, so it can say what it's waiting
-// for instead of sitting blank while the context loads.
 function showPending(popup: Window, provider: LlmProvider) {
 	try {
 		const label = LLM_PROVIDER_LABELS[provider];
@@ -100,7 +96,7 @@ function showPending(popup: Window, provider: LlmProvider) {
 			"margin:2rem;font:13px/1.5 ui-monospace,monospace;color-scheme:light dark";
 		body.textContent = `Preparing the prompt for ${label}…`;
 	} catch {
-		// Not writable in this browser; the tab stays blank until it redirects.
+		//
 	}
 }
 
@@ -122,7 +118,6 @@ function isPromptContext(value: unknown): value is PromptContext {
 		isRecord(value) &&
 		typeof value.id === "string" &&
 		typeof value.label === "string" &&
-		typeof value.markdownUrl === "string" &&
 		typeof value.kind === "string" &&
 		typeof value.hasProof === "boolean" &&
 		PROMPT_TARGET_TYPES.some((type) => type === value.type) &&

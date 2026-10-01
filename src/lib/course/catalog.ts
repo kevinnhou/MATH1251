@@ -9,7 +9,6 @@ export interface CatalogPage {
 	breadcrumbs: string[];
 	description?: MarkdownFragment<"inline">;
 	kindView: boolean;
-	markdownUrl: string;
 	parentUrl: string | null;
 	prompt: PromptTarget | null;
 	strand?: GraphModule;
@@ -57,7 +56,6 @@ function placeholderPage(url: string): CatalogPage {
 		aliases: [],
 		breadcrumbs: normalised.split("/").filter(Boolean),
 		kindView: false,
-		markdownUrl: "",
 		parentUrl: parentPath(normalised),
 		prompt: null,
 		title: literalInlineFragment(normalised),

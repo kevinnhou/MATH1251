@@ -138,7 +138,6 @@ export interface PromptTarget {
 export interface PromptContext extends PromptTarget {
 	blocks: ContextBlock[];
 	difficulty?: ExampleDifficulty;
-	markdownUrl: string;
 }
 
 export const PROMPT_TARGET_TYPES = ["page", "env", "kind-view"] as const;

@@ -12,7 +12,6 @@ import { buildExportGraph } from "@/lib/export/build";
 import { kindViewTarget, pageTarget } from "@/lib/export/context";
 import type { ExportGraph } from "@/lib/export/model";
 import { requireNode } from "@/lib/export/query";
-import { nodeMarkdownUrl } from "@/lib/export/urls";
 import { assembleGraphDocument } from "@/lib/graph/assemble";
 import type { GraphDocument } from "@/lib/graph/types";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
@@ -174,12 +173,7 @@ function buildCatalog(
 function catalogPage(resolved: ResolvedDocs, graph: ExportGraph): CatalogPage {
 	const { module, page } = resolved.source;
 	const title = compileMarkdownFragment(resolved.title, "inline");
-	const url = resolved.kind === "kind-view" ? resolved.view.url : page.url;
-	const common = {
-		markdownUrl: nodeMarkdownUrl(url),
-		strand: module,
-		title,
-	};
+	const common = { strand: module, title };
 
 	if (resolved.kind === "kind-view") {
 		const { view } = resolved;

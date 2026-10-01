@@ -1,6 +1,6 @@
 import { STRAND_LABELS } from "@/lib/course/strands";
 import type { KindView } from "@/lib/math-env/kind-view";
-import { getKindLabel } from "@/lib/math-env/kinds";
+import { type ExampleDifficulty, getKindLabel } from "@/lib/math-env/kinds";
 import {
 	bodyRole,
 	type ContextBlock,
@@ -21,7 +21,6 @@ import {
 	relationsOf,
 	requireNode,
 } from "./query";
-import { nodeMarkdownUrl } from "./urls";
 
 const OUTGOING: readonly RelationName[] = [
 	"proves",
@@ -76,7 +75,6 @@ export function envContext(
 	graph: ExportGraph
 ): PromptContext {
 	const proofs = envProofs(node, graph);
-	// Notes come after the proofs, so a long note is truncated before a proof is.
 	const notesLast = bodyRole(node) === "Notes";
 	const core = [
 		heading(node, pageOf(graph, node)),
@@ -86,17 +84,16 @@ export function envContext(
 		notesLast ? bodyBlock(node) : "",
 	];
 
-	return {
-		blocks: [
+	return promptContext(
+		envTarget(node, graph),
+		[
 			...tier("core", core),
 			...tier("relations", relationSummary(graph, node.id, OUTGOING)),
 			...prerequisiteBlocks(graph, node.id),
 			...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
 		],
-		...envTarget(node, graph),
-		markdownUrl: nodeMarkdownUrl(node.id),
-		...(node.difficulty === undefined ? {} : { difficulty: node.difficulty }),
-	};
+		node.difficulty
+	);
 }
 
 export function pageContext(
@@ -104,21 +101,17 @@ export function pageContext(
 	graph: ExportGraph
 ): PromptContext {
 	const envs = childrenOf(graph, node.id);
-	return {
-		blocks: [
-			...tier("core", [
-				heading(node),
-				node.ideas === undefined ? "" : `Key ideas: ${node.ideas.join(", ")}.`,
-				outline(envs),
-			]),
-			...tier("relations", relationSummary(graph, node.id, OUTGOING)),
-			...tier("details", envs.map(statementBlock)),
-			...prerequisiteBlocks(graph, node.id),
-			...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
-		],
-		...pageTarget(node),
-		markdownUrl: nodeMarkdownUrl(node.id),
-	};
+	return promptContext(pageTarget(node), [
+		...tier("core", [
+			heading(node),
+			node.ideas === undefined ? "" : `Key ideas: ${node.ideas.join(", ")}.`,
+			outline(envs),
+		]),
+		...tier("relations", relationSummary(graph, node.id, OUTGOING)),
+		...tier("details", envs.map(statementBlock)),
+		...prerequisiteBlocks(graph, node.id),
+		...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
+	]);
 }
 
 export function kindViewContext(
@@ -128,22 +121,30 @@ export function kindViewContext(
 	const target = kindViewTarget(view, graph);
 	const envs = envsOfKind(graph, view.parentUrl, view.kind);
 
+	return promptContext(target, [
+		...tier("core", [
+			`${target.label} (${view.parentUrl}), without the surrounding lecture prose.`,
+			outline(envs),
+		]),
+		...tier(
+			"details",
+			envs.map((env) =>
+				[statementBlock(env), bodyBlock(env)].filter(Boolean).join("\n")
+			)
+		),
+		...prerequisiteBlocks(graph, view.parentUrl),
+	]);
+}
+
+function promptContext(
+	target: PromptTarget,
+	blocks: ContextBlock[],
+	difficulty?: ExampleDifficulty
+): PromptContext {
 	return {
-		blocks: [
-			...tier("core", [
-				`${target.label} (${view.parentUrl}), without the surrounding lecture prose.`,
-				outline(envs),
-			]),
-			...tier(
-				"details",
-				envs.map((env) =>
-					[statementBlock(env), bodyBlock(env)].filter(Boolean).join("\n")
-				)
-			),
-			...prerequisiteBlocks(graph, view.parentUrl),
-		],
+		blocks,
 		...target,
-		markdownUrl: nodeMarkdownUrl(view.url),
+		...(difficulty === undefined ? {} : { difficulty }),
 	};
 }
 
