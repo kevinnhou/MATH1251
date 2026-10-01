@@ -1,29 +1,31 @@
+import type { PromptTarget } from "@/lib/export/model";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import { literalInlineFragment } from "@/lib/markdown/types";
 import { homeRoute } from "@/lib/site/config";
 import type { GraphModule } from "./strands";
 
-export interface CatalogPage {
+export interface RoutePage {
 	aliases: string[];
 	breadcrumbs: string[];
 	description?: MarkdownFragment<"inline">;
 	kindView: boolean;
-	markdownUrl: string;
 	parentUrl: string | null;
 	strand?: GraphModule;
 	title: MarkdownFragment<"inline">;
 	url: string;
 }
 
+export interface CatalogPage extends RoutePage {
+	prompt: PromptTarget;
+}
+
 export interface PageCatalog {
 	pages: CatalogPage[];
 }
 
-export interface CurrentPages {
-	inCatalog: boolean;
-	route: CatalogPage;
-	source: CatalogPage;
-}
+export type CurrentPages =
+	| { inCatalog: true; route: CatalogPage; source: CatalogPage }
+	| { inCatalog: false; route: RoutePage; source: RoutePage };
 
 const TRAILING_SLASHES = /\/+$/;
 
@@ -49,13 +51,12 @@ export function findPageByUrl(
 	return catalog.pages.find((page) => page.url === normalised);
 }
 
-function placeholderPage(url: string): CatalogPage {
+function placeholderPage(url: string): RoutePage {
 	const normalised = normalisePath(withoutHash(url));
 	return {
 		aliases: [],
 		breadcrumbs: normalised.split("/").filter(Boolean),
 		kindView: false,
-		markdownUrl: "",
 		parentUrl: parentPath(normalised),
 		title: literalInlineFragment(normalised),
 		url: normalised,

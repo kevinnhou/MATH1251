@@ -1,4 +1,9 @@
-import type { CatalogPage, PageCatalog } from "@/lib/course/catalog";
+import type {
+	CatalogPage,
+	CurrentPages,
+	PageCatalog,
+	RoutePage,
+} from "@/lib/course/catalog";
 import { findPageByUrl, normalisePath } from "@/lib/course/catalog";
 import type { ResolveOutcome } from "./types";
 
@@ -8,7 +13,7 @@ const PROTOCOL = /^[a-z][a-z0-9+.-]*:/i;
 export function resolvePage(
 	catalog: PageCatalog,
 	query: string,
-	current: CatalogPage
+	current: CurrentPages
 ): ResolveOutcome {
 	const trimmed = query.trim();
 	if (trimmed === "") {
@@ -16,15 +21,18 @@ export function resolvePage(
 	}
 
 	if (trimmed === ".") {
-		return { kind: "match", page: current };
+		return current.inCatalog
+			? { kind: "match", page: current.route }
+			: { kind: "none", query: trimmed };
 	}
 
+	const { route } = current;
 	if (trimmed === "..") {
-		if (current.parentUrl === null) {
+		if (route.parentUrl === null) {
 			return { kind: "none", query: trimmed };
 		}
 
-		const parent = findPageByUrl(catalog, current.parentUrl);
+		const parent = findPageByUrl(catalog, route.parentUrl);
 		if (!parent) {
 			return { kind: "none", query: trimmed };
 		}
@@ -36,7 +44,7 @@ export function resolvePage(
 		return { kind: "none", query: trimmed };
 	}
 
-	const ranked = rankPages(catalog, trimmed, current);
+	const ranked = rankPages(catalog, trimmed, route);
 	const [first] = ranked;
 	if (first === undefined) {
 		return { kind: "none", query: trimmed };
@@ -57,7 +65,7 @@ export function resolvePage(
 export function rankPages(
 	catalog: PageCatalog,
 	query: string,
-	current: CatalogPage
+	current: RoutePage
 ): Array<{ page: CatalogPage; score: number }> {
 	const needle = query.toLowerCase();
 	const pathNeedle = needle.replace(LEADING_SLASH, "");
@@ -85,7 +93,7 @@ function scorePage(
 	needle: string,
 	pathNeedle: string,
 	normalised: string,
-	current: CatalogPage
+	current: RoutePage
 ): number {
 	if (page.url === normalised) {
 		return 100;

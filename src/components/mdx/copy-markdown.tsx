@@ -1,55 +1,45 @@
 "use client";
 
-import { buttonVariants } from "fumadocs-ui/components/ui/button";
-import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
-import { copyText, fetchText } from "@/lib/client/actions";
-import { cn } from "@/lib/cn";
+import { Check, Copy, LoaderCircle, X } from "lucide-react";
+import { type CopyStatus, useCopyMarkdown } from "@/lib/export/use-copy";
+import { EXPORT_BUTTON_CLASS } from "./ask-panel";
 
-const cache = new Map<string, string>();
+const COPY_LABELS: Record<CopyStatus, string> = {
+	copied: "Copied",
+	copying: "Copying…",
+	failed: "Couldn't copy. Offline?",
+	idle: "Copy Markdown",
+};
 
-export function LLMCopyButton({ markdownUrl }: { markdownUrl: string }) {
-	const [isLoading, setLoading] = useState(false);
-	const [checked, onClick] = useCopyButton(async () => {
-		const cached = cache.get(markdownUrl);
-		if (cached !== undefined) {
-			const ok = await copyText(cached);
-			if (!ok) {
-				throw new Error("Clipboard is unavailable.");
-			}
-			return;
-		}
-
-		setLoading(true);
-
-		try {
-			const content = await fetchText(markdownUrl);
-			cache.set(markdownUrl, content);
-			const ok = await copyText(content);
-			if (!ok) {
-				throw new Error("Clipboard is unavailable.");
-			}
-		} finally {
-			setLoading(false);
-		}
-	});
+export function LLMCopyButton({ id }: { id: string }) {
+	const { copy, status } = useCopyMarkdown(id);
 
 	return (
 		<button
-			className={cn(
-				buttonVariants({
-					className: "gap-2 [&_svg]:size-3.5 [&_svg]:text-fd-muted-foreground",
-					color: "secondary",
-					size: "sm",
-				})
-			)}
-			disabled={isLoading}
-			onClick={onClick}
+			className={EXPORT_BUTTON_CLASS}
+			disabled={status === "copying"}
+			onClick={copy}
 			type="button"
 		>
-			{checked ? <Check /> : <Copy />}
-			Copy Markdown
+			<CopyIcon status={status} />
+			<span aria-live="polite">{COPY_LABELS[status]}</span>
 		</button>
 	);
+}
+
+function CopyIcon({ status }: { status: CopyStatus }) {
+	switch (status) {
+		case "copied":
+			return <Check />;
+		case "copying":
+			return (
+				<LoaderCircle className="animate-spin motion-reduce:animate-none" />
+			);
+		case "failed":
+			return <X />;
+		case "idle":
+			return <Copy />;
+		default:
+			return status satisfies never;
+	}
 }

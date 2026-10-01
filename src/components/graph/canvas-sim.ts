@@ -43,12 +43,9 @@ export interface SimLink {
 export type ForceGraph = ForceGraphMethods<SimNode, SimLink>;
 
 export interface GraphLayout {
-	/** At reach 1 every node is titled, so every node reserves label room. */
 	hopOne: boolean;
 	mode: GraphProjection["layout"];
-	/** Radial ring radius per hop distance. */
 	radii: number[];
-	/** Free layouts spread out as they grow. */
 	scale: number;
 }
 
@@ -121,10 +118,6 @@ export function applyForces(
 	graph.d3Force("radial", null);
 }
 
-/**
- * Merges the projection into the cached simulation nodes, so nodes that stay
- * visible keep their positions, and seeds new radial nodes near their rings.
- */
 export function syncGraphData(
 	projection: GraphProjection,
 	cache: Map<string, SimNode>,

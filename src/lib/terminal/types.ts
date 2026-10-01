@@ -3,6 +3,7 @@ import type {
 	CurrentPages,
 	PageCatalog,
 } from "@/lib/course/catalog";
+import type { OpenPromptRequest, OpenPromptResult } from "@/lib/export/client";
 import type { GraphRuntime } from "@/lib/graph/runtime";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 
@@ -86,9 +87,9 @@ export type TerminalOutput =
 			query: string;
 	  }
 	| {
+			id: string;
 			kind: "markdown";
 			markdown: string;
-			markdownUrl: string;
 			title: string;
 	  }
 	| {
@@ -102,9 +103,8 @@ export type TerminalOutput =
 	  };
 
 export interface CommandRuntime {
-	fetchMarkdown: (url: string, signal: AbortSignal) => Promise<string>;
-	openExternal: (url: string) => boolean;
-	origin: string;
+	loadMarkdown: (id: string) => Promise<string>;
+	openPrompt: (request: OpenPromptRequest) => Promise<OpenPromptResult>;
 	searchNotes: (query: string, signal: AbortSignal) => Promise<SearchHit[]>;
 }
 

@@ -8,6 +8,10 @@ import {
 } from "@/lib/course/catalog";
 import type { CourseRoutes } from "@/lib/course/routes";
 import { getStrand } from "@/lib/course/strands";
+import { buildExportGraph } from "@/lib/export/build";
+import { kindViewTarget, pageTarget } from "@/lib/export/context";
+import type { ExportGraph } from "@/lib/export/model";
+import { requireKindView, requireNode } from "@/lib/export/query";
 import { assembleGraphDocument } from "@/lib/graph/assemble";
 import type { GraphDocument } from "@/lib/graph/types";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
@@ -21,16 +25,9 @@ import {
 	createTenetIndex,
 	type TenetIndex,
 } from "@/lib/math-env/tenet";
-import {
-	getKindViewMarkdownUrl,
-	getPageMarkdownUrl,
-	getSourcePages,
-	type SourcePage,
-	source,
-} from "./source";
+import { getSourcePages, type SourcePage, source } from "./source";
 
 export type ResolvedDocs = {
-	markdownUrl: string;
 	source: SourcePage;
 	title: string;
 } & (
@@ -46,6 +43,7 @@ interface PageIndex {
 
 export interface Corpus extends PageIndex {
 	catalog: PageCatalog;
+	exportGraph: ExportGraph;
 	graph: GraphDocument;
 	routes: CourseRoutes;
 	tenets: TenetIndex;
@@ -78,10 +76,19 @@ export const getCorpus = memoInProduction((): Corpus => {
 	const tenets = createTenetIndex(index.pages);
 	assertTenetIndex(tenets);
 
+	const graph = assembleGraphDocument(index.pages, tenets, resolvePageHref);
+	const exportGraph = buildExportGraph(
+		index.pages,
+		tenets,
+		graph,
+		index.kindViews
+	);
+
 	return {
 		...index,
-		catalog: buildCatalog(index.byUrl),
-		graph: assembleGraphDocument(index.pages, tenets, resolvePageHref),
+		catalog: buildCatalog(index.byUrl, exportGraph),
+		exportGraph,
+		graph,
 		routes: buildRoutes(index),
 		tenets,
 	};
@@ -90,7 +97,10 @@ export const getCorpus = memoInProduction((): Corpus => {
 export function resolveDocsPage(
 	slugs: readonly string[]
 ): ResolvedDocs | undefined {
-	const url = slugs.length === 0 ? "/" : `/${slugs.join("/")}`;
+	return resolveDocsUrl(slugs.length === 0 ? "/" : `/${slugs.join("/")}`);
+}
+
+export function resolveDocsUrl(url: string): ResolvedDocs | undefined {
 	return getPageIndex().byUrl.get(url);
 }
 
@@ -113,7 +123,6 @@ function indexByUrl(
 			byUrl.set(view.url, {
 				description: view.description,
 				kind: "kind-view",
-				markdownUrl: getKindViewMarkdownUrl(view).url,
 				source: parent,
 				title: view.title,
 				view,
@@ -126,7 +135,6 @@ function indexByUrl(
 		byUrl.set(page.url, {
 			description: page.data.description,
 			kind: "notes",
-			markdownUrl: getPageMarkdownUrl(page).url,
 			source: notes,
 			title: page.data.title,
 		});
@@ -156,22 +164,21 @@ function buildRoutes({ kindViews, pages }: PageIndex): CourseRoutes {
 	};
 }
 
-function buildCatalog(byUrl: ReadonlyMap<string, ResolvedDocs>): PageCatalog {
+function buildCatalog(
+	byUrl: ReadonlyMap<string, ResolvedDocs>,
+	graph: ExportGraph
+): PageCatalog {
 	return {
 		pages: [...byUrl.values()]
-			.map(catalogPage)
+			.map((resolved) => catalogPage(resolved, graph))
 			.toSorted((left, right) => left.url.localeCompare(right.url)),
 	};
 }
 
-function catalogPage(resolved: ResolvedDocs): CatalogPage {
+function catalogPage(resolved: ResolvedDocs, graph: ExportGraph): CatalogPage {
 	const { module, page } = resolved.source;
 	const title = compileMarkdownFragment(resolved.title, "inline");
-	const common = {
-		markdownUrl: resolved.markdownUrl,
-		strand: module,
-		title,
-	};
+	const common = { strand: module, title };
 
 	if (resolved.kind === "kind-view") {
 		const { view } = resolved;
@@ -182,6 +189,7 @@ function catalogPage(resolved: ResolvedDocs): CatalogPage {
 			description: compileMarkdownFragment(resolved.description, "inline"),
 			kindView: true,
 			parentUrl: view.parentUrl,
+			prompt: kindViewTarget(requireKindView(graph, view.url)),
 			url: view.url,
 		};
 	}
@@ -200,6 +208,7 @@ function catalogPage(resolved: ResolvedDocs): CatalogPage {
 			: undefined,
 		kindView: false,
 		parentUrl: parentPath(page.url),
+		prompt: pageTarget(requireNode(graph, page.url)),
 		url: page.url,
 	};
 }

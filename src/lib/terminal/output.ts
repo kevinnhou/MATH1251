@@ -30,8 +30,8 @@ export function loadingOutput(message: string): TerminalOutput {
 }
 
 export function markdownOutput(options: {
+	id: string;
 	markdown: string;
-	markdownUrl: string;
 	title: string;
 }): TerminalOutput {
 	return { kind: "markdown", ...options };

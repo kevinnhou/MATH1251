@@ -1,31 +1,26 @@
 import { notFound } from "next/navigation";
 import {
 	exportStaticParams,
-	renderMarkdown,
+	renderPromptContext,
 	resolveExportTarget,
 } from "@/lib/export/corpus";
-import { nodeFileName } from "@/lib/export/urls";
-import { textFileResponse } from "@/lib/site/text-response";
 
 export const revalidate = false;
 export const dynamicParams = false;
 
 export async function GET(
 	_req: Request,
-	{ params }: RouteContext<"/llms.mdx/docs/[[...slug]]">
+	{ params }: RouteContext<"/llms.mdx/context/[[...slug]]">
 ) {
 	const { slug = [] } = await params;
-	const target = resolveExportTarget(slug, "markdown");
+	const target = resolveExportTarget(slug, "context");
 	if (target === undefined) {
 		notFound();
 	}
 
-	return textFileResponse(
-		renderMarkdown(target),
-		nodeFileName(target.id, "markdown")
-	);
+	return Response.json(renderPromptContext(target));
 }
 
 export function generateStaticParams() {
-	return exportStaticParams("markdown");
+	return exportStaticParams("context");
 }

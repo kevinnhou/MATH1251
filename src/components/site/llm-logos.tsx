@@ -1,4 +1,4 @@
-import type { LlmProvider } from "@/lib/site/llm-ask";
+import type { LlmProvider } from "@/lib/export/prompt";
 
 function ChatGptLogo() {
 	return (

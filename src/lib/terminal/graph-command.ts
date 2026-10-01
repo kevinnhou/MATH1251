@@ -151,7 +151,7 @@ export function resolveFocusTarget(
 		return fromGraph;
 	}
 
-	const resolved = resolvePage(catalog, raw, current.route);
+	const resolved = resolvePage(catalog, raw, current);
 	if (resolved.kind === "match") {
 		return document.nodes.find((node) => node.id === resolved.page.url);
 	}

@@ -135,8 +135,6 @@ function ClientGraph({
 		[projection, reach]
 	);
 
-	// The force graph is memoised with stable callbacks, which read the
-	// latest props from here.
 	const live = useRef({ layout, onOpen, onSelect, projection });
 	live.current = { layout, onOpen, onSelect, projection };
 	const paintRef = useRef<PaintState>({

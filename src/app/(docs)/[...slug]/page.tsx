@@ -14,7 +14,7 @@ import { MarkdownLabel } from "@/components/markdown/label";
 import { getMDXComponents } from "@/components/mdx";
 import { LLMCopyButton } from "@/components/mdx/copy-markdown";
 import { PageActions } from "@/components/mdx/page-actions";
-import { kindViewNotesLink, selectPageRelated } from "@/lib/graph/related";
+import { promptTargetFor } from "@/lib/export/corpus";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { getKindViewToc } from "@/lib/math-env/kind-view";
 import { gitConfig } from "@/lib/site/config";
@@ -38,6 +38,7 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 	const { envs, page } = resolved.source;
 	const { body: MDX, toc } = await loadPageContent(page.path);
 	const view = resolved.kind === "kind-view" ? resolved.view : undefined;
+	const target = promptTargetFor(view?.url ?? page.url) ?? notFound();
 
 	return (
 		<DocsPage
@@ -56,23 +57,17 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 				) : null}
 			</DocsDescription>
 			<div className="flex flex-row flex-wrap items-center gap-2 border-b pb-6">
-				<LLMCopyButton markdownUrl={resolved.markdownUrl} />
-				{view === undefined ? (
-					<PageActions
-						githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`}
-						markdownUrl={resolved.markdownUrl}
-						related={selectPageRelated(corpus.graph, page.url)}
-						task="page"
-					/>
-				) : (
-					<>
-						<PageActions
-							markdownUrl={resolved.markdownUrl}
-							related={[kindViewNotesLink(view, page.data.title)]}
-							task="kind-view"
-						/>
-						<BackToNotes title={page.data.title} url={page.url} />
-					</>
+				<PageActions
+					githubUrl={
+						view === undefined
+							? `https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`
+							: undefined
+					}
+					target={target}
+				/>
+				<LLMCopyButton id={target.id} />
+				{view === undefined ? null : (
+					<BackToNotes title={page.data.title} url={page.url} />
 				)}
 			</div>
 			{view === undefined ? <GraphHost pageUrl={page.url} /> : null}
@@ -86,6 +81,7 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 							pageEnvs: envs,
 							pageTitle: page.data.title,
 							pageUrl: page.url,
+							promptTarget: promptTargetFor,
 							tenetIndex: corpus.tenets,
 							viewKind: view?.kind,
 						}

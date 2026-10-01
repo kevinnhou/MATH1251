@@ -121,7 +121,6 @@ export function graphEdgeId(
 	return `${kind}\0${source}\0${target}`;
 }
 
-/** "DEF / definition" for an environment, "page" for a page. */
 export function nodeKindLabel(node: GraphNode): string {
 	if (isPageNode(node)) {
 		return node.type;
