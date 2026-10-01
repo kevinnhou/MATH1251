@@ -27,13 +27,13 @@ import {
 	type Relation,
 } from "./model";
 import {
+	attachedProofs,
 	childrenOf,
 	envsOfKind,
 	type Prerequisite,
 	pageOf,
 	pagesOf,
 	prerequisites,
-	proofsOf,
 	relationsOf,
 	requireNode,
 } from "./query";
@@ -109,7 +109,7 @@ export function envDocument(node: ExportNode, graph: ExportGraph): string {
 		body: [
 			page === undefined ? "" : `From ${nodeLink(page)}.`,
 			envSections(node, 2),
-			...proofsOf(graph, node.id).map((proof) =>
+			...attachedProofs(graph, node).map((proof) =>
 				joinBlocks(["## Proof", proof.body ?? ""])
 			),
 		],

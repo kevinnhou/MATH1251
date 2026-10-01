@@ -13,11 +13,11 @@ import {
 	type RelationName,
 } from "./model";
 import {
+	attachedProofs,
 	childrenOf,
 	envsOfKind,
 	pageOf,
 	prerequisites,
-	proofsOf,
 	relationsOf,
 	requireNode,
 } from "./query";
@@ -38,7 +38,7 @@ const PREREQUISITE_STATEMENT_LIMIT = 600;
 
 export function envTarget(node: ExportNode, graph: ExportGraph): PromptTarget {
 	return {
-		hasProof: node.kind === "proof" || envProofs(node, graph).length > 0,
+		hasProof: node.kind === "proof" || attachedProofs(graph, node).length > 0,
 		id: node.id,
 		kind: node.kind,
 		label: node.label,
@@ -74,7 +74,7 @@ export function envContext(
 	node: ExportNode,
 	graph: ExportGraph
 ): PromptContext {
-	const proofs = envProofs(node, graph);
+	const proofs = attachedProofs(graph, node);
 	const notesLast = bodyRole(node) === "Notes";
 	const core = [
 		heading(node, pageOf(graph, node)),
@@ -146,10 +146,6 @@ function promptContext(
 		...target,
 		...(difficulty === undefined ? {} : { difficulty }),
 	};
-}
-
-function envProofs(node: ExportNode, graph: ExportGraph): ExportNode[] {
-	return node.kind === "proof" ? [] : proofsOf(graph, node.id);
 }
 
 function heading(node: ExportNode, page?: ExportNode): string {

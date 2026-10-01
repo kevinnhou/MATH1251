@@ -20,6 +20,15 @@ export function requireNode(graph: ExportGraph, id: string): ExportNode {
 	return node;
 }
 
+function requirePosition(graph: ExportGraph, id: string): number {
+	const position = graph.position.get(id);
+	if (position === undefined) {
+		throw new Error(`Export node "${id}" has no position.`);
+	}
+
+	return position;
+}
+
 export function pagesOf(graph: ExportGraph): ExportNode[] {
 	return [...graph.nodes.values()]
 		.filter((node) => node.type === "page")
@@ -53,6 +62,13 @@ export function proofsOf(graph: ExportGraph, id: string): ExportNode[] {
 	);
 }
 
+export function attachedProofs(
+	graph: ExportGraph,
+	node: ExportNode
+): ExportNode[] {
+	return node.kind === "proof" ? [] : proofsOf(graph, node.id);
+}
+
 export function relationsOf(
 	graph: ExportGraph,
 	id: string,
@@ -80,8 +96,8 @@ export function relationsOf(
 	return relations.toSorted(
 		(left, right) =>
 			names.indexOf(left.name) - names.indexOf(right.name) ||
-			(graph.position.get(left.node.id) ?? 0) -
-				(graph.position.get(right.node.id) ?? 0)
+			requirePosition(graph, left.node.id) -
+				requirePosition(graph, right.node.id)
 	);
 }
 
@@ -91,11 +107,7 @@ export interface Prerequisite {
 }
 
 export function prerequisites(graph: ExportGraph, id: string): Prerequisite[] {
-	const root = graph.nodes.get(id);
-	if (root === undefined) {
-		return [];
-	}
-
+	const root = requireNode(graph, id);
 	const roots =
 		root.type === "page"
 			? childrenOf(graph, id).map((node) => node.id)

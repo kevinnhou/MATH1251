@@ -496,6 +496,10 @@ prompt, but a client with stale code may send links only until it reloads.
   No model stores an export URL: `PromptContext`, `CatalogPage` and terminal
   output carry the node ID, and the URL is derived where it is used.
 - `hasProof` and the other intent facts are decided only in `context.ts`.
+- Which proofs belong to a node is decided by `attachedProofs` (`query.ts`) for
+  both the Markdown and the prompt context: none for a proof itself.
+- Graph readers throw on an unknown node ID or a node without a position, rather
+  than returning an empty result.
 - The export graph is built once per worker, in `getCorpus()` (see COMPILE.md §6).
 - `openPrompt` is called before any `await` in a user-triggered handler.
 - `loadPromptContext` and `openPrompt` never reject. Surfaces don't need a
