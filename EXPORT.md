@@ -243,8 +243,9 @@ API key or backend is needed. There are three pieces:
 1. **Target** (`PromptTarget`): `id`, `label`, `kind`, `type` and `hasProof`.
    It is small, computed on the server, and available before anything is
    fetched. It decides which intents are offered.
-2. **Context** (`PromptContext`): the target plus `difficulty` and ranked
-   `blocks`. The Markdown URL is not stored: `prompt.ts` derives it from the
+2. **Context** (`PromptContext`): the target plus ranked `blocks`. The file
+   repeats the target for a model that fetches it directly, but the client
+   reads only `blocks` and keeps the target it already holds. The Markdown URL is not stored: `prompt.ts` derives it from the
    ID with `nodeMarkdownUrl`. It is fetched from `/llms.mdx/context/…` when the prompt
    is opened.
 3. **Prompt** (`prompt.ts`): the context, an intent and a provider, packed into
@@ -364,9 +365,10 @@ node IDs, never URLs.
   ID. A failed load is evicted, so the next attempt retries.
 - **Timeout:** each fetch is aborted after 8 s (`FETCH_TIMEOUT_MS`). The files
   are static, so a slower response means the connection has stalled.
-- **Fallback:** `loadPromptContext(target)` never rejects. If the file cannot be
+- **Fallback:** `loadPromptContext(target)` never rejects. It always returns
+  the target it was given, with the file's `blocks`. If the file cannot be
   loaded (offline, timed out, 404, or a stale format that fails
-  `isPromptContext`), it returns the target with no blocks. The intent and task
+  `isContextBlocks`), the blocks are empty. The intent and task
   text stay correct, and the prompt links to the Markdown instead of quoting it.
 - **Prefetch:** `prefetchContext(id)` warms the context cache when the pointer
   or focus reaches the `Ask AI` button or an environment's corner hint, and
@@ -477,8 +479,7 @@ in `ASK_COMMANDS` (`commands.ts`); the command, usage line and `help` follow. Ke
 limit.
 
 **New fact an intent depends on:** add it to `PromptTarget`, set it in the
-three `*Target` functions, and check it in `isPromptContext`. Do not work it out
-again in a component.
+three `*Target` functions. Do not work it out again in a component.
 
 **New edge kind:** add it to `EXPORT_EDGE_KINDS`, `RELATION_NAMES`,
 `RELATION_LABELS` and `RELATION_ORDER` (the build fails until every relation
@@ -489,7 +490,7 @@ name is in all three), and emit it in `build.ts`. Add it to
 **New tier:** add it to `CONTEXT_TIERS` (the order there is the packing order)
 and `TIER_HEADINGS`.
 
-**Changing the context format:** `isPromptContext` rejects files it doesn't
+**Changing the context format:** `isContextBlocks` rejects blocks it doesn't
 recognise, and those fall back to link-only prompts. A deploy never breaks a
 prompt, but a client with stale code may send links only until it reloads.
 
@@ -498,7 +499,8 @@ prompt, but a client with stale code may send links only until it reloads.
 - Every export URL comes from `urls.ts`, and every link in an export is a node ID.
   No model stores an export URL: `PromptContext`, `CatalogPage` and terminal
   output carry the node ID, and the URL is derived where it is used.
-- `hasProof` and the other intent facts are decided only in `context.ts`.
+- `hasProof` and the other intent facts are decided only in `context.ts`, from
+  the target the surface holds, never from a fetched file.
 - Which proofs belong to a node is decided by `attachedProofs` (`query.ts`) for
   both the Markdown and the prompt context: none for a proof itself.
 - Graph readers throw on an unknown node ID or a node without a position, rather

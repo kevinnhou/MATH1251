@@ -140,14 +140,9 @@ export interface PromptTarget {
 	id: string;
 	kind: MathEnvKind | "page";
 	label: string;
-	type: PromptTargetType;
+	type: "page" | "env" | "kind-view";
 }
 
 export interface PromptContext extends PromptTarget {
 	blocks: ContextBlock[];
-	difficulty?: ExampleDifficulty;
 }
-
-export const PROMPT_TARGET_TYPES = ["page", "env", "kind-view"] as const;
-
-type PromptTargetType = (typeof PROMPT_TARGET_TYPES)[number];

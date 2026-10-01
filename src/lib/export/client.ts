@@ -1,7 +1,7 @@
 import { fetchText } from "@/lib/client/actions";
 import {
 	CONTEXT_TIERS,
-	PROMPT_TARGET_TYPES,
+	type ContextBlock,
 	type PromptContext,
 	type PromptTarget,
 } from "./model";
@@ -17,20 +17,21 @@ const FETCH_TIMEOUT_MS = 8000;
 const PROMPT_WAIT_MS = 3000;
 
 const markdown = new Map<string, Promise<string>>();
-const contexts = new Map<string, Promise<PromptContext>>();
+const contexts = new Map<string, Promise<ContextBlock[]>>();
 
 export function loadMarkdown(id: string): Promise<string> {
 	return cached(markdown, id, () => fetchExport(nodeMarkdownUrl(id)));
 }
 
-function loadContext(id: string): Promise<PromptContext> {
+function loadContext(id: string): Promise<ContextBlock[]> {
 	return cached(contexts, id, async () =>
-		parsePromptContext(await fetchExport(nodeContextUrl(id)))
+		parseContextBlocks(await fetchExport(nodeContextUrl(id)))
 	);
 }
 
-function loadPromptContext(target: PromptTarget): Promise<PromptContext> {
-	return loadContext(target.id).catch(() => fallbackContext(target));
+async function loadPromptContext(target: PromptTarget): Promise<PromptContext> {
+	const blocks = await loadContext(target.id).catch(() => []);
+	return { ...target, blocks };
 }
 
 function fallbackContext(target: PromptTarget): PromptContext {
@@ -104,25 +105,19 @@ function fetchExport(url: string): Promise<string> {
 	return fetchText(url, AbortSignal.timeout(FETCH_TIMEOUT_MS));
 }
 
-function parsePromptContext(text: string): PromptContext {
+function parseContextBlocks(text: string): ContextBlock[] {
 	const value: unknown = JSON.parse(text);
-	if (!isPromptContext(value)) {
+	if (!(isRecord(value) && isContextBlocks(value.blocks))) {
 		throw new Error("Malformed prompt context.");
 	}
 
-	return value;
+	return value.blocks;
 }
 
-function isPromptContext(value: unknown): value is PromptContext {
+function isContextBlocks(value: unknown): value is ContextBlock[] {
 	return (
-		isRecord(value) &&
-		typeof value.id === "string" &&
-		typeof value.label === "string" &&
-		typeof value.kind === "string" &&
-		typeof value.hasProof === "boolean" &&
-		PROMPT_TARGET_TYPES.some((type) => type === value.type) &&
-		Array.isArray(value.blocks) &&
-		value.blocks.every(
+		Array.isArray(value) &&
+		value.every(
 			(block) =>
 				isRecord(block) &&
 				typeof block.text === "string" &&

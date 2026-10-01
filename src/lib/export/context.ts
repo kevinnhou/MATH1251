@@ -1,5 +1,4 @@
 import { STRAND_LABELS } from "@/lib/course/strands";
-import type { ExampleDifficulty } from "@/lib/math-env/kinds";
 import {
 	bodyRole,
 	type ContextBlock,
@@ -79,16 +78,12 @@ export function envContext(
 		notesLast ? bodyBlock(node) : "",
 	];
 
-	return promptContext(
-		envTarget(node, graph),
-		[
-			...tier("core", core),
-			...tier("relations", relationSummary(graph, node.id, OUTGOING)),
-			...prerequisiteBlocks(graph, node.id),
-			...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
-		],
-		node.difficulty
-	);
+	return promptContext(envTarget(node, graph), [
+		...tier("core", core),
+		...tier("relations", relationSummary(graph, node.id, OUTGOING)),
+		...prerequisiteBlocks(graph, node.id),
+		...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
+	]);
 }
 
 export function pageContext(
@@ -132,14 +127,9 @@ export function kindViewContext(
 
 function promptContext(
 	target: PromptTarget,
-	blocks: ContextBlock[],
-	difficulty?: ExampleDifficulty
+	blocks: ContextBlock[]
 ): PromptContext {
-	return {
-		blocks,
-		...target,
-		...(difficulty === undefined ? {} : { difficulty }),
-	};
+	return { blocks, ...target };
 }
 
 function heading(node: ExportNode, page?: ExportNode): string {
