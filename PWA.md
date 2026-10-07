@@ -9,7 +9,7 @@ src/app/manifest.ts                web app manifest
 src/app/pwa-icon/                  generated app icons
 src/app/(docs)/~offline/page.tsx   offline page
 src/app/catalog.json/route.ts      full page catalog
-src/app/graph-data.json/route.ts   graph document
+src/app/relations.json/route.ts    course map
 
 src/components/pwa/
   provider.tsx     registers the worker; saves pages on in-app navigation
@@ -18,7 +18,7 @@ src/components/pwa/
 
 src/lib/site/config.ts       routes (shared with the worker)
 src/lib/pwa/protocol.ts      cache names, page request marker, network status message (shared with the worker)
-src/lib/client/resource.ts   jsonResource and useResource (catalog, graph)
+src/lib/client/resource.ts   jsonResource and useResource (catalog, course map)
 ```
 
 The worker is disabled in dev.
@@ -34,7 +34,7 @@ Rules match in order. Anything unmatched goes straight to the network
 | `/_next/static/*`                   | cache first                | `static`             | 30 days since last use, 400 entries |
 | RSC requests (`RSC: 1`)             | network only, 5 s timeout  | none                 |                                     |
 | navigations and page saves          | network first, 3 s timeout | `pages`              | 30 days since last use, 150 entries |
-| `/catalog.json`, `/graph-data.json` | network first, 3 s timeout | `data`               | latest copy                         |
+| `/catalog.json`, `/relations.json` | network first, 3 s timeout | `data`               | latest copy                         |
 | `/~offline`                         | precache                   | `serwist-precache-*` | replaced each build                 |
 
 

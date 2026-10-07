@@ -9,8 +9,7 @@ src/lib/terminal/          terminal logic (pure, no React)
   commands.ts              command registry, completion
   dirs.ts                  directories and path resolution
   location.ts              working directory and tree view transitions
-  graph-command.ts         the `graph` command
-  graph-output.ts          graph node > inspect output
+  relations-command.ts     the `relations` command (see RELATIONS.md)
   parse.ts                 tokenising, applying completions
   resolve.ts               page lookup and ranking for arguments
   mode.ts                  surface helpers (draft, output, dismiss)
@@ -36,9 +35,9 @@ src/lib/client/keybinds.ts every site wide hotkey
 src/app/api/search/route.ts search endpoint (`format=terminal`)
 ```
 
-`src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `GraphProvider` ›
+`src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `RelationsProvider` ›
 `TerminalProvider` › `VirtualDocsLayout`. The terminal sits above the Fumadocs
-layout, so it can serve the graph and the page, while the sidebar lives inside
+layout, so it can serve the course map and the page, while the sidebar lives inside
 the layout.
 
 The terminal works from two sources of course data (see COMPILE.md §10):
@@ -65,7 +64,7 @@ The terminal works from two sources of course data (see COMPILE.md §10):
 | `pwd` | Prints the working directory |
 | `md <page\|.>` | Shows the page's Markdown source |
 | `gpt`, `claude`, `cursor [explain\|proof\|quiz\|check] <page\|.>` | Opens the page in that assistant with that prompt (default `explain`); Tab offers the intents first |
-| `graph <depth\|strand\|focus\|find\|immerse\|collapse\|reset>` | Drives the course graph |
+| `relations [view <arcs\|matrix\|ladder\|threads>\|focus <page>\|reset]` | Opens and drives the course map in the reading dock; with no argument, lists what the focused page builds on and leads to |
 | `help` | Lists commands |
 | `clear` | Clears output |
 | anything else | Full-text search; matching pages replace the tree |
@@ -169,7 +168,7 @@ in the tree falls back to the output pane.
   result row last focused or hovered, with highlighted snippets and links to
   each section. One delegated `pointerover`/`focusin` listener on the pane
   picks the row, so moving between rows re-renders only the preview.
-- **Page:** `SearchHighlight` marks the query terms in `[data-graph-prose]`
+- **Page:** `SearchHighlight` marks the query terms in `[data-prose]`
   with the CSS Custom Highlight API: no DOM changes, cleared with the view.
   Its `::highlight()` rule is rendered inline because the CSS pipeline does
   not parse it yet.
@@ -184,7 +183,7 @@ so typing re-renders only the prompt:
 
 | Hook | Changes | Holds | Used by |
 |---|---|---|---|
-| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
+| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers |
 | `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `view` | sidebar, panes, tree, prompt, output pane |
 | `useTerminal()` | every keystroke | everything above, plus surface, completions, history focus | `TerminalPrompt` only |
 
@@ -237,7 +236,7 @@ each feature keeps its own window listener and ordering never matters.
 | ⌘K / Ctrl+K | terminal | anywhere except other text fields | Focus the prompt |
 | `1`–`9`, `0` | sidebar | anywhere outside a text field | Leave output, reveal the sidebar, focus that top-level section (in a chapter: that page) |
 | Esc | terminal | prompt unfocused, something to dismiss | Dismiss one layer |
-| Esc | graph | graph engaged (capture phase) | Graph's own escape |
+| Esc | reading dock | dock open (capture phase) | Close the map, or the bay |
 | printable keys, ↑/↓, paste | terminal | output showing, no text selected | Continue in the prompt (digits excluded) |
 | ↑↓←→ / WASD | tree | a tree row focused | Move; ←/→ fold and unfold |
 | Space | tree | a link row focused | Open |
