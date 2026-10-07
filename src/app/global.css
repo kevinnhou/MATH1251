@@ -3,15 +3,21 @@
 @import "fumadocs-ui/css/preset.css";
 
 :root {
-	--graph-module-algebra: #ffadad;
-	--graph-module-calculus: #a8c7e8;
-	--graph-module-core: #74828a;
+	--relations-strand-algebra: #ffadad;
+	--relations-strand-calculus: #a8c7e8;
+	--relations-strand-core: #74828a;
+	--relations-builds-on: #2a78d6;
+	--relations-leads-to: #eb6834;
+	--relations-thread: #1baf7a;
 }
 
 .dark {
-	--graph-module-algebra: #af7178;
-	--graph-module-calculus: #7a93ab;
-	--graph-module-core: #74828a;
+	--relations-strand-algebra: #af7178;
+	--relations-strand-calculus: #7a93ab;
+	--relations-strand-core: #74828a;
+	--relations-builds-on: #3987e5;
+	--relations-leads-to: #d95926;
+	--relations-thread: #199e70;
 }
 
 * {
@@ -113,7 +119,99 @@ html > body[data-scroll-locked] {
 	font-family: var(--font-geist-mono), monospace;
 }
 
-[data-graph-prose] {
+[data-dock] {
+	--dock-cut: color-mix(in oklab, var(--color-fd-background), black 5%);
+	--dock-radius: 14px;
+}
+
+.dark [data-dock] {
+	--dock-cut: color-mix(in oklab, var(--color-fd-background), black 45%);
+}
+
+[data-dock-surface] {
+	background: var(--dock-cut);
+	border-top-left-radius: var(--dock-radius);
+}
+
+[data-dock-corner] {
+	position: absolute;
+	width: var(--dock-radius);
+	height: var(--dock-radius);
+	pointer-events: none;
+	background: radial-gradient(
+		circle at 0 0,
+		transparent calc(var(--dock-radius) - 0.5px),
+		var(--dock-cut) var(--dock-radius)
+	);
+}
+
+[data-dock-corner="top"] {
+	right: 0;
+	bottom: 100%;
+}
+
+[data-dock-corner="left"] {
+	right: 100%;
+	bottom: 0;
+}
+
+body:has([data-dock]) {
+	padding-bottom: 6rem;
+}
+
+@keyframes dock-swap {
+	from {
+		opacity: 0;
+		transform: translateY(2px);
+	}
+}
+
+[data-dock-swap] {
+	animation: dock-swap 180ms ease-out;
+}
+
+.math-env::before {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: calc(1.15rem + 0.375rem - 0.75px);
+	width: 1.5px;
+	pointer-events: none;
+	content: "";
+	background: var(--color-fd-foreground);
+	opacity: 0;
+	transform: scaleY(0.6);
+	transition:
+		opacity 200ms ease-out,
+		transform 240ms ease-out;
+}
+
+.math-env[data-dock-active]::before {
+	opacity: 0.25;
+	transform: none;
+}
+
+.math-env[data-dock-active="open"]::before {
+	opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-dock-swap] {
+		animation: none;
+	}
+
+	.math-env::before {
+		transition: none;
+	}
+}
+
+@media print {
+	.math-env::before {
+		display: none;
+	}
+}
+
+[data-prose] {
 	max-width: min(100%, 48rem);
 }
 
@@ -284,11 +382,7 @@ html > body[data-scroll-locked] {
 	border: 1px solid var(--color-fd-border);
 }
 
-[data-graph-label] .katex-display {
-	margin: 0;
-}
-
-[data-graph-label] .md-fragment-inline .katex,
+[data-relations-label] .md-fragment-inline .katex,
 [data-sidebar] .md-fragment-inline .katex {
 	font-size: 0.95em;
 }

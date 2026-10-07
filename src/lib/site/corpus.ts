@@ -1,5 +1,6 @@
 import "server-only";
 
+import { posix } from "node:path";
 import { cache } from "react";
 import {
 	type CatalogPage,
@@ -12,8 +13,6 @@ import { buildExportGraph } from "@/lib/export/build";
 import { kindViewTarget, pageTarget } from "@/lib/export/context";
 import type { ExportGraph } from "@/lib/export/model";
 import { requireKindView, requireNode } from "@/lib/export/query";
-import { assembleGraphDocument } from "@/lib/graph/assemble";
-import type { GraphDocument } from "@/lib/graph/types";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import {
 	type KindView,
@@ -25,6 +24,10 @@ import {
 	createTenetIndex,
 	type TenetIndex,
 } from "@/lib/math-env/tenet";
+import { createThreadIndex, type ThreadIndex } from "@/lib/math-env/thread";
+import { buildCourseMap, courseOrder } from "@/lib/relations/build";
+import { indexCourseMap, type MapIndex } from "@/lib/relations/query";
+import type { CourseMap } from "@/lib/relations/types";
 import { getSourcePages, type SourcePage, source } from "./source";
 
 export type ResolvedDocs = {
@@ -43,10 +46,12 @@ interface PageIndex {
 
 export interface Corpus extends PageIndex {
 	catalog: PageCatalog;
+	courseIndex: MapIndex;
+	courseMap: CourseMap;
 	exportGraph: ExportGraph;
-	graph: GraphDocument;
 	routes: CourseRoutes;
 	tenets: TenetIndex;
+	threads: ThreadIndex;
 }
 
 const LEADING_SLASH = /^\//;
@@ -76,21 +81,29 @@ export const getCorpus = memoInProduction((): Corpus => {
 	const tenets = createTenetIndex(index.pages);
 	assertTenetIndex(tenets);
 
-	const graph = assembleGraphDocument(index.pages, tenets, resolvePageHref);
+	const order = courseOrder(source.getPageTree());
+	const threads = createThreadIndex(
+		index.pages,
+		order.order.map(({ url }) => url)
+	);
 	const exportGraph = buildExportGraph(
 		index.pages,
 		tenets,
-		graph,
-		index.kindViews
+		resolvePageHref,
+		index.kindViews,
+		threads
 	);
+	const courseMap = buildCourseMap(order, exportGraph, threads);
 
 	return {
 		...index,
 		catalog: buildCatalog(index.byUrl, exportGraph),
+		courseIndex: indexCourseMap(courseMap),
+		courseMap,
 		exportGraph,
-		graph,
 		routes: buildRoutes(index),
 		tenets,
+		threads,
 	};
 });
 
@@ -143,8 +156,10 @@ function indexByUrl(
 	return byUrl;
 }
 
-function resolvePageHref(href: string, dir: string): string | undefined {
-	const resolved = source.getPageByHref(href, { dir });
+function resolvePageHref(href: string, fromPath: string): string | undefined {
+	const resolved = source.getPageByHref(href, {
+		dir: posix.dirname(fromPath.replaceAll("\\", "/")),
+	});
 	if (!resolved || getStrand(resolved.page.slugs) === undefined) {
 		return;
 	}

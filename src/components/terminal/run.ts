@@ -78,8 +78,8 @@ export async function runTerminalLine(
 		catalog,
 		current: currentPagesFromUrl(catalog, ctx.route),
 		cwd: ctx.cwd,
-		graph: ctx.graph,
 		parsed,
+		relations: ctx.relations,
 		runtime: browserRuntime,
 		signal: controller.signal,
 	});

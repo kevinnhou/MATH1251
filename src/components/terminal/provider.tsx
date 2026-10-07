@@ -16,7 +16,7 @@ import {
 	useState,
 } from "react";
 import { useCurrentRoute } from "@/components/course/provider";
-import { useGraph } from "@/components/graph/provider";
+import { useRelations } from "@/components/relations/provider";
 import { useResource } from "@/lib/client/resource";
 import { currentPagesFromUrl } from "@/lib/course/catalog";
 import { catalogResource } from "@/lib/course/client";
@@ -48,7 +48,6 @@ interface SidebarControls {
 interface TerminalApi {
 	bindSidebar: (controls: SidebarControls) => () => void;
 	changeDirectory: (url: string) => void;
-	clearInspectOutput: () => void;
 	focusPrompt: (options?: { expand?: boolean }) => void;
 	inputRef: RefObject<HTMLInputElement | null>;
 	outputRef: RefObject<HTMLDivElement | null>;
@@ -113,7 +112,7 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 	const catalog = useResource(catalogResource);
 	const router = useRouter();
 	const { inCatalog: inCourse, url: routeUrl } = useCurrentRoute();
-	const graph = useGraph();
+	const relations = useRelations();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const outputRef = useRef<HTMLDivElement>(null);
 	const abortRef = useRef<AbortController | null>(null);
@@ -139,13 +138,13 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 				catalog: catalog.value,
 				current: currentPagesFromUrl(catalog.value, routeUrl),
 				cwd: location.cwd,
-				graph,
 				parsed,
+				relations,
 			})
 		);
 	}, [
 		catalog,
-		graph,
+		relations,
 		location.cwd,
 		parsed,
 		routeUrl,
@@ -180,10 +179,6 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 	const publishOutput = useCallback((output: TerminalOutput, echo?: string) => {
 		dispatch({ echo, output, type: "show" });
 		setLiveMessage(announce(output));
-	}, []);
-
-	const clearInspectOutput = useCallback(() => {
-		dispatch({ type: "clear-inspect" });
 	}, []);
 
 	const showTree = useCallback(() => {
@@ -227,10 +222,10 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 			},
 			cwd: location.cwd,
 			dispatch,
-			graph,
 			historyEntries: state.history.entries,
 			navigate: (url) => router.push(url),
 			publishOutput,
+			relations,
 			route: routeUrl,
 		});
 
@@ -262,21 +257,13 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 		(): TerminalApi => ({
 			bindSidebar,
 			changeDirectory,
-			clearInspectOutput,
 			focusPrompt,
 			inputRef,
 			outputRef,
 			publishOutput,
 			showTree,
 		}),
-		[
-			bindSidebar,
-			changeDirectory,
-			clearInspectOutput,
-			focusPrompt,
-			publishOutput,
-			showTree,
-		]
+		[bindSidebar, changeDirectory, focusPrompt, publishOutput, showTree]
 	);
 
 	const pane = paneTarget(surface);

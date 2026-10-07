@@ -19,7 +19,7 @@ import {
 	networkStatusMessage,
 	pwaCaches,
 } from "../lib/pwa/protocol";
-import { catalogRoute, graphDataRoute, offlineRoute } from "../lib/site/config";
+import { catalogRoute, courseMapRoute, offlineRoute } from "../lib/site/config";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -30,7 +30,7 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 const STATIC_PREFIX = "/_next/static/";
-const DATA_ROUTES = new Set([catalogRoute, graphDataRoute]);
+const DATA_ROUTES = new Set([catalogRoute, courseMapRoute]);
 const OWNED_CACHES = new Set<string>(Object.values(pwaCaches));
 
 const isStatic = (url: string) => url.startsWith(STATIC_PREFIX);

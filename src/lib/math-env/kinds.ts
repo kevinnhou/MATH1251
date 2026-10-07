@@ -8,12 +8,15 @@ export const MATH_ENV_STYLES = ["work", "spec", "theory", "proof"] as const;
 
 export type MathEnvStyle = (typeof MATH_ENV_STYLES)[number];
 
-type GraphMaterialisation = "always" | "if-cited" | "never";
+export const ENV_RELATIONS = ["uses", "proves", "practises"] as const;
+
+export type EnvRelation = (typeof ENV_RELATIONS)[number];
 
 interface MathEnvKindConfig {
 	code: string;
-	graph: GraphMaterialisation;
 	label: string;
+	of: EnvRelation;
+	optionalSlug?: boolean;
 	plural: string;
 	qed?: boolean;
 	style: MathEnvStyle;
@@ -24,48 +27,50 @@ interface MathEnvKindConfig {
 export const MATH_ENV_KINDS = {
 	corollary: {
 		code: "CR",
-		graph: "always",
 		label: "Corollary",
+		of: "uses",
 		plural: "Corollaries",
 		style: "theory",
 		word: "COROLLARY",
 	},
 	definition: {
 		code: "DF",
-		graph: "always",
 		label: "Definition",
+		of: "uses",
 		plural: "Definitions",
 		style: "spec",
 		word: "DEFINITION",
 	},
 	example: {
 		code: "EG",
-		graph: "if-cited",
 		label: "Example",
+		of: "practises",
+		optionalSlug: true,
 		plural: "Examples",
 		style: "work",
 		word: "EXAMPLE",
 	},
 	lemma: {
 		code: "LM",
-		graph: "always",
 		label: "Lemma",
+		of: "uses",
 		plural: "Lemmas",
 		style: "theory",
 		word: "LEMMA",
 	},
 	method: {
 		code: "MT",
-		graph: "always",
 		label: "Method",
+		of: "uses",
 		plural: "Methods",
 		style: "spec",
 		word: "METHOD",
 	},
 	proof: {
 		code: "PF",
-		graph: "if-cited",
 		label: "Proof",
+		of: "proves",
+		optionalSlug: true,
 		plural: "Proofs",
 		qed: true,
 		style: "proof",
@@ -74,16 +79,16 @@ export const MATH_ENV_KINDS = {
 	},
 	proposition: {
 		code: "PR",
-		graph: "always",
 		label: "Proposition",
+		of: "uses",
 		plural: "Propositions",
 		style: "theory",
 		word: "PROPOSITION",
 	},
 	theorem: {
 		code: "TH",
-		graph: "always",
 		label: "Theorem",
+		of: "uses",
 		plural: "Theorems",
 		style: "theory",
 		word: "THEOREM",
@@ -108,8 +113,8 @@ export function mathEnvKindFromTag(tag: string): MathEnvKind | undefined {
 	}
 }
 
-export function graphMaterialisation(kind: MathEnvKind): GraphMaterialisation {
-	return MATH_ENV_KINDS[kind].graph;
+export function envRelation(kind: MathEnvKind): EnvRelation {
+	return getMathEnvConfig(kind).of;
 }
 
 export function getKindLabel(kind: MathEnvKind, plural = false): string {
@@ -138,7 +143,7 @@ export function parseDifficulty(value: string): ParseResult<ExampleDifficulty> {
 }
 
 export function isSlugRequired(kind: MathEnvKind): boolean {
-	return graphMaterialisation(kind) === "always";
+	return getMathEnvConfig(kind).optionalSlug !== true;
 }
 
 const EXAMPLE_DIFFICULTY_LIST = "challenge, exam, or routine";

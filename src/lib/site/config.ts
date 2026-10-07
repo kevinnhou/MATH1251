@@ -19,7 +19,7 @@ export const gitConfig = {
 };
 
 export const offlineRoute = "/~offline";
-export const graphDataRoute = "/graph-data.json";
+export const courseMapRoute = "/relations.json";
 export const catalogRoute = "/catalog.json";
 export const exportGraphRoute = "/graph.json";
 export const llmsFullRoute = "/llms-full.txt";

@@ -53,7 +53,6 @@ export type TerminalAction =
 	| { type: "focus" }
 	| { type: "show"; echo?: string; output: TerminalOutput }
 	| { type: "result"; echo: string; result: CommandResult }
-	| { type: "clear-inspect" }
 	| { type: "show-tree" }
 	| { type: "change-directory"; url: string }
 	| { type: "route"; url: string; inCourse: boolean };
@@ -141,10 +140,6 @@ export function terminalReducer(
 			};
 		case "result":
 			return applyResult(state, action.result, action.echo);
-		case "clear-inspect":
-			return state.surface.output?.kind === "inspect"
-				? { ...state, surface: emptySurface() }
-				: state;
 		case "show-tree":
 			return { ...state, surface: leaveOutput(state.surface) };
 		case "change-directory":

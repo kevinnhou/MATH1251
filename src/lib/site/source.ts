@@ -2,7 +2,7 @@ import corpusMeta from "collections/corpus-meta";
 import { loader, type VirtualFile } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { cache } from "react";
-import { type GraphModule, getStrand } from "@/lib/course/strands";
+import { getStrand, type Strand } from "@/lib/course/strands";
 import { getKindViewSlug, type MathEnvKind } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import { docsImageRoute, docsRoute } from "./config";
@@ -37,7 +37,7 @@ export const source = loader({
 
 export interface SourcePage {
 	envs: PageEnvs;
-	module: GraphModule | undefined;
+	module: Strand | undefined;
 	page: (typeof source)["$inferPage"];
 }
 

@@ -1,6 +1,4 @@
 import type { CatalogPage } from "@/lib/course/catalog";
-import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
-import { plainInlineLabel } from "@/lib/markdown/types";
 import { isSafeInternalUrl } from "@/lib/site/url";
 import type { LinkGroup, OutputLink, SearchHit, TerminalOutput } from "./types";
 
@@ -35,17 +33,6 @@ export function markdownOutput(options: {
 	title: string;
 }): TerminalOutput {
 	return { kind: "markdown", ...options };
-}
-
-export function inspectOutput(options: {
-	actionUrl?: string;
-	message?: string;
-	nodeId: string;
-	preview?: RenderedMarkdown<"block" | "inline">;
-	title: InlineLabel;
-	type?: string;
-}): TerminalOutput {
-	return { kind: "inspect", ...options };
 }
 
 export function groupedLinks(
@@ -123,8 +110,6 @@ export function announce(output: TerminalOutput): string {
 		}
 		case "markdown":
 			return `Markdown for ${output.title}`;
-		case "inspect":
-			return plainInlineLabel(output.title);
 		default: {
 			const _exhaustive: never = output;
 			return _exhaustive;
