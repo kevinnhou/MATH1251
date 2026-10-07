@@ -1,4 +1,5 @@
 import type { ParseResult } from "@/lib/result";
+import type { ThreadTag } from "./page-envs";
 
 const TENET_SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -63,4 +64,34 @@ export function parseTenetSlugList(value: string): ParseResult<string[]> {
 	}
 
 	return { ok: true, value: slugs };
+}
+
+export function parseThreadTags(value: string): ParseResult<ThreadTag[]> {
+	const tags: ThreadTag[] = [];
+	const seen = new Set<string>();
+
+	for (const part of value.split(";")) {
+		const separator = part.indexOf(":");
+		const slugPart = separator === -1 ? part : part.slice(0, separator);
+		const role = separator === -1 ? "" : part.slice(separator + 1).trim();
+
+		const parsed = parseTenetSlug(slugPart);
+		if (!parsed.ok) {
+			return { error: `Thread tag: ${parsed.error}`, ok: false };
+		}
+
+		if (seen.has(parsed.value)) {
+			return {
+				error: `Thread "${parsed.value}" is tagged more than once.`,
+				ok: false,
+			};
+		}
+
+		seen.add(parsed.value);
+		tags.push(
+			role.length > 0 ? { role, slug: parsed.value } : { slug: parsed.value }
+		);
+	}
+
+	return { ok: true, value: tags };
 }

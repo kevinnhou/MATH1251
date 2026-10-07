@@ -7,7 +7,7 @@ import { toMarkdown } from "mdast-util-to-markdown";
 import type { Node } from "unist";
 import { visit } from "unist-util-visit";
 import type { VFile } from "vfile";
-import { isRecord } from "@/lib/result";
+import { isRecord, type ParseResult } from "@/lib/result";
 import {
 	getMathEnvConfig,
 	isSlugRequired,
@@ -22,12 +22,24 @@ import {
 	type PageSegment,
 	type RecallOccurrence,
 	recallId,
+	type ThreadOccurrence,
+	type ThreadTag,
+	threadId,
 } from "./page-envs";
-import { parseTenetSlug, parseTenetSlugList } from "./slug";
+import { parseTenetSlug, parseTenetSlugList, parseThreadTags } from "./slug";
 
-const METADATA_ATTRIBUTES = ["difficulty", "of", "see", "slug"] as const;
+const METADATA_ATTRIBUTES = [
+	"difficulty",
+	"of",
+	"see",
+	"slug",
+	"summary",
+	"thread",
+] as const;
 
 type FlowChild = MdxJsxFlowElement["children"][number];
+
+const CHILDREN_ONLY = { _stringify: "children-only" };
 
 export function remarkMathEnv() {
 	return (tree: Root, file: VFile) => {
@@ -40,22 +52,25 @@ function rewriteDocument(tree: Root, file: VFile): PageEnvs {
 	const entries: EnvOccurrence[] = [];
 	const recalls: RecallOccurrence[] = [];
 	const segments: PageSegment[] = [];
+	const threads: ThreadOccurrence[] = [];
 	const children: RootContent[] = [];
 	const counts = new Map<MathEnvKind, number>();
 	const recallCounts = new Map<string, number>();
 	const slugs = new Set<string>();
 	let prose: MdxJsxFlowElement | undefined;
 
-	const closeProse = () => {
-		if (prose === undefined) {
-			return;
-		}
-
-		const markdown = serializeMarkdown(prose.children as Root["children"]);
+	const pushProse = (node: MdxJsxFlowElement) => {
+		const markdown = serializeMarkdown(node.children as Root["children"]);
 		if (markdown.length > 0) {
 			segments.push({ markdown, type: "prose" });
 		}
-		prose = undefined;
+	};
+
+	const closeProse = () => {
+		if (prose !== undefined) {
+			pushProse(prose);
+			prose = undefined;
+		}
 	};
 
 	for (const child of tree.children) {
@@ -71,6 +86,18 @@ function rewriteDocument(tree: Root, file: VFile): PageEnvs {
 			children.push(
 				wrapper("KindFilter", [child as FlowChild], [attribute("kind", kind)])
 			);
+			continue;
+		}
+
+		if (isElement(child, "Thread")) {
+			closeProse();
+			threads.push(readThread(child, file, slugs));
+			pushProse(child);
+			child.data = {
+				...child.data,
+				...CHILDREN_ONLY,
+			} as MdxJsxFlowElement["data"];
+			children.push(wrapper("Prose", [child]));
 			continue;
 		}
 
@@ -98,7 +125,7 @@ function rewriteDocument(tree: Root, file: VFile): PageEnvs {
 
 	closeProse();
 	tree.children = children;
-	return { entries, recalls, segments };
+	return { entries, recalls, segments, threads };
 }
 
 function readEnv(
@@ -120,6 +147,7 @@ function readEnv(
 	const of = readSlugList(node, "of", file);
 	const see = readSlugList(node, "see", file);
 	const difficulty = readDifficulty(node, kind, file);
+	const threads = readThreadTags(node, file);
 	const { body, statement } = splitEnvMarkdown(node);
 
 	return {
@@ -128,6 +156,7 @@ function readEnv(
 		kind,
 		of,
 		see,
+		threads,
 		...(body ? { body } : {}),
 		...(difficulty ? { difficulty } : {}),
 		...(slug ? { slug } : {}),
@@ -142,31 +171,19 @@ function readSlug(
 	file: VFile,
 	seen: Set<string>
 ): string | undefined {
-	const value = stringAttribute(node, "slug");
-	if (value === undefined) {
-		if (isSlugRequired(kind)) {
-			file.fail(
-				`${getMathEnvConfig(kind).label} requires a static "slug" attribute.`,
-				node
-			);
-		}
-		return;
+	const slug = parseAttribute(node, "slug", parseTenetSlug, file);
+	if (slug === undefined) {
+		return isSlugRequired(kind)
+			? requiredAttribute(node, getMathEnvConfig(kind).label, "slug", file)
+			: undefined;
 	}
 
-	const parsed = parseTenetSlug(value);
-	if (!parsed.ok) {
-		file.fail(parsed.error, node);
+	if (seen.has(slug)) {
+		file.fail(`Tenet slug "${slug}" is already used on this page.`, node);
 	}
 
-	if (seen.has(parsed.value)) {
-		file.fail(
-			`Tenet slug "${parsed.value}" is already used on this page.`,
-			node
-		);
-	}
-
-	seen.add(parsed.value);
-	return parsed.value;
+	seen.add(slug);
+	return slug;
 }
 
 function readDifficulty(
@@ -174,21 +191,11 @@ function readDifficulty(
 	kind: MathEnvKind,
 	file: VFile
 ): EnvOccurrence["difficulty"] {
-	const value = stringAttribute(node, "difficulty");
-	if (value === undefined) {
-		return;
-	}
-
-	if (kind !== "example") {
+	if (kind !== "example" && stringAttribute(node, "difficulty") !== undefined) {
 		file.fail('Only Example accepts a "difficulty" attribute.', node);
 	}
 
-	const parsed = parseDifficulty(value);
-	if (!parsed.ok) {
-		file.fail(parsed.error, node);
-	}
-
-	return parsed.value;
+	return parseAttribute(node, "difficulty", parseDifficulty, file);
 }
 
 function readSlugList(
@@ -196,17 +203,46 @@ function readSlugList(
 	name: "of" | "see",
 	file: VFile
 ): string[] {
-	const value = stringAttribute(node, name);
-	if (value === undefined) {
-		return [];
+	return parseAttribute(node, name, parseTenetSlugList, file) ?? [];
+}
+
+function readThreadTags(node: MdxJsxFlowElement, file: VFile): ThreadTag[] {
+	return parseAttribute(node, "thread", parseThreadTags, file) ?? [];
+}
+
+function readThread(
+	node: MdxJsxFlowElement,
+	file: VFile,
+	seen: Set<string>
+): ThreadOccurrence {
+	assertStaticMetadata(node, file);
+
+	const slug =
+		parseAttribute(node, "slug", parseTenetSlug, file) ??
+		requiredAttribute(node, "Thread", "slug", file);
+	if (seen.has(slug)) {
+		file.fail(`Slug "${slug}" is already used on this page.`, node);
+	}
+	seen.add(slug);
+
+	const summary =
+		stringAttribute(node, "summary")?.trim() ||
+		requiredAttribute(node, "Thread", "summary", file);
+
+	const [first] = node.children;
+	if (first?.type !== "heading") {
+		file.fail("Thread must start with a heading, which is its title.", node);
 	}
 
-	const parsed = parseTenetSlugList(value);
-	if (!parsed.ok) {
-		file.fail(parsed.error, node);
-	}
+	const id = threadId(slug);
+	setAttribute(node, "id", id);
 
-	return parsed.value;
+	return {
+		id,
+		slug,
+		summary,
+		title: serializeMarkdown([{ children: first.children, type: "paragraph" }]),
+	};
 }
 
 function readRecall(
@@ -216,22 +252,16 @@ function readRecall(
 ): RecallOccurrence {
 	assertStaticMetadata(node, file);
 
-	const value = stringAttribute(node, "of");
-	if (value === undefined) {
-		file.fail('Recall requires a static "of" attribute.', node);
-	}
+	const of =
+		parseAttribute(node, "of", parseTenetSlug, file) ??
+		requiredAttribute(node, "Recall", "of", file);
 
-	const parsed = parseTenetSlug(value);
-	if (!parsed.ok) {
-		file.fail(parsed.error, node);
-	}
-
-	const index = (recallCounts.get(parsed.value) ?? 0) + 1;
-	recallCounts.set(parsed.value, index);
-	const id = recallId(parsed.value, index);
+	const index = (recallCounts.get(of) ?? 0) + 1;
+	recallCounts.set(of, index);
+	const id = recallId(of, index);
 	setAttribute(node, "id", id);
 
-	return { id, of: parsed.value };
+	return { id, of };
 }
 
 function envHeadings(node: MdxJsxFlowElement): EnvHeading[] {
@@ -301,6 +331,10 @@ function validateRootNesting(tree: Root, file: VFile) {
 		if (isElement(node, "Recall")) {
 			file.fail("Recall must be a direct child of the document.", node);
 		}
+
+		if (isElement(node, "Thread")) {
+			file.fail("Thread must be a direct child of the document.", node);
+		}
 	});
 }
 
@@ -357,6 +391,34 @@ function findAttribute(
 	);
 }
 
+function parseAttribute<T>(
+	node: MdxJsxFlowElement,
+	name: string,
+	parse: (value: string) => ParseResult<T>,
+	file: VFile
+): T | undefined {
+	const value = stringAttribute(node, name);
+	if (value === undefined) {
+		return;
+	}
+
+	const parsed = parse(value);
+	if (!parsed.ok) {
+		file.fail(parsed.error, node);
+	}
+
+	return parsed.value;
+}
+
+function requiredAttribute(
+	node: MdxJsxFlowElement,
+	element: string,
+	name: string,
+	file: VFile
+): never {
+	file.fail(`${element} requires a static "${name}" attribute.`, node);
+}
+
 function stringAttribute(
 	node: MdxJsxFlowElement,
 	name: string
@@ -386,7 +448,7 @@ function wrapper(
 	return {
 		attributes,
 		children,
-		data: { _stringify: "children-only" } as MdxJsxFlowElement["data"],
+		data: { ...CHILDREN_ONLY } as MdxJsxFlowElement["data"],
 		name,
 		type: "mdxJsxFlowElement",
 	};

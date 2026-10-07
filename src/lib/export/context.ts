@@ -6,6 +6,7 @@ import {
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
+	type ExportThread,
 	type PromptContext,
 	type PromptTarget,
 	RELATION_LABELS,
@@ -18,17 +19,21 @@ import {
 	pageOf,
 	prerequisites,
 	relationsOf,
+	requireNode,
+	threadsOf,
 } from "./query";
 
 const OUTGOING: readonly RelationName[] = [
 	"proves",
 	"uses",
+	"practises",
 	"recalls",
 	"references",
 	"see_also",
 ];
 const INCOMING: readonly RelationName[] = [
 	"used_by",
+	"practised_by",
 	"recalled_by",
 	"referenced_by",
 ];
@@ -64,6 +69,16 @@ export function kindViewTarget(view: ExportKindView): PromptTarget {
 	};
 }
 
+export function threadTarget(thread: ExportThread): PromptTarget {
+	return {
+		hasProof: false,
+		id: thread.id,
+		kind: "thread",
+		label: thread.label,
+		type: "thread",
+	};
+}
+
 export function envContext(
 	node: ExportNode,
 	graph: ExportGraph
@@ -80,7 +95,10 @@ export function envContext(
 
 	return promptContext(envTarget(node, graph), [
 		...tier("core", core),
-		...tier("relations", relationSummary(graph, node.id, OUTGOING)),
+		...tier("relations", [
+			...relationSummary(graph, node.id, OUTGOING),
+			...threadSummary(graph, node.id),
+		]),
 		...prerequisiteBlocks(graph, node.id),
 		...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
 	]);
@@ -122,6 +140,36 @@ export function kindViewContext(
 			)
 		),
 		...prerequisiteBlocks(graph, view.parentId),
+	]);
+}
+
+export function threadContext(
+	thread: ExportThread,
+	graph: ExportGraph
+): PromptContext {
+	const members = thread.members.map((member) => ({
+		node: requireNode(graph, member.id),
+		role: member.role,
+	}));
+	const places = members.map(({ node, role }, number) => {
+		const page = pageOf(graph, node);
+		const where = page === undefined ? "" : ` on "${page.label}"`;
+		return `${number + 1}. ${node.label}${inParentheses(role)}${where}`;
+	});
+
+	return promptContext(threadTarget(thread), [
+		...tier("core", [
+			`Thread "${thread.label}" (${thread.id}): one idea that recurs across the course.\nSummary: ${thread.summary}`,
+			`Places, in reading order:\n${places.join("\n")}`,
+		]),
+		...tier(
+			"details",
+			members.map(({ node, role }) =>
+				node.statement === undefined
+					? ""
+					: `${node.label}${inParentheses(role)}:\n${node.statement}`
+			)
+		),
 	]);
 }
 
@@ -179,6 +227,17 @@ function relationSummary(
 		([name, items]) =>
 			`${RELATION_LABELS[name]}: ${items.map((item) => item.node.label).join("; ")}.`
 	);
+}
+
+function threadSummary(graph: ExportGraph, id: string): string[] {
+	return threadsOf(graph, id).map(({ role, thread }) => {
+		const as = role === undefined ? "" : ` as ${role}`;
+		return `In the thread "${thread.label}"${as}: ${thread.summary}`;
+	});
+}
+
+function inParentheses(role: string | undefined): string {
+	return role === undefined ? "" : ` (${role})`;
 }
 
 function prerequisiteBlocks(graph: ExportGraph, id: string): ContextBlock[] {

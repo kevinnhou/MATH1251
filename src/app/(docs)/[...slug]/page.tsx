@@ -8,15 +8,16 @@ import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GraphHost } from "@/components/graph/view";
 import { InlineHtml } from "@/components/markdown/html";
 import { MarkdownLabel } from "@/components/markdown/label";
 import { getMDXComponents } from "@/components/mdx";
 import { LLMCopyButton } from "@/components/mdx/copy-markdown";
 import { PageActions } from "@/components/mdx/page-actions";
+import { ReadingDock } from "@/components/relations/dock";
 import { promptTargetFor } from "@/lib/export/corpus";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { getKindViewToc } from "@/lib/math-env/kind-view";
+import { buildPageDock } from "@/lib/relations/dock";
 import { gitConfig } from "@/lib/site/config";
 import { loadPageContent } from "@/lib/site/content";
 import {
@@ -39,6 +40,10 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 	const { body: MDX, toc } = await loadPageContent(page.path);
 	const view = resolved.kind === "kind-view" ? resolved.view : undefined;
 	const target = promptTargetFor(view?.url ?? page.url) ?? notFound();
+	const dock = buildPageDock(corpus, envs, {
+		title: page.data.title,
+		url: page.url,
+	});
 
 	return (
 		<DocsPage
@@ -70,24 +75,26 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 					<BackToNotes title={page.data.title} url={page.url} />
 				)}
 			</div>
-			{view === undefined ? <GraphHost pageUrl={page.url} /> : null}
-			<DocsBody data-graph-prose="">
+			<DocsBody data-prose="">
 				<MDX
 					components={getMDXComponents(
 						{
 							a: createRelativeLink(source, page),
 						},
 						{
+							courseIndex: corpus.courseIndex,
 							pageEnvs: envs,
 							pageTitle: page.data.title,
 							pageUrl: page.url,
 							promptTarget: promptTargetFor,
 							tenetIndex: corpus.tenets,
+							threadIndex: corpus.threads,
 							viewKind: view?.kind,
 						}
 					)}
 				/>
 			</DocsBody>
+			<ReadingDock dock={dock} key={page.url} />
 		</DocsPage>
 	);
 }

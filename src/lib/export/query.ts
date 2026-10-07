@@ -1,16 +1,16 @@
 import type { MathEnvKind } from "@/lib/math-env/kinds";
 import {
+	DEPENDENCY_EDGES,
 	type ExportEdgeKind,
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
+	type ExportThreadMembership,
 	RELATION_NAMES,
 	RELATION_ORDER,
 	type Relation,
 	type RelationName,
 } from "./model";
-
-const DEPENDENCY_EDGES: readonly ExportEdgeKind[] = ["uses", "proves"];
 
 export function requireNode(graph: ExportGraph, id: string): ExportNode {
 	const node = graph.nodes.get(id);
@@ -33,6 +33,13 @@ export function requireKindView(
 	return view;
 }
 
+export function threadsOf(
+	graph: ExportGraph,
+	id: string
+): readonly ExportThreadMembership[] {
+	return graph.threadsOf.get(id) ?? [];
+}
+
 function requirePosition(graph: ExportGraph, id: string): number {
 	const position = graph.position.get(id);
 	if (position === undefined) {
@@ -46,6 +53,10 @@ export function pagesOf(graph: ExportGraph): ExportNode[] {
 	return [...graph.nodes.values()]
 		.filter((node) => node.type === "page")
 		.toSorted((left, right) => left.id.localeCompare(right.id));
+}
+
+export function pageIdOf(node: ExportNode): string | undefined {
+	return node.type === "page" ? node.id : node.page;
 }
 
 export function pageOf(

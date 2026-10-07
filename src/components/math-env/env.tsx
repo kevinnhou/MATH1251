@@ -6,7 +6,7 @@ import type { EnvView } from "@/lib/math-env/env-meta";
 import { getMathEnvConfig } from "@/lib/math-env/kinds";
 import { Footnotes } from "./footnotes";
 import { EnvMark } from "./mark";
-import { EnvShare } from "./share";
+import { AskShare } from "./share";
 
 interface EnvProps {
 	children?: ReactNode;
@@ -67,8 +67,12 @@ export function Env({ children, env, markHref, markLinkLabel }: EnvProps) {
 	}
 
 	return (
-		<EnvShare target={env.prompt}>
+		<AskShare
+			className="absolute right-0 bottom-0"
+			group="math-env"
+			target={env.prompt}
+		>
 			{(rightClickHint) => renderEnv(rightClickHint)}
-		</EnvShare>
+		</AskShare>
 	);
 }

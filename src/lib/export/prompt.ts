@@ -88,6 +88,10 @@ export function subjectPhrase(target: PhraseTarget): string {
 		return "this page";
 	}
 
+	if (target.kind === "thread") {
+		return "this thread";
+	}
+
 	return target.type === "kind-view"
 		? `these ${getKindLabel(target.kind, true).toLowerCase()}`
 		: `this ${getKindLabel(target.kind).toLowerCase()}`;
@@ -182,6 +186,10 @@ function buildPrompt(request: PromptRequest): string {
 }
 
 function taskText(intent: PromptIntent, context: PromptContext): string {
+	if (context.type === "thread") {
+		return threadTaskText(intent);
+	}
+
 	const subject = context.type === "env" ? "this result" : "this material";
 	const example = context.kind === "example";
 
@@ -202,6 +210,19 @@ function taskText(intent: PromptIntent, context: PromptContext): string {
 			return example
 				? "Work through this example, explaining why each step is the natural one and which result from <context> it uses. Then ask what the student would like to explore further."
 				: "Explain this result: what it says, why it is true, which prerequisites it rests on and where it is used next. Work any derivation in full. Then ask what the student would like to go deeper on.";
+		default:
+			return intent satisfies never;
+	}
+}
+
+function threadTaskText(intent: PromptIntent): string {
+	switch (intent) {
+		case "quiz":
+			return "Quiz the student on the links between the places in <context>, one question at a time: name a setting and ask what plays each part of the shared idea there, or give two places and ask what carries over and what changes. Wait for each answer and give feedback before the next question.";
+		case "explain":
+		case "proof":
+		case "check":
+			return "<context> is a thread: one idea the course meets in several places. First state the shared idea in plain words and the intuition for why it keeps appearing. Then go through the places in order: for each, say what plays each part of the idea there, using its role and statement, and how it connects to the previous place. Say where the analogy stops working. End with a short summary of the common pattern, then ask which connection the student wants to explore.";
 		default:
 			return intent satisfies never;
 	}

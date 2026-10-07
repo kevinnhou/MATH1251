@@ -17,6 +17,10 @@ export interface ResolvedRef {
 	title: MarkdownFragment<"inline">;
 }
 
+export interface EnvRef extends ResolvedRef {
+	kind: MathEnvKind;
+}
+
 export interface Tenet {
 	difficulty?: ExampleDifficulty;
 	kind: MathEnvKind;
@@ -41,6 +45,17 @@ interface TenetSourcePage {
 
 export function getTenetHref(tenet: Tenet): string {
 	return `${tenet.pageUrl}#${tenet.occurrenceId}`;
+}
+
+export function toEnvRef(pageUrl: string, entry: EnvOccurrence): EnvRef {
+	return {
+		href: `${pageUrl}#${entry.id}`,
+		kind: entry.kind,
+		title: compileTitle(
+			entry.title,
+			entry.slug ?? getMathEnvConfig(entry.kind).label
+		),
+	};
 }
 
 function toResolvedRef(tenet: Tenet): ResolvedRef {
@@ -115,14 +130,11 @@ function collectCitations(
 
 	for (const { envs, page } of pages) {
 		for (const entry of envs.entries) {
-			addCitations(citedBy, [...entry.of, ...entry.see], {
-				href: `${page.url}#${entry.id}`,
-				kind: entry.kind,
-				title: compileTitle(
-					entry.title,
-					entry.slug ?? getMathEnvConfig(entry.kind).label
-				),
-			});
+			addCitations(
+				citedBy,
+				[...entry.of, ...entry.see],
+				toEnvRef(page.url, entry)
+			);
 		}
 
 		for (const recall of envs.recalls) {
