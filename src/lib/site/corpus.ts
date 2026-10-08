@@ -25,9 +25,9 @@ import {
 	type TenetIndex,
 } from "@/lib/math-env/tenet";
 import { createThreadIndex, type ThreadIndex } from "@/lib/math-env/thread";
-import { buildCourseMap, courseOrder } from "@/lib/relations/build";
-import { indexCourseMap, type MapIndex } from "@/lib/relations/query";
-import type { CourseMap } from "@/lib/relations/types";
+import { buildCourseIndex, courseOrder } from "@/lib/relations/build";
+import { buildThreadMap, type ThreadMap } from "@/lib/relations/thread-map";
+import type { CourseIndex } from "@/lib/relations/types";
 import { getSourcePages, type SourcePage, source } from "./source";
 
 export type ResolvedDocs = {
@@ -46,11 +46,11 @@ interface PageIndex {
 
 export interface Corpus extends PageIndex {
 	catalog: PageCatalog;
-	courseIndex: MapIndex;
-	courseMap: CourseMap;
+	courseIndex: CourseIndex;
 	exportGraph: ExportGraph;
 	routes: CourseRoutes;
 	tenets: TenetIndex;
+	threadMap: ThreadMap;
 	threads: ThreadIndex;
 }
 
@@ -93,16 +93,16 @@ export const getCorpus = memoInProduction((): Corpus => {
 		index.kindViews,
 		threads
 	);
-	const courseMap = buildCourseMap(order, exportGraph, threads);
+	const courseIndex = buildCourseIndex(order, exportGraph);
 
 	return {
 		...index,
 		catalog: buildCatalog(index.byUrl, exportGraph),
-		courseIndex: indexCourseMap(courseMap),
-		courseMap,
+		courseIndex,
 		exportGraph,
 		routes: buildRoutes(index),
 		tenets,
+		threadMap: buildThreadMap(courseIndex, threads, index.pages),
 		threads,
 	};
 });

@@ -22,7 +22,7 @@ export interface ThreadIndex {
 	bySlug: Map<string, Thread>;
 }
 
-interface ThreadSourcePage {
+export interface ThreadSourcePage {
 	envs: PageEnvs;
 	page: { url: string };
 }

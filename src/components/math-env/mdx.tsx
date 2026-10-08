@@ -19,19 +19,22 @@ import {
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import type { TenetIndex } from "@/lib/math-env/tenet";
 import type { ThreadIndex } from "@/lib/math-env/thread";
-import type { MapIndex } from "@/lib/relations/query";
+import type { ThreadMap as ThreadMapData } from "@/lib/relations/thread-map";
+import type { CourseIndex } from "@/lib/relations/types";
 import { Env } from "./env";
 import { Recall } from "./recall";
 import { Statement } from "./statement";
 import { ThreadSection } from "./thread";
+import { ThreadMap } from "./thread-map";
 
 export type MathEnvMdxOptions = KindViewRenderOptions & {
-	courseIndex?: MapIndex;
+	courseIndex?: CourseIndex;
 	pageEnvs?: PageEnvs;
 	pageTitle?: string;
 	promptTarget?: PromptTargetLookup;
 	tenetIndex?: TenetIndex;
 	threadIndex?: ThreadIndex;
+	threadMap?: ThreadMapData;
 };
 
 export function getMathEnvMdxComponents(
@@ -98,6 +101,8 @@ export function getMathEnvMdxComponents(
 				</ThreadSection>
 			);
 		},
+		ThreadMap: () =>
+			options.threadMap ? <ThreadMap map={options.threadMap} /> : null,
 	};
 
 	for (const kind of Object.keys(MATH_ENV_KINDS) as MathEnvKind[]) {

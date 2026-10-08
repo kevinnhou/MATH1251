@@ -89,6 +89,7 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 							promptTarget: promptTargetFor,
 							tenetIndex: corpus.tenets,
 							threadIndex: corpus.threads,
+							threadMap: corpus.threadMap,
 							viewKind: view?.kind,
 						}
 					)}

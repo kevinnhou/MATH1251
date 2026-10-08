@@ -101,6 +101,12 @@ function rewriteDocument(tree: Root, file: VFile): PageEnvs {
 			continue;
 		}
 
+		if (isElement(child, "ThreadMap")) {
+			closeProse();
+			children.push(wrapper("Prose", [child]));
+			continue;
+		}
+
 		if (isElement(child, "Recall")) {
 			closeProse();
 			const recall = readRecall(child, file, recallCounts);
@@ -315,6 +321,8 @@ function splitEnvMarkdown(node: MdxJsxFlowElement): {
 	};
 }
 
+const ROOT_ELEMENTS = ["Recall", "Thread", "ThreadMap"] as const;
+
 function validateRootNesting(tree: Root, file: VFile) {
 	visit(tree, "mdxJsxFlowElement", (node, _index, parent) => {
 		if (parent?.type === "root") {
@@ -328,12 +336,10 @@ function validateRootNesting(tree: Root, file: VFile) {
 			);
 		}
 
-		if (isElement(node, "Recall")) {
-			file.fail("Recall must be a direct child of the document.", node);
-		}
-
-		if (isElement(node, "Thread")) {
-			file.fail("Thread must be a direct child of the document.", node);
+		for (const name of ROOT_ELEMENTS) {
+			if (isElement(node, name)) {
+				file.fail(`${name} must be a direct child of the document.`, node);
+			}
 		}
 	});
 }

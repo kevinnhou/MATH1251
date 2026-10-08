@@ -3,18 +3,12 @@
 @import "fumadocs-ui/css/preset.css";
 
 :root {
-	--relations-strand-algebra: #ffadad;
-	--relations-strand-calculus: #a8c7e8;
-	--relations-strand-core: #74828a;
 	--relations-builds-on: #2a78d6;
 	--relations-leads-to: #eb6834;
 	--relations-thread: #1baf7a;
 }
 
 .dark {
-	--relations-strand-algebra: #af7178;
-	--relations-strand-calculus: #7a93ab;
-	--relations-strand-core: #74828a;
 	--relations-builds-on: #3987e5;
 	--relations-leads-to: #d95926;
 	--relations-thread: #199e70;
@@ -191,7 +185,7 @@ body:has([data-dock]) {
 	transform: none;
 }
 
-.math-env[data-dock-active="open"]::before {
+.math-env[data-dock-active="bay"]::before {
 	opacity: 0.8;
 }
 
@@ -380,6 +374,39 @@ body:has([data-dock]) {
 .md-fragment-block td {
 	padding: 0.2rem 0.5rem;
 	border: 1px solid var(--color-fd-border);
+}
+
+[data-thread-map] {
+	--tm-dot: color-mix(in oklab, var(--color-fd-foreground) 55%, transparent);
+	container: thread-map / inline-size;
+}
+
+[data-tm-row] {
+	display: flex;
+	flex-direction: column;
+}
+
+[data-tm-cell] {
+	display: contents;
+}
+
+[data-tm-strands],
+[data-tm-channel],
+[data-tm-cell][data-empty] {
+	display: none;
+}
+
+[data-tm-channel] {
+	height: var(--tm-channel);
+}
+
+[data-tm-dot] {
+	background: var(--tm-dot);
+	transition: background-color 200ms ease-out;
+}
+
+[data-thread-map][data-active] [data-tm-station] {
+	opacity: 0.35;
 }
 
 [data-relations-label] .md-fragment-inline .katex,
