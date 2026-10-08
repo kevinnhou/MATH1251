@@ -1,46 +1,51 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree";
-import { getStrand, type Strand } from "@/lib/course/strands";
-import type { ExportGraph } from "@/lib/export/model";
+import {
+	DEPENDENCY_EDGES,
+	type ExportEdgeKind,
+	type ExportGraph,
+} from "@/lib/export/model";
 import { pageIdOf } from "@/lib/export/query";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
-import type { ThreadIndex } from "@/lib/math-env/thread";
 import {
-	type CourseMap,
-	isPageLinkRelation,
-	type MapChapter,
-	type MapPage,
-	type MapThread,
-	type PageLink,
+	byDirection,
+	type CourseChapter,
+	type CourseIndex,
+	type CoursePage,
+	type CourseStrand,
+	type Direction,
 } from "./types";
 
-const VIA_LIMIT = 4;
-
-const STRAND_SHORT: Record<Strand, string> = {
-	algebra: "ALG",
-	calculus: "CALC",
-	core: "CORE",
-};
-
-const CHAPTER_PREFIX: Record<Strand, string> = {
-	algebra: "A",
-	calculus: "C",
-	core: "K",
-};
+const PAGE_LINK_RELATIONS: readonly ExportEdgeKind[] = [
+	...DEPENDENCY_EDGES,
+	"recalls",
+];
 
 export interface CourseOrder {
-	chapters: MapChapter[];
+	chapters: CourseChapter[];
 	order: { chapter: number; url: string }[];
+	strands: CourseStrand[];
 }
 
-export function buildCourseMap(
-	{ chapters, order }: CourseOrder,
-	graph: ExportGraph,
-	threads: ThreadIndex
-): CourseMap {
-	const pages = order.flatMap(({ chapter, url }): MapPage[] => {
+interface PageLink {
+	source: string;
+	target: string;
+	weight: number;
+}
+
+type LinkEnd = "source" | "target";
+
+const ENDS: Record<Direction, { from: LinkEnd; to: LinkEnd }> = {
+	"builds-on": { from: "source", to: "target" },
+	"leads-to": { from: "target", to: "source" },
+};
+
+export function buildCourseIndex(
+	{ chapters, order, strands }: CourseOrder,
+	graph: ExportGraph
+): CourseIndex {
+	const pages = order.flatMap(({ chapter, url }): CoursePage[] => {
 		const node = graph.nodes.get(url);
-		const module = chapters[chapter]?.module;
-		if (node?.type !== "page" || module === undefined) {
+		if (node?.type !== "page") {
 			return [];
 		}
 
@@ -48,38 +53,37 @@ export function buildCourseMap(
 			{
 				chapter,
 				id: url,
-				module,
 				title: compileMarkdownFragment(node.title, "inline"),
 			},
 		];
 	});
+	const pageById = new Map(pages.map((page) => [page.id, page]));
+	const position = new Map(pages.map((page, index) => [page.id, index]));
+	const links = pageLinks(graph, pageById);
+	const at = (id: string) => position.get(id) ?? -1;
 
-	return {
-		chapters,
-		links: pageLinks(graph, new Set(pages.map((page) => page.id))),
-		pages,
-		threads: mapThreads(threads),
-	};
-}
+	const neighbours = byDirection((direction) => {
+		const { from, to } = ENDS[direction];
+		const byPage = Map.groupBy(links, (link) => link[from]);
+		return new Map(
+			[...byPage].map(([id, list]) => [
+				id,
+				list
+					.toSorted(
+						(left, right) =>
+							right.weight - left.weight || at(left[to]) - at(right[to])
+					)
+					.flatMap((link) => pageById.get(link[to]) ?? []),
+			])
+		);
+	});
 
-function mapThreads(threads: ThreadIndex): MapThread[] {
-	return [...threads.bySlug.values()].map((thread) => ({
-		href: thread.href,
-		members: thread.members.map((member) => ({
-			href: member.href,
-			kind: member.kind,
-			page: member.pageUrl,
-			title: member.title,
-			...(member.role ? { role: member.role } : {}),
-		})),
-		slug: thread.slug,
-		summary: thread.summary,
-		title: thread.title,
-	}));
+	return { chapters, neighbours, pageById, pages, position, strands };
 }
 
 export function courseOrder(tree: Root): CourseOrder {
-	const chapters: MapChapter[] = [];
+	const strands: CourseStrand[] = [];
+	const chapters: CourseChapter[] = [];
 	const order: CourseOrder["order"] = [];
 	const seen = new Set<string>();
 
@@ -101,36 +105,37 @@ export function courseOrder(tree: Root): CourseOrder {
 		}
 	}
 
-	for (const strand of tree.children) {
-		if (strand.type !== "folder") {
+	for (const folder of tree.children) {
+		if (folder.type !== "folder") {
 			continue;
 		}
 
-		const module = strandOf(strand);
-		if (module === undefined) {
+		const strand = strandOf(folder);
+		if (strand === undefined) {
 			continue;
 		}
 
+		strands.push(strand);
 		const intro = chapters.length;
 		chapters.push({
-			id: strand.$id ?? module,
-			module,
-			short: STRAND_SHORT[module],
-			title: nameOf(strand),
+			id: folder.$id ?? strand.id,
+			number: 0,
+			strand: strand.id,
+			title: strand.title,
 		});
-		push(strand.index?.url, intro);
+		push(folder.index?.url, intro);
 
 		let number = 0;
-		for (const child of strand.children) {
+		for (const child of folder.children) {
 			if (child.type === "page") {
 				push(child.url, intro);
 			} else if (child.type === "folder") {
 				number += 1;
 				const chapter = chapters.length;
 				chapters.push({
-					id: child.$id ?? `${module}-${number}`,
-					module,
-					short: `${CHAPTER_PREFIX[module]}${number}`,
+					id: child.$id ?? `${strand.id}-${number}`,
+					number,
+					strand: strand.id,
 					title: nameOf(child),
 				});
 				push(child.index?.url, chapter);
@@ -139,11 +144,12 @@ export function courseOrder(tree: Root): CourseOrder {
 		}
 	}
 
-	return { chapters, order };
+	return { chapters, order, strands };
 }
 
-function strandOf(folder: Folder): Strand | undefined {
-	return getStrand((firstUrl(folder) ?? "").split("/").filter(Boolean));
+function strandOf(folder: Folder): CourseStrand | undefined {
+	const [id] = (firstUrl(folder) ?? "").split("/").filter(Boolean);
+	return id === undefined ? undefined : { id, title: nameOf(folder) || id };
 }
 
 function firstUrl(folder: Folder): string | undefined {
@@ -167,8 +173,11 @@ function nameOf(folder: Folder): string {
 	return typeof folder.name === "string" ? folder.name : "";
 }
 
-function pageLinks(graph: ExportGraph, pages: ReadonlySet<string>): PageLink[] {
-	const links = new Map<string, PageLink & { viaSet: Set<string> }>();
+function pageLinks(
+	graph: ExportGraph,
+	pages: ReadonlyMap<string, CoursePage>
+): PageLink[] {
+	const links = new Map<string, PageLink>();
 	const pageOfEnd = (id: string) => {
 		const node = graph.nodes.get(id);
 		const page = node && pageIdOf(node);
@@ -176,7 +185,7 @@ function pageLinks(graph: ExportGraph, pages: ReadonlySet<string>): PageLink[] {
 	};
 
 	for (const edge of graph.edges) {
-		if (!isPageLinkRelation(edge.kind)) {
+		if (!PAGE_LINK_RELATIONS.includes(edge.kind)) {
 			continue;
 		}
 
@@ -187,31 +196,10 @@ function pageLinks(graph: ExportGraph, pages: ReadonlySet<string>): PageLink[] {
 		}
 
 		const key = `${source}\0${target}`;
-		let link = links.get(key);
-		if (link === undefined) {
-			link = {
-				counts: {},
-				source,
-				target,
-				via: [],
-				viaSet: new Set(),
-				weight: 0,
-			};
-			links.set(key, link);
-		}
-
-		link.counts[edge.kind] = (link.counts[edge.kind] ?? 0) + 1;
+		const link = links.get(key) ?? { source, target, weight: 0 };
 		link.weight += 1;
-		const targetNode = graph.nodes.get(edge.target);
-		if (targetNode?.type === "env") {
-			link.viaSet.add(
-				compileMarkdownFragment(targetNode.label, "inline").plain
-			);
-		}
+		links.set(key, link);
 	}
 
-	return [...links.values()].map(({ viaSet, ...link }) => ({
-		...link,
-		via: [...viaSet].slice(0, VIA_LIMIT),
-	}));
+	return [...links.values()];
 }

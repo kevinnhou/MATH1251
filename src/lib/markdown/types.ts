@@ -22,6 +22,14 @@ const HTML_ESCAPES: Record<string, string> = {
 	">": "&gt;",
 };
 
+export function rendered<M extends MarkdownMode>({
+	html,
+	mode,
+	plain,
+}: RenderedMarkdown<M>): RenderedMarkdown<M> {
+	return { html, mode, plain };
+}
+
 export function plainInlineLabel(label: InlineLabel): string {
 	return typeof label === "string" ? label : label.plain;
 }

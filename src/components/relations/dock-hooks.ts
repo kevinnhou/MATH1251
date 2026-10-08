@@ -9,7 +9,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { ReadyRelations } from "@/lib/relations/types";
 import {
 	type Box,
 	distanceToBox,
@@ -33,7 +32,7 @@ const CORRIDOR = { dwell: 500, margin: 24, minSpeed: 0.2, minTravel: 40 };
 
 const PROXIMITY = { closeDelay: 320, openDelay: 100, radius: 48 } as const;
 
-export type DockState = "rest" | "bay" | "map";
+export type DockState = "rest" | "bay";
 
 export interface Corridor {
 	apex: Point | null;
@@ -56,25 +55,19 @@ function inCorridor({ apex, dock }: Corridor, { x, y }: Point): boolean {
 
 export function useDockState(
 	rootRef: RefObject<HTMLElement | null>,
-	relations: ReadyRelations | undefined,
 	corridor: Corridor
 ) {
-	const mapOpen = relations?.mapOpen ?? false;
 	const [pinned, setPinned] = useState(false);
 	const [keyboardFocus, setKeyboardFocus] = useState(false);
 	const [dismissed, setDismissed] = useState(false);
-	const near = useProximity(rootRef, corridor, !mapOpen);
+	const near = useProximity(rootRef, corridor);
 
 	if (dismissed && !near) {
 		setDismissed(false);
 	}
 
-	let state: DockState = "rest";
-	if (mapOpen) {
-		state = "map";
-	} else if ((near && !dismissed) || pinned || keyboardFocus) {
-		state = "bay";
-	}
+	const state: DockState =
+		(near && !dismissed) || pinned || keyboardFocus ? "bay" : "rest";
 
 	const dismiss = () => {
 		setPinned(false);
@@ -82,11 +75,6 @@ export function useDockState(
 	};
 
 	const onEscape = useEffectEvent(() => {
-		if (mapOpen) {
-			relations?.setMapOpen(false);
-			return;
-		}
-
 		dismiss();
 		const active = document.activeElement;
 		if (active instanceof HTMLElement && rootRef.current?.contains(active)) {
@@ -94,7 +82,7 @@ export function useDockState(
 		}
 	});
 
-	const open = state !== "rest";
+	const open = state === "bay";
 	useEffect(() => {
 		if (!open) {
 			return;
@@ -112,7 +100,7 @@ export function useDockState(
 	}, [open]);
 
 	return {
-		engaged: near || keyboardFocus || mapOpen,
+		engaged: near || keyboardFocus,
 		focusHandlers: {
 			onBlur: (event: FocusEvent<HTMLElement>) => {
 				if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -334,16 +322,14 @@ function underCursor(rect: DOMRect, cursor: Point): boolean {
 
 export function useProximity(
 	ref: RefObject<HTMLElement | null>,
-	corridor: Corridor,
-	enabled: boolean
+	corridor: Corridor
 ): boolean {
 	const { closeDelay, openDelay, radius } = PROXIMITY;
 	const [near, setNear] = useState(false);
 
 	useEffect(() => {
 		const element = ref.current;
-		if (!(enabled && element)) {
-			setNear(false);
+		if (!element) {
 			return;
 		}
 
@@ -404,7 +390,7 @@ export function useProximity(
 			unsubscribe();
 			window.removeEventListener("resize", measure);
 		};
-	}, [corridor, enabled, ref]);
+	}, [corridor, ref]);
 
 	return near;
 }

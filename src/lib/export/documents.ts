@@ -2,7 +2,6 @@ import { STRAND_LABELS, STRANDS } from "@/lib/course/strands";
 import { getKindLabel, type MathEnvKind } from "@/lib/math-env/kinds";
 import {
 	catalogRoute,
-	courseMapRoute,
 	docsContextRoute,
 	exportGraphRoute,
 	llmsFullRoute,
@@ -207,7 +206,6 @@ export function indexDocument(graph: ExportGraph): string {
 		`- [Knowledge graph](${exportGraphRoute}): every node and typed edge as JSON`,
 		`- [Full notes](${llmsFullRoute}): every page document concatenated`,
 		`- [Catalog](${catalogRoute}): page and kind-view index used by site search`,
-		`- [Course map](${courseMapRoute}): pages in reading order and the page-to-page dependencies behind the site's course map`,
 	];
 
 	if (graph.threads.size > 0) {

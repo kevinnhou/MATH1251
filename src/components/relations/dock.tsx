@@ -11,7 +11,7 @@ import {
 	useRef,
 } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { useRelations } from "@/components/relations/provider";
+import { usePublishDock } from "@/components/relations/provider";
 import { cn } from "@/lib/cn";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import {
@@ -25,6 +25,7 @@ import {
 	type DockThread,
 	type PageDock,
 } from "@/lib/relations/types";
+import { DIRECTION_COLORS, MUTED_COLOR, THREAD_COLOR } from "./colors";
 import {
 	type DockState,
 	useActiveAnchor,
@@ -32,13 +33,8 @@ import {
 	useCorridor,
 	useDockState,
 } from "./dock-hooks";
-import { DIRECTION_COLORS, MUTED_COLOR, THREAD_COLOR } from "./parts";
-import { MapPanel } from "./view";
 
-const WIDTHS: Record<"dock" | "map", string> = {
-	dock: "w-[min(19rem,calc(100vw-2.5rem))]",
-	map: "w-[min(60rem,calc(100vw-1rem))]",
-};
+const WIDTH = "w-[min(19rem,calc(100vw-2.5rem))]";
 
 interface DockSubject {
 	bay: ReactNode;
@@ -54,14 +50,12 @@ interface SubjectStrip extends DockStrip {
 }
 
 export function ReadingDock({ dock }: { dock: PageDock }) {
-	const relations = useRelations();
-	const ready = relations.status === "ready" ? relations : undefined;
+	usePublishDock(dock);
 	const rootRef = useRef<HTMLElement>(null);
 	const bayId = useId();
 	const corridor = useCorridor();
 	const { engaged, focusHandlers, state, toggleBay } = useDockState(
 		rootRef,
-		ready,
 		corridor
 	);
 	const anchors = useMemo(
@@ -75,8 +69,7 @@ export function ReadingDock({ dock }: { dock: PageDock }) {
 	const subject = subjectAt(dock, activeAnchor);
 	const [restRef, restHeight] = useBoxHeight();
 	const [bayRef, bayHeight] = useBoxHeight();
-	const [mapRef, mapHeight] = useBoxHeight();
-	const map = state === "map" ? ready : undefined;
+	const open = state === "bay";
 	useActiveMark(activeAnchor, state);
 
 	return (
@@ -91,46 +84,22 @@ export function ReadingDock({ dock }: { dock: PageDock }) {
 			<span aria-hidden="true" data-dock-corner="left" />
 			<div
 				className={cn(
-					"flex flex-col items-end justify-end overflow-hidden text-fd-foreground transition-[width,height] duration-200 ease-out motion-reduce:transition-none",
-					map ? WIDTHS.map : WIDTHS.dock
+					"flex flex-col items-end justify-end overflow-hidden text-fd-foreground transition-[height] duration-200 ease-out motion-reduce:transition-none",
+					WIDTH
 				)}
 				data-dock-surface=""
-				style={{
-					height: surfaceHeight(state, {
-						bay: bayHeight,
-						map: mapHeight,
-						rest: restHeight,
-					}),
-				}}
+				style={{ height: surfaceHeight(open, restHeight, bayHeight) }}
 			>
-				{map ? (
-					<div
-						className={cn(
-							"max-h-[min(80vh,46rem)] shrink-0 overflow-y-auto p-4",
-							WIDTHS.map
-						)}
-						ref={mapRef}
-					>
-						<MapPanel relations={map} />
-					</div>
-				) : (
-					<div className={cn("relative shrink-0", WIDTHS.dock)} ref={restRef}>
-						<Bay
-							id={bayId}
-							onOpenMap={ready ? () => ready.setMapOpen(true) : undefined}
-							open={state === "bay"}
-							ref={bayRef}
-							subject={subject}
-						/>
-						<RestBar
-							bayId={bayId}
-							course={dock.course}
-							expanded={state === "bay"}
-							onToggle={toggleBay}
-							subject={subject}
-						/>
-					</div>
-				)}
+				<div className={cn("relative shrink-0", WIDTH)} ref={restRef}>
+					<Bay id={bayId} open={open} ref={bayRef} subject={subject} />
+					<RestBar
+						bayId={bayId}
+						course={dock.course}
+						expanded={open}
+						onToggle={toggleBay}
+						subject={subject}
+					/>
+				</div>
 			</div>
 		</aside>
 	);
@@ -138,13 +107,11 @@ export function ReadingDock({ dock }: { dock: PageDock }) {
 
 function Bay({
 	id,
-	onOpenMap,
 	open,
 	ref,
 	subject,
 }: {
 	id: string;
-	onOpenMap: (() => void) | undefined;
 	open: boolean;
 	ref: RefCallback<HTMLDivElement>;
 	subject: DockSubject;
@@ -157,7 +124,7 @@ function Bay({
 			ref={ref}
 			style={{ opacity: open ? 1 : 0 }}
 		>
-			<div className="flex max-h-[min(60vh,32rem)] flex-col gap-3 overflow-y-auto px-4 pt-4 pb-1">
+			<div className="max-h-[min(60vh,32rem)] overflow-y-auto px-4 pt-4 pb-1">
 				<div
 					className="flex flex-col gap-2.5 text-[12px] text-fd-muted-foreground leading-relaxed"
 					data-dock-swap=""
@@ -165,39 +132,27 @@ function Bay({
 				>
 					{subject.bay}
 				</div>
-				{onOpenMap ? (
-					<button
-						className="self-start text-[11px] text-fd-muted-foreground outline-none hover:text-fd-foreground focus-visible:outline-1 focus-visible:outline-fd-foreground"
-						onClick={onOpenMap}
-						type="button"
-					>
-						Course map →
-					</button>
-				) : null}
 			</div>
 		</div>
 	);
 }
 
 function surfaceHeight(
-	state: DockState,
-	heights: Record<DockState, number | undefined>
+	open: boolean,
+	rest: number | undefined,
+	bay: number | undefined
 ): number | undefined {
-	if (state !== "bay") {
-		return heights[state];
+	if (!open) {
+		return rest;
 	}
 
-	const { bay, rest } = heights;
 	return rest === undefined || bay === undefined ? undefined : rest + bay;
 }
 
 function useActiveMark(anchor: string | null, state: DockState) {
 	useEffect(() => {
 		const element = anchor === null ? null : document.getElementById(anchor);
-		element?.setAttribute(
-			"data-dock-active",
-			state === "rest" ? "rest" : "open"
-		);
+		element?.setAttribute("data-dock-active", state);
 		return () => element?.removeAttribute("data-dock-active");
 	}, [anchor, state]);
 }

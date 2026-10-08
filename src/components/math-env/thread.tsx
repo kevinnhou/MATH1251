@@ -6,13 +6,13 @@ import { getMathEnvConfig } from "@/lib/math-env/kinds";
 import type { StatementView } from "@/lib/math-env/statement-html";
 import type { TenetIndex } from "@/lib/math-env/tenet";
 import type { Thread, ThreadMember } from "@/lib/math-env/thread";
-import { chapterOfId, type MapIndex } from "@/lib/relations/query";
-import type { MapChapter } from "@/lib/relations/types";
+import { chapterOfId } from "@/lib/relations/query";
+import type { CourseChapter, CourseIndex } from "@/lib/relations/types";
 import { StatementHtml } from "./statement";
 import { ThreadFrame } from "./thread-compare";
 
 interface Station {
-	chapter?: MapChapter;
+	chapter?: CourseChapter;
 	member: ThreadMember;
 	statement?: StatementView;
 }
@@ -26,7 +26,7 @@ export function ThreadSection({
 	thread,
 }: {
 	children?: ReactNode;
-	courseIndex?: MapIndex;
+	courseIndex?: CourseIndex;
 	id?: string;
 	target?: PromptTarget;
 	tenets?: TenetIndex;
@@ -75,7 +75,7 @@ function segmentTo(
 	if (next === undefined) {
 		return;
 	}
-	return next.chapter?.module === station.chapter?.module ? "solid" : "dashed";
+	return next.chapter?.strand === station.chapter?.strand ? "solid" : "dashed";
 }
 
 const REVEAL =

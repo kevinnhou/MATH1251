@@ -11,16 +11,18 @@ import {
 	relationsOf,
 } from "@/lib/export/query";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
+import { type RenderedMarkdown, rendered } from "@/lib/markdown/types";
 import { type PageEnvs, threadId } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
-import { chapterOfId, hasMemberOn, type MapIndex, neighbours } from "./query";
+import type { Thread, ThreadIndex } from "@/lib/math-env/thread";
+import { chapterOfId, neighbours } from "./query";
 import {
 	byDirection,
+	type CourseIndex,
 	type DockEnv,
 	type DockList,
 	type DockRef,
 	type DockThread,
-	type MapThread,
 	type PageDock,
 } from "./types";
 
@@ -31,20 +33,22 @@ const PAGE_LIST_LIMIT = 5;
 const THREAD_MEMBER_LIMIT = 8;
 
 interface DockSources {
-	courseIndex: MapIndex;
+	courseIndex: CourseIndex;
 	exportGraph: ExportGraph;
 	tenets: TenetIndex;
+	threads: ThreadIndex;
 }
 
 interface DockContext {
 	chapter: string | undefined;
 	graph: ExportGraph;
-	index: MapIndex;
+	index: CourseIndex;
 	pageUrl: string;
+	threads: readonly Thread[];
 }
 
 export function buildPageDock(
-	{ courseIndex: index, exportGraph: graph, tenets }: DockSources,
+	{ courseIndex: index, exportGraph: graph, tenets, threads }: DockSources,
 	envs: PageEnvs,
 	page: { title: string; url: string }
 ): PageDock {
@@ -53,6 +57,7 @@ export function buildPageDock(
 		graph,
 		index,
 		pageUrl: page.url,
+		threads: [...threads.bySlug.values()],
 	};
 	const own = envs.entries.flatMap((entry) => {
 		const node = graph.nodes.get(envId(page.url, entry.id));
@@ -77,25 +82,25 @@ export function buildPageDock(
 		envs: [...own, ...recalled],
 		page: {
 			links: byDirection((direction) =>
-				refList(links[direction], PAGE_LIST_LIMIT, ({ page: other }) => ({
+				refList(links[direction], PAGE_LIST_LIMIT, (other) => ({
 					id: other.id,
-					title: other.title,
+					title: rendered(other.title),
 					...placeOf(ctx, other.id),
 				}))
 			),
 			strip: byDirection((direction) =>
 				positions(
 					ctx,
-					links[direction].map(({ page: other }) => other.id)
+					links[direction].map((other) => other.id)
 				)
 			),
-			title: compileMarkdownFragment(page.title, "inline"),
+			title: inline(page.title),
 		},
-		threads: index.threads
+		threads: ctx.threads
 			.filter(
 				(thread) =>
-					threadAnchor(ctx, thread) !== undefined ||
-					hasMemberOn(thread, page.url)
+					thread.pageUrl === page.url ||
+					thread.members.some((member) => member.pageUrl === page.url)
 			)
 			.map((thread) => dockThread(ctx, thread)),
 	};
@@ -103,7 +108,7 @@ export function buildPageDock(
 
 function dockThread(
 	ctx: DockContext,
-	thread: MapThread,
+	thread: Thread,
 	exclude?: string
 ): DockThread {
 	const members = thread.members.filter((member) => member.href !== exclude);
@@ -113,24 +118,23 @@ function dockThread(
 		href: thread.href,
 		members: refList(members, THREAD_MEMBER_LIMIT, (member) => ({
 			id: member.href,
-			title: member.title,
-			...placeOf(ctx, member.page),
-			...(member.role ? { role: member.role } : {}),
+			title: rendered(member.title),
+			...placeOf(ctx, member.pageUrl),
+			...(member.role ? { role: rendered(member.role) } : {}),
 		})),
 		positions: positions(
 			ctx,
-			members.map((member) => member.page)
+			members.map((member) => member.pageUrl)
 		),
 		slug: thread.slug,
-		summary: thread.summary,
-		title: thread.title,
+		summary: rendered(thread.summary),
+		title: rendered(thread.title),
 		...(anchor ? { anchor } : {}),
 	};
 }
 
-function threadAnchor(ctx: DockContext, thread: MapThread): string | undefined {
-	const anchor = threadId(thread.slug);
-	return thread.href === `${ctx.pageUrl}#${anchor}` ? anchor : undefined;
+function threadAnchor(ctx: DockContext, thread: Thread): string | undefined {
+	return thread.pageUrl === ctx.pageUrl ? threadId(thread.slug) : undefined;
 }
 
 function dockEnv(
@@ -156,12 +160,12 @@ function dockEnv(
 			"builds-on": positions(ctx, needs.map(pageIdOf)),
 			"leads-to": positions(ctx, [...leadsTo, ...practisedIn].map(pageIdOf)),
 		},
-		threads: ctx.index.threads
+		threads: ctx.threads
 			.filter((thread) =>
 				thread.members.some((member) => member.href === node.id)
 			)
 			.map((thread) => dockThread(ctx, thread, node.id)),
-		title: compileMarkdownFragment(node.title || node.label, "inline"),
+		title: inline(node.title || node.label),
 	};
 }
 
@@ -192,7 +196,7 @@ function dockRef(ctx: DockContext, node: ExportNode): DockRef {
 
 	return {
 		id: node.id,
-		title: compileMarkdownFragment(source, "inline"),
+		title: inline(source),
 		...placeOf(ctx, pageId),
 		...(node.difficulty ? { difficulty: node.difficulty } : {}),
 	};
@@ -213,4 +217,8 @@ function positions(
 		const position = id === undefined ? undefined : ctx.index.position.get(id);
 		return position === undefined ? [] : [position];
 	});
+}
+
+function inline(source: string): RenderedMarkdown<"inline"> {
+	return rendered(compileMarkdownFragment(source, "inline"));
 }

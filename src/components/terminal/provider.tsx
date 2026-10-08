@@ -16,7 +16,7 @@ import {
 	useState,
 } from "react";
 import { useCurrentRoute } from "@/components/course/provider";
-import { useRelations } from "@/components/relations/provider";
+import { useCurrentDock } from "@/components/relations/provider";
 import { useResource } from "@/lib/client/resource";
 import { currentPagesFromUrl } from "@/lib/course/catalog";
 import { catalogResource } from "@/lib/course/client";
@@ -112,7 +112,7 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 	const catalog = useResource(catalogResource);
 	const router = useRouter();
 	const { inCatalog: inCourse, url: routeUrl } = useCurrentRoute();
-	const relations = useRelations();
+	const dock = useCurrentDock();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const outputRef = useRef<HTMLDivElement>(null);
 	const abortRef = useRef<AbortController | null>(null);
@@ -139,12 +139,10 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 				current: currentPagesFromUrl(catalog.value, routeUrl),
 				cwd: location.cwd,
 				parsed,
-				relations,
 			})
 		);
 	}, [
 		catalog,
-		relations,
 		location.cwd,
 		parsed,
 		routeUrl,
@@ -222,10 +220,10 @@ export function TerminalProvider({ children }: { children: ReactNode }) {
 			},
 			cwd: location.cwd,
 			dispatch,
+			dock,
 			historyEntries: state.history.entries,
 			navigate: (url) => router.push(url),
 			publishOutput,
-			relations,
 			route: routeUrl,
 		});
 

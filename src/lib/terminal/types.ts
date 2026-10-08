@@ -5,7 +5,7 @@ import type {
 } from "@/lib/course/catalog";
 import type { OpenPromptRequest, OpenPromptResult } from "@/lib/export/client";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
-import type { RelationsRuntime } from "@/lib/relations/types";
+import type { PageDock } from "@/lib/relations/types";
 
 export const TERMINAL_HISTORY_LIMIT = 50;
 export const TERMINAL_HISTORY_KEY = "math1251-terminal-history";
@@ -104,10 +104,10 @@ export interface CompleteContext {
 	current: CurrentPages;
 	cwd: string;
 	parsed: ParsedLine;
-	relations: RelationsRuntime;
 }
 
 export interface ExecuteContext extends CompleteContext {
+	dock: PageDock | undefined;
 	runtime: CommandRuntime;
 	signal: AbortSignal;
 }
