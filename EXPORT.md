@@ -23,7 +23,7 @@ src/lib/export/              export logic (pure except corpus.ts and the client 
   use-prompt.ts              React hook: remembered intent and provider, launch, blocked pop-up state
   use-copy.ts                React hook: copy a node's Markdown, with copying/copied/failed status
 
-src/lib/site/corpus.ts       builds exportGraph once, then the course map and its MapIndex (RELATIONS.md) and catalog from it
+src/lib/site/corpus.ts       builds exportGraph once, then the CourseIndex and thread map (RELATIONS.md) and catalog from it
 src/lib/site/config.ts       docsContentRoute, docsContextRoute, exportGraphRoute, llmsFullRoute
 
 src/app/llms.mdx/docs/[[...slug]]/route.ts      Markdown per node

@@ -37,7 +37,7 @@ src/app/api/search/route.ts search endpoint (`format=terminal`)
 
 `src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `RelationsProvider` ›
 `TerminalProvider` › `VirtualDocsLayout`. The terminal sits above the Fumadocs
-layout, so it can serve the course map and the page, while the sidebar lives inside
+layout, so it can read the page's relations and the page, while the sidebar lives inside
 the layout.
 
 The terminal works from two sources of course data (see COMPILE.md §10):
@@ -64,7 +64,7 @@ The terminal works from two sources of course data (see COMPILE.md §10):
 | `pwd` | Prints the working directory |
 | `md <page\|.>` | Shows the page's Markdown source |
 | `gpt`, `claude`, `cursor [explain\|proof\|quiz\|check] <page\|.>` | Opens the page in that assistant with that prompt (default `explain`); Tab offers the intents first |
-| `relations [view <arcs\|matrix\|ladder\|threads>\|focus <page>\|reset]` | Opens and drives the course map in the reading dock; with no argument, lists what the focused page builds on and leads to |
+| `relations` | Lists what the current page builds on and leads to, and the threads through it |
 | `help` | Lists commands |
 | `clear` | Clears output |
 | anything else | Full-text search; matching pages replace the tree |
@@ -236,7 +236,7 @@ each feature keeps its own window listener and ordering never matters.
 | ⌘K / Ctrl+K | terminal | anywhere except other text fields | Focus the prompt |
 | `1`–`9`, `0` | sidebar | anywhere outside a text field | Leave output, reveal the sidebar, focus that top-level section (in a chapter: that page) |
 | Esc | terminal | prompt unfocused, something to dismiss | Dismiss one layer |
-| Esc | reading dock | dock open (capture phase) | Close the map, or the bay |
+| Esc | reading dock | bay open (capture phase) | Close the bay |
 | printable keys, ↑/↓, paste | terminal | output showing, no text selected | Continue in the prompt (digits excluded) |
 | ↑↓←→ / WASD | tree | a tree row focused | Move; ←/→ fold and unfold |
 | Space | tree | a link row focused | Open |

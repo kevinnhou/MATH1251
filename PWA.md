@@ -9,7 +9,6 @@ src/app/manifest.ts                web app manifest
 src/app/pwa-icon/                  generated app icons
 src/app/(docs)/~offline/page.tsx   offline page
 src/app/catalog.json/route.ts      full page catalog
-src/app/relations.json/route.ts    course map
 
 src/components/pwa/
   provider.tsx     registers the worker; saves pages on in-app navigation
@@ -18,7 +17,7 @@ src/components/pwa/
 
 src/lib/site/config.ts       routes (shared with the worker)
 src/lib/pwa/protocol.ts      cache names, page request marker, network status message (shared with the worker)
-src/lib/client/resource.ts   jsonResource and useResource (catalog, course map)
+src/lib/client/resource.ts   jsonResource and useResource (catalog)
 ```
 
 The worker is disabled in dev.
@@ -34,7 +33,7 @@ Rules match in order. Anything unmatched goes straight to the network
 | `/_next/static/*`                   | cache first                | `static`             | 30 days since last use, 400 entries |
 | RSC requests (`RSC: 1`)             | network only, 5 s timeout  | none                 |                                     |
 | navigations and page saves          | network first, 3 s timeout | `pages`              | 30 days since last use, 150 entries |
-| `/catalog.json`, `/relations.json` | network first, 3 s timeout | `data`               | latest copy                         |
+| `/catalog.json`                     | network first, 3 s timeout | `data`               | latest copy                         |
 | `/~offline`                         | precache                   | `serwist-precache-*` | replaced each build                 |
 
 
@@ -50,7 +49,7 @@ rule answers from cache.
 ## Lifecycle
 
 - **Install:** fetches every `/_next/static` file in the build manifest and
-both data routes through their runtime rules (~2.2 MB of static files). This
+the data route (`/catalog.json`) through its runtime rule (~2.2 MB of static files). This
 matters because the first visit happens before the worker is in control, so
 none of its requests pass through it.
 - **Activate:** `skipWaiting` and `clientsClaim` take over at once. Caches not
