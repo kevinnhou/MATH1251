@@ -28,3 +28,28 @@ export function sectionHotkey(event: KeyboardEvent): number | null {
 
 	return event.key === "0" ? 9 : Number(event.key) - 1;
 }
+
+export type Move = "up" | "down" | "left" | "right";
+
+const MOVES: Record<string, Move> = {
+	ArrowDown: "down",
+	ArrowLeft: "left",
+	ArrowRight: "right",
+	ArrowUp: "up",
+	a: "left",
+	d: "right",
+	s: "down",
+	w: "up",
+};
+
+// Arrows and WASD, for widgets that own them while focused (sidebar tree,
+// route strip, thread map). Nothing listens for these on the window.
+export function moveKey(event: KeyboardEvent): Move | null {
+	if (isModifiedKey(event) || event.shiftKey) {
+		return null;
+	}
+
+	return (
+		MOVES[event.key.length === 1 ? event.key.toLowerCase() : event.key] ?? null
+	);
+}

@@ -1,4 +1,5 @@
 import { isModifiedKey } from "@/lib/client/actions";
+import { type Move, moveKey } from "@/lib/client/keybinds";
 
 export const TREE = {
 	folder: "[data-tree-folder]",
@@ -10,15 +11,11 @@ export const TREE = {
 	toggle: ":scope > [data-tree-header] [data-tree-toggle]",
 } as const;
 
-const MOVES: Record<string, "up" | "down" | "out" | "in"> = {
-	ArrowDown: "down",
-	ArrowLeft: "out",
-	ArrowRight: "in",
-	ArrowUp: "up",
-	a: "out",
-	d: "in",
-	s: "down",
-	w: "up",
+const TREE_MOVES: Record<Move, "up" | "down" | "out" | "in"> = {
+	down: "down",
+	left: "out",
+	right: "in",
+	up: "up",
 };
 
 export function handleTreeKey(
@@ -46,11 +43,12 @@ export function handleTreeKey(
 		return;
 	}
 
-	const move =
-		MOVES[event.key.length === 1 ? event.key.toLowerCase() : event.key];
-	if (!move) {
+	const key = moveKey(event.nativeEvent);
+	if (key === null) {
 		return;
 	}
+
+	const move = TREE_MOVES[key];
 
 	event.preventDefault();
 	const target = resolveMove(move, row, root);

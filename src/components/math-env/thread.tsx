@@ -11,7 +11,7 @@ import type { CourseChapter, CourseIndex } from "@/lib/relations/types";
 import { StatementHtml } from "./statement";
 import { ThreadFrame } from "./thread-compare";
 
-interface Station {
+export interface Station {
 	chapter?: CourseChapter;
 	member: ThreadMember;
 	statement?: StatementView;
@@ -32,39 +32,48 @@ export function ThreadSection({
 	tenets?: TenetIndex;
 	thread?: Thread;
 }) {
-	const stations = (thread?.members ?? []).map(
-		(member): Station => ({
-			chapter: courseIndex && chapterOfId(courseIndex, member.pageUrl),
-			member,
-			statement: member.slug
-				? tenets?.bySlug.get(member.slug)?.statementView
-				: undefined,
-		})
-	);
+	const stations = thread ? threadStations(thread, courseIndex, tenets) : [];
 
 	return (
 		<ThreadFrame
 			count={stations.length}
 			id={id}
-			spine={
-				<ol className="m-0 list-none px-0 pt-4 pb-0">
-					{stations.map((station, number) => (
-						<ThreadStation
-							key={station.member.href}
-							newChapter={
-								stations[number - 1]?.chapter?.id !== station.chapter?.id
-							}
-							number={number}
-							segment={segmentTo(station, stations[number + 1])}
-							station={station}
-						/>
-					))}
-				</ol>
-			}
+			spine={<ThreadSpine stations={stations} />}
 			target={target}
 		>
 			{children}
 		</ThreadFrame>
+	);
+}
+
+export function threadStations(
+	thread: Thread,
+	courseIndex?: CourseIndex,
+	tenets?: TenetIndex
+): Station[] {
+	return thread.members.map((member) => ({
+		chapter: courseIndex && chapterOfId(courseIndex, member.pageUrl),
+		member,
+		statement: member.slug
+			? tenets?.bySlug.get(member.slug)?.statementView
+			: undefined,
+	}));
+}
+
+// The stations are hidden until an ancestor `group/spine` has `data-open`.
+export function ThreadSpine({ stations }: { stations: readonly Station[] }) {
+	return (
+		<ol className="m-0 list-none px-0 pt-4 pb-0">
+			{stations.map((station, number) => (
+				<ThreadStation
+					key={station.member.href}
+					newChapter={stations[number - 1]?.chapter?.id !== station.chapter?.id}
+					number={number}
+					segment={segmentTo(station, stations[number + 1])}
+					station={station}
+				/>
+			))}
+		</ol>
 	);
 }
 
@@ -95,6 +104,7 @@ function ThreadStation({
 	return (
 		<li
 			className="group/station grid grid-cols-[0.75rem_minmax(0,1fr)] gap-x-3"
+			data-href={member.href}
 			data-station=""
 			style={{ "--station": number } as CSSProperties}
 		>

@@ -10,9 +10,11 @@ course. Two kinds of relation:
 The site shows them in two places:
 
 - the **reading dock**, a cutout in the bottom-right corner of every page that
-  follows the environment being read and shows its dependencies and threads;
-- the **thread map** on `/core`: every thread as a line through the course,
-  strands side by side and chapters as rows.
+  follows the environment being read and shows its dependencies, and each of
+  its threads as a summary and a small route you can move along;
+- the **threads page**, `/threads` and `/threads/<slug>`: every thread as a
+  line through the course, strands side by side and chapters as rows, with
+  threads focused or not. `/core` lists the threads and links into it.
 
 Each thread's own section also compares its members' statements.
 
@@ -39,7 +41,7 @@ src/lib/relations/                 relation views (pure)
   build.ts                         page tree + export graph > CourseIndex (server), PAGE_LINK_RELATIONS
   dock.ts                          page envs + CourseIndex + ThreadIndex > PageDock (server)
   query.ts                         neighbours, chapterOfId
-  thread-map.ts                    CourseIndex + ThreadIndex > ThreadMap (server)
+  thread-map.ts                    CourseIndex + ThreadIndex > ThreadMap and each thread's route (server)
 
 src/components/relations/
   provider.tsx                     holds the current page's PageDock for the terminal
@@ -48,13 +50,20 @@ src/components/relations/
   pointer.ts                       shared mouse tracker (position, velocity) and its geometry
   colors.ts                        relation colours
 
-src/components/math-env/thread.tsx ThreadSection: a `<Thread>` with its COMPARE spine
+src/components/math-env/thread.tsx ThreadSection: a `<Thread>` with its COMPARE spine; threadStations, ThreadSpine
 src/components/math-env/thread-compare.tsx  ThreadFrame (section + right-click ask) and ThreadCompare (toggle, reveal)
-src/components/math-env/thread-map.tsx      ThreadMap: rows, cells and stations (server)
-src/components/math-env/thread-map-frame.tsx ThreadMapFrame: key, highlighting and the lines (client)
-src/components/math-env/thread-map-lines.ts  lane and channel sizes, traceRoutes: measured dots > one path per thread
+
+src/components/threads/
+  route-track.tsx                  RouteTrack: a route drawn as lanes and stops (server-safe, no state)
+  route-strip.tsx                  RouteStrip: a RouteTrack with a cursor and keys, linking to the threads page (client)
+  thread-list.tsx                  ThreadList: `<ThreadMap />` on /core, an index linking to /threads/<slug>
+  page.tsx                         ThreadsPage: /threads and /threads/<slug> (server)
+  explorer.tsx                     ThreadsExplorer: focus, index, map, cursor and route panel (client)
+  lines.ts                         lane and channel sizes, traceRoutes: measured dots > one path per thread
+src/app/(docs)/threads/            the two routes
 src/app/(docs)/[...slug]/page.tsx  builds the page's PageDock, renders ReadingDock
-src/app/global.css                 colour tokens, the cutout's shape, the active mark and the thread map's static rules
+src/app/global.css                 colour tokens, the cutout's shape, the active mark and the map's static rules
+src/lib/client/keybinds.ts         moveKey: the arrows and WASD every focus-scoped widget shares
 src/lib/terminal/relations-command.ts  the `relations` command
 ```
 
@@ -68,9 +77,11 @@ flowchart LR
     tenets --> export["export graph<br/>(export/build.ts)"]
     export --> exports["Markdown, prompt context,<br/>llms.txt, graph.json"]
     export --> index["CourseIndex<br/>(relations/build.ts)"] --> dock["PageDock per page<br/>(relations/dock.ts)"]
-    index --> threadmap["ThreadMap<br/>(relations/thread-map.ts)"] --> core["&lt;ThreadMap /&gt; on /core"]
+    index --> threadmap["ThreadMap, routes<br/>(relations/thread-map.ts)"] --> threadspage["/threads, /threads/&lt;slug&gt;"]
+    threadmap --> core["&lt;ThreadMap /&gt; list on /core"]
     threads --> dock
     threads --> threadmap
+    threadmap -. threadRoute .-> dock
     dock --> page["page.tsx > ReadingDock"] --> terminal["RelationsProvider > relations command"]
 ```
 
@@ -185,7 +196,7 @@ into course order by the page order it is given (`courseOrder`, the same
 walk of the page tree that the `CourseIndex` is built from; members on one page keep source
 order). It fails the build on a duplicate thread slug or a tag naming an
 unknown thread. Every surface and export reads members in that one order,
-except the thread map, which lays them out by chapter row (see [Thread map](#thread-map)). Each `ThreadMember` carries the
+except the threads page's map, which lays them out by chapter row (see [Threads page](#threads-page)). Each `ThreadMember` carries the
 environment's `href`, `kind`, `title`, `pageUrl`, `slug` and `role`.
 
 MATH1251 defines five threads on `/core`: `coordinates`,
@@ -194,7 +205,7 @@ MATH1251 defines five threads on `/core`: `coordinates`,
 `polynomial-interpolation` is in two). They show in four places:
 
 - **the dock** (see [Threads in the dock](#threads-in-the-dock));
-- **the thread map** on `/core` (see [Thread map](#thread-map));
+- **the threads page**, with the list on `/core` (see [Threads page](#threads-page));
 - **the thread's own section**, which ends with a closed `[COMPARE] N Origins`
   spine (`ThreadSection`, see below);
 - **the exports**: each thread has its own Markdown and prompt context, and
@@ -514,7 +525,7 @@ The rest bar summarises a `DockSubject`, built by one of three functions
 | title | the environment's title or label, plus `· recalled` for a recall | the thread's title | the page title |
 | summary | the first non-empty of "Builds on X", "Leads to X", "Practised in X" (with "and N more"), else "Part of the thread T.", else "Not linked to the rest of the course yet." | "Appears in N places." | "Builds on X" or "Leads to X" (pages), else not linked |
 | strip | `env.strip` plus its threads' pages | the thread's pages | `page.strip` plus its threads' pages |
-| bay | `EnvBay` | `ThreadClause` | `PageBay` |
+| bay | `EnvBay` | `ThreadBlock` | `PageBay` |
 
 All three come from `PageDock`, so they work without a fetch, on kind-view
 routes too.
@@ -544,14 +555,13 @@ out.
 
 | Subject | Sentences |
 |---|---|
-| environment (`EnvBay`) | "Builds on …." (blue), "Practised in …." (muted), "Leads to …." (orange), then one `ThreadClause` per thread it is in |
-| thread (`ThreadClause`) | the summary, then "It appears in …." |
-| page (`PageBay`) | "This page builds on …." (blue), "It leads to …." (orange), "Threads run through this page: T (6), …." (aqua) |
+| environment (`EnvBay`) | "Builds on …." (blue), "Practised in …." (muted), "Leads to …." (orange), then one `ThreadBlock` per thread it is in |
+| thread (`ThreadBlock`) | the thread's block (below) |
+| page (`PageBay`) | "This page builds on …." (blue), "It leads to …." (orange), then one `ThreadBlock` per thread on the page |
 
 If none apply, the bay says "Not linked to the rest of the course yet."
 
-An item reads `Title (aside)`. The aside is a thread member's role, or else the
-item's chapter title (only when it isn't this page's chapter) and an example's
+An item reads `Title (aside)`. The aside is the item's chapter title (only when it isn't this page's chapter) and an example's
 difficulty. Lists are joined with commas and "and", and cut to their limit with
 "N more" at the end:
 
@@ -561,20 +571,56 @@ difficulty. Lists are joined with commas and "and", and cut to their limit with
 | practised in | 4 (`PRACTISED_LIMIT`) | muted foreground |
 | leads to | 4 (`LEADS_LIMIT`) | `--relations-leads-to` |
 | page builds on / leads to | 5 (`PAGE_LIST_LIMIT`) | blue / orange |
-| thread members | 8 (`THREAD_MEMBER_LIMIT`) | `--relations-thread` |
 
 ### Threads in the dock
 
-In an environment's bay, a `ThreadClause` reads "Part of the thread *T*:
-summary. It also appears in A (role), B (role) and 3 more."
+Threads are not a list in the bay. Each is a `ThreadBlock`: a hairline, then
+`[THREAD]` with the title (linking to its prose section) and its number of
+stops, the one-line summary, and its **route strip**.
 
-- **Members** are every other environment in the thread, in reading order of
-  their pages. The environment being read is left out, and so is its count.
-  The dock reads them from `ThreadIndex`, in its order.
+```
+[THREAD] Modes                          7
+A linear evolution splits into modes …
+ALG  ─■──□──□────┐            ← ■ here, □ the other stops
+CAL              └──□──□──□
+THM / matrix powers · HERE      Eigenvalues
+Spectral applications
+```
+
+- **The strip** (`RouteStrip` over `RouteTrack`) draws the thread's route:
+  one lane per strand it visits, labelled with the strand's first three
+  letters, stops evenly spaced in course order like a metro diagram, the line
+  in aqua turning at right angles. Where the reader is (`here`) is filled:
+  the environment being read, or on a page or thread subject every stop on
+  this page.
+- **The status line** under it names the stop under the cursor: kind code and
+  role, `· HERE` when it is here, the chapter, and the title as a link
+  straight to the environment.
+- **The whole strip is one link** to `/threads/<slug>#<station>`, the stop under
+  the cursor, so clicking anywhere on it opens the threads page focused on that
+  thread with the cursor on that stop.
+- **The cursor** starts on here (else the first stop). It shows as a square
+  box while the strip is engaged: the pointer moves it to the nearest stop,
+  and so does the keyboard.
+
+| Key | With focus on | Does |
+|---|---|---|
+| ←/→, A/D | a strip | move the cursor one stop |
+| Home / End | a strip | first / last stop |
+| ↑/↓, W/S | a strip | the previous / next strip; ↓ from the last returns to the rest bar |
+| ↑, W | the rest bar | into the bay, at the last strip |
+| Enter | a strip | open the threads page at the cursor |
+| Esc | anywhere in the dock | close the bay (as before) |
+
+The keys belong to the focused element (see TERMINAL.md, Keys): nothing
+new listens on the window, so the terminal's printable keys and the sidebar's
+digits are untouched. The rest bar and strips are marked `data-route-nav`
+inside the dock's `data-route-group`, which is what ↑/↓ walk. While focus is
+in the dock the subject is frozen, so moving the cursor never changes which
+environment the dock follows.
+
 - **Thread sections** are anchors too: a `<Thread>` defined on this page puts
   its `id` in the dock's anchors, so reading `/core` follows thread by thread.
-- **The page fallback** names every thread defined on the page or with a
-  member on it, with each one's member count.
 
 ### The payload
 
@@ -600,13 +646,15 @@ interface DockEnv {
 	practisedIn: DockList; // practised_by
 	leadsTo: DockList;     // used_by
 	strip: DockStrip;      // other pages reached
-	threads: DockThread[]; // members exclude this environment
+	threads: DockThread[]; // `here` is this environment
 }
 
 interface DockThread {
 	anchor?: string;   // DOM id, when the thread is defined on this page
 	href; slug; summary; title;
-	members: DockList; // items cut to the limit
+	mapHref: string;   // /threads/<slug>
+	route: ThreadRoute; // every member, in course order (see Threads page, Model)
+	here: number[];    // stops that are here: the environment, else this page's members
 	positions: number[]; // reading-order positions of members' other pages
 }
 
@@ -626,91 +674,147 @@ interface DockRef { id; title; place?; difficulty?; role? } // place: the chapte
 - **Untitled targets** from another page are labelled with their page, e.g.
   `Example (Seen Questions)`.
 
-## Thread map
+## Threads page
 
-`<ThreadMap />` draws every thread as a line through the course. It sits on
-`/core` under "Shared ideas", above the thread sections it summarises. It
-must be a direct child of the document; `remark.ts` keeps it out of the
-exports, and kind views hide it like prose.
+`/threads` draws every thread as a line through the course. `/threads/<slug>`
+is the same page with that thread focused, statically generated per thread
+(`dynamicParams = false`), so a focused page renders focused with no flash and
+is saved for offline like any other page. Both routes render `ThreadsPage`
+(`components/threads/page.tsx`) inside the docs layout, full width, with no
+table of contents and no dock.
+
+The ways in:
+
+- **the dock**: each thread's route strip opens
+  `/threads/<slug>#<station>`, at the stop under its cursor (see
+  [Threads in the dock](#threads-in-the-dock));
+- **`/core`**: `<ThreadMap />` under "Shared ideas" renders `ThreadList`, an
+  index with each thread's number, title, summary and a grey route strip,
+  every row linking to `/threads/<slug>`, plus `[MAP]` to `/threads`. It must
+  be a direct child of the document; `remark.ts` keeps it out of the exports,
+  and kind views hide it like prose.
 
 ### Model (`thread-map.ts`)
 
-`buildThreadMap(courseIndex, threads, pages)` runs once in `getCorpus()`:
+`buildThreadMap(courseIndex, threads, pages)` runs once in `getCorpus()`. All
+of it reaches the client as props, so every Markdown field goes through
+`rendered()`.
 
 | Field | Holds |
 |---|---|
 | `strands` | the strands that have at least one member, in tree order (so `core`, which only defines threads, has no column) |
 | `rows` | one per chapter number from the first to the last with a member; each has a `cell` per strand: that strand's chapter at that number (or none) and its `stations` |
-| stations | one per tagged environment: `href`, `kind`, `title`, and a `stop` per thread it is in (`lane`, `slug`, `role`) |
-| `threads` | `slug`, `title`, `summary`, `href`, `size`; a thread's index is its `lane`. They are the key's props on the client, so their Markdown goes through `rendered()` |
+| stations | one per tagged environment: `href`, `id` (`stationId(href)`, the DOM id a link can land on), kind `code`, `title`, and a `stop` per thread it is in (`thread` slug, `role`) |
+| `threads` | `slug`, `number` (1-based, in definition order), `title`, `summary`, `href` (its prose section), `mapHref` (`/threads/<slug>`) and `route` |
 
-**Rows are a shared timeline.** The strands are taught side by side, so
-chapter *k* of every strand is on row *k*. Within a row, stations go by strand,
-then by reading order (page, then source order). Each thread runs through its
-stops in that order, which is time order rather than reading order: `modes` runs
-Algebra 1 → Calculus 2 → Algebra 4. If the strands' pacing ever differs from
-their chapter numbers, the row is the thing to change (for example a `week` in
-each chapter's `meta.json`).
+**A route** (`threadRoute(courseIndex, thread)`, `ThreadRoute` in `types.ts`)
+is the thread as a line: one stop per member in course order (`code`, `href`,
+`title`, `role`, chapter title as `place`, `station` id), and `lanes`, the
+titles of the strands the thread visits. A stop's `lane` indexes `lanes`, so a
+route has as many lanes as it needs whatever the number of strands. The dock,
+the `/core` list and the threads index all draw routes; nothing names a strand.
+
+**Rows are a shared timeline** (`alignedRows`). The strands are taught side by
+side, so chapter *k* of every strand is on row *k*. Within a row, stations go
+by strand, then by reading order (page, then source order). Each thread runs
+through its stops in that order, which is time order rather than reading
+order: `modes` runs Algebra 1 → Calculus 2 → Algebra 4. This is the one
+MATH1251 assumption in the model: a course taught one strand after another
+would lay rows out by reading order, and only `alignedRows` would change.
 
 An environment in two threads is one station with two stops: an interchange.
 
+### Focus
+
+`ThreadsExplorer` (client) holds the focused threads, the index preview and
+the map cursor. Focus is binary rather than faded:
+
+| | Nothing focused | Some threads focused |
+|---|---|---|
+| lines | every thread, foreground at 30%; the threads of the hovered index row or the cursor station turn aqua | only the focused threads, all aqua |
+| stations | all, titles only | only those on a focused thread, with each focused stop's role (prefixed `01 /` when several are focused) |
+| lanes | one per thread | one per focused thread, so the line sits next to its stations |
+| strands | every strand with a member | only strands with a focused station |
+| rows | rows with no station collapse | rows with no focused station collapse |
+
+Collapsed rows merge into one dashed marker naming their chapter numbers
+(`02–04`), so the map keeps its sense of time without the empty space.
+
+With exactly one thread focused, a **route panel** sits beside the map (below
+it under 60rem of container width): `[ROUTE] 03`, `[READ]` (the prose
+section), title, summary, and the thread's COMPARE spine, open, with
+statements. The spines are rendered on the server (`ThreadSpine`, exported
+from `math-env/thread.tsx`) and passed in as nodes, so statements never travel
+as data. On wide screens the panel is sticky and scrolls by itself.
+
+The address follows the first focused thread (`history.replaceState`:
+`/threads/<slug>`, or `/threads` with none), so a reload or a shared link
+opens on it. A second focused thread isn't kept in the address.
+
+### Index and keys
+
+The index is a table of rows: focus square, number, title, the strands it
+visits (`ALG·CAL`), and its number of stops. Below it a status line shows the
+hovered or focused row's summary; every summary sits in the same grid cell, so
+nothing below it moves.
+
+| Input | Where | Does |
+|---|---|---|
+| click, Enter | index row | focus only this thread; again, clear |
+| Shift-click, Space, the square | index row | add or remove this thread |
+| ↑/↓, W/S | index row | previous / next row |
+| `[CLEAR]`, Esc | anywhere in the page | clear focus |
+| ↑↓←→, WASD | map station | previous / next station, in the order the lines run |
+| Home / End | map station | first / last station |
+| Enter | map station | open the environment |
+| hover | map station | move the cursor there |
+| `#<station>` | address | put the cursor on that station and scroll to it |
+
+The map is one tab stop: only the cursor's station (else the first) is
+tabbable. The cursor station's label is inverted (foreground on background),
+and the route panel marks the same environment `data-state="current"`.
+
 ### Layout
 
-The stations, labels and links are HTML, rendered on the server: real links,
-KaTeX in roles and titles, wrapping text. Only the lines are SVG, drawn by the
-client after layout. Without them the map is still a correct table of where
-each idea appears.
+The stations, labels and links are HTML: real links, KaTeX in roles and
+titles, wrapping text. Only the lines are SVG, drawn after layout. Without
+them the map is still a correct table of where each idea appears.
 
 The map is its own container (`container: thread-map / inline-size`), so it
 responds to the width it gets, not the viewport:
 
-- **Wide** (each strand column has at least 14rem): a grid with one column per
-  strand and one row per chapter. A line moving between columns means "this
-  idea is also in your other strand at the same time".
-- **Narrow** (phones, or too many strands for the width): one column in time
-  order, like a git graph. Each chapter's heading names its strand, and empty
-  chapters are left out.
+- **Wide** (each visible strand column has at least 14rem): a grid with one
+  column per strand and one row per chapter. A line moving between columns
+  means "this idea is also in your other strand at the same time".
+- **Narrow** (phones, the route panel beside it, or too many strands): one
+  column in time order, like a git graph. Each chapter's heading names its
+  strand, and empty chapters are left out.
 
-The wide breakpoint depends on the number of strands, so `ThreadMap` writes
-its container query into a `<style>` beside it, together with one highlight
-rule per thread. The static rules are in `global.css` under `[data-tm-*]`.
+The wide breakpoint depends on the number of visible strands, so `MapView`
+writes its container query into a `<style>` beside it. The static rules are
+in `global.css` under `[data-tm-*]`.
 
-Every cell has a gutter on its left with one 8px lane per thread
-(`LANE_WIDTH`, `thread-map-lines.ts`), in thread order. A station's dots sit in its threads' lanes,
-and an interchange joins them with a short bar. Each row has a **channel**
-under its headings, as tall as one 4px track per thread (`CHANNEL_STEP`) plus
-padding: the only place lines cross between columns, so they never cross text.
+Every cell has a gutter on its left with one 8px lane per visible thread
+(`LANE_WIDTH`, `threads/lines.ts`). A station's dots sit in its threads'
+lanes, and an interchange joins them with a short bar. Each row has a
+**channel** under its headings, as tall as one 4px track per visible thread
+(`CHANNEL_STEP`) plus padding: the only place lines cross between columns, so
+they never cross text.
 
-### Lines (`ThreadMapFrame`)
+### Lines
 
-After layout and on every resize of the map (`ResizeObserver`, and once the
-fonts load), `traceRoutes` reads each dot's centre and each row's channel
-top, about 40 rect reads, and builds one path per thread through its dots in
-document order, which is the model's order:
+`traceRoutes` reads each dot's centre and each row's channel top, about 40
+rect reads, and builds one path per thread through its dots in document
+order, which is the model's order:
 
 - **Same column:** straight down the thread's lane.
-- **Another column:** down (or up, within one row) the lane to the channel of
-  the later stop's row, across on the thread's own track, then down the other
-  lane to the stop.
+- **Another column:** down the lane to the channel of the later stop's row,
+  across on the thread's own track, then down the other lane to the stop.
 
-Corners are rounded (6px). Nothing is measured on scroll.
-
-### Interaction
-
-- **The key** above the map has a button per thread (title and number of
-  places). Hovering one, or focusing it from the keyboard, previews it;
-  clicking selects it, and clicking again, or Esc while focus is in the map,
-  clears it (one Esc, one layer). Below the key, the active thread's summary
-  and `[READ]`, a link to its section. The preview holds while the pointer or
-  focus stays in the key and summary, so `[READ]` can be reached. Every
-  summary is laid out in the same grid cell, so changing thread never moves
-  the map.
-- **Hovering or focusing a station** previews its threads.
-- **The active threads** (preview, else selection) turn aqua, at 2px, drawn on
-  top. Other lines turn to the border colour, and stations outside the active
-  threads fade to 35%.
-- Touch has no hover: tapping a key button selects, tapping a station follows
-  its link.
+Corners are square. `MapView` remounts when the visible threads change, and
+measures in a layout effect, so lines are drawn before the first paint; after
+that, on every resize of the map (`ResizeObserver`) and once the fonts load.
+Nothing is measured on scroll.
 
 ### Colour
 
@@ -729,8 +833,10 @@ modes, with two caveats that the design works around:
 - **Tritan, dark:** worst pair ΔE 4.0. On the strip, thread ticks are full
   height and dependency ticks are 6 units, so height tells them apart.
 
-At rest the thread map's lines are the foreground at 30%: it never needs more
-than one colour, because only the active threads are coloured.
+At rest the map's lines are the foreground at 30%: it never needs more than
+one colour, because only focused or previewed threads are coloured. Several
+focused threads are all aqua; their lanes and the `01 /` prefix on roles tell
+them apart.
 
 ## Terminal
 
@@ -749,9 +855,11 @@ than one colour, because only the active threads are coloured.
 - **A new thread:** wrap the prose that explains it in `<Thread slug summary>`
   and tag each member environment with `thread="<slug>: <role>"`. A thread is
   worth adding when its members span chapters or strands; inside one page,
-  `of` already says it. The thread map gives it a lane.
+  `of` already says it. It gets a lane on the map, a route in the dock and a
+  page at `/threads/<slug>`.
 - **A new strand:** add a top-level folder with a `meta.json`. The `CourseIndex`,
-  the dock's strip and the thread map pick it up; routing, OG images and the
+  the dock's strip, routes (a lane wherever a thread visits it) and the map
+  pick it up; routing, OG images and the
   exports still need it in `src/lib/course/strands.ts`.
 - **A new relation:** add it to `ENV_RELATIONS`, `EXPORT_EDGE_KINDS`,
   `RELATION_NAMES`, `RELATION_LABELS` and `RELATION_ORDER` (EXPORT.md). Add it
@@ -778,12 +886,20 @@ Starting values, none yet checked in a browser:
 | cutout depth | `--dock-cut`, `global.css` | 5% darker (light), 45% (dark) |
 | notch radius | `--dock-radius` | 14px |
 | dock width | `dock.tsx` | 19rem |
-| list limits | `relations/dock.ts` | 6 / 4 / 4 env, 5 page, 8 thread members |
-| thread map column | `COLUMN_MIN_REM`, `thread-map.tsx` | 14rem per strand, 2rem gap |
-| thread map lanes | `LANE_WIDTH`, `CHANNEL_STEP`, `thread-map-lines.ts` | 8px / 4px |
+| list limits | `relations/dock.ts` | 6 / 4 / 4 env, 5 page |
+| route strip | `LANE`, `INSET`, `route-track.tsx` | 12px per lane, stops 4% in from each end |
+| map column | `COLUMN_MIN_REM`, `threads/explorer.tsx` | 14rem per strand, 2rem gap |
+| route panel | `threads/explorer.tsx` | beside the map from 60rem of container width, 22rem wide |
+| map lanes | `LANE_WIDTH`, `CHANNEL_STEP`, `threads/lines.ts` | 8px / 4px |
 | page bottom padding | `global.css` | 6rem |
 
 ## Not yet built
+
+- **Several focused threads in the address:** only the first is kept, so a
+  reload drops the others.
+- **Hover leaves the map cursor behind:** with nothing focused, the last
+  hovered station keeps its threads lit after the pointer leaves. Decide
+  whether leaving the map should clear it.
 
 - **Hover to preview:** hovering a prose link, footnote or recall to show that
   tenet's statement in the bay.

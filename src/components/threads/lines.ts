@@ -3,7 +3,6 @@ const LANE_INSET = 3;
 const GUTTER_PAD = 8;
 const CHANNEL_STEP = 4;
 const CHANNEL_PAD = 6;
-const CORNER = 6;
 
 interface Point {
 	x: number;
@@ -60,7 +59,7 @@ export function traceRoutes(element: HTMLElement): Map<string, string> {
 	return new Map(
 		[...dots].map(([slug, list]) => [
 			slug,
-			roundedPath(routeThrough(list.map(stopAt))),
+			polyline(routeThrough(list.map(stopAt))),
 		])
 	);
 }
@@ -80,52 +79,21 @@ function routeThrough(stops: readonly Stop[]): Point[] {
 	});
 }
 
-function roundedPath(points: readonly Point[]): string {
-	const corners = points.filter((point, index) => {
-		const previous = points[index - 1];
-		const next = points[index + 1];
-		return !(
-			previous &&
-			next &&
-			((previous.x === point.x && point.x === next.x) ||
-				(previous.y === point.y && point.y === next.y))
-		);
-	});
-
-	return corners
-		.map((point, index) => {
-			const previous = corners[index - 1];
-			const next = corners[index + 1];
-			if (previous === undefined) {
-				return `M${coords(point)}`;
-			}
-
-			if (next === undefined) {
-				return `L${coords(point)}`;
-			}
-
-			const r = Math.min(
-				CORNER,
-				distance(previous, point) / 2,
-				distance(point, next) / 2
+// Square corners: a thread turns at right angles, never rounds.
+function polyline(points: readonly Point[]): string {
+	return points
+		.filter((point, index) => {
+			const previous = points[index - 1];
+			const next = points[index + 1];
+			return !(
+				previous &&
+				next &&
+				((previous.x === point.x && point.x === next.x) ||
+					(previous.y === point.y && point.y === next.y))
 			);
-			return `L${coords(toward(point, previous, r))} Q${coords(point)} ${coords(toward(point, next, r))}`;
 		})
+		.map((point, index) => `${index === 0 ? "M" : "L"}${coords(point)}`)
 		.join(" ");
-}
-
-function distance(from: Point, to: Point): number {
-	return Math.hypot(to.x - from.x, to.y - from.y);
-}
-
-function toward(from: Point, to: Point, length: number): Point {
-	const total = distance(from, to);
-	return total === 0
-		? from
-		: {
-				x: from.x + ((to.x - from.x) * length) / total,
-				y: from.y + ((to.y - from.y) * length) / total,
-			};
 }
 
 function coords({ x, y }: Point): string {

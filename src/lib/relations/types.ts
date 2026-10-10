@@ -58,11 +58,28 @@ export interface DockList {
 
 export type DockStrip = Record<Direction, number[]>;
 
+export interface RouteStop {
+	code: string;
+	href: string;
+	lane: number;
+	place?: string;
+	role?: RenderedMarkdown<"inline">;
+	station: string;
+	title: RenderedMarkdown<"inline">;
+}
+
+export interface ThreadRoute {
+	lanes: string[];
+	stops: RouteStop[];
+}
+
 export interface DockThread {
 	anchor?: string;
+	here: number[];
 	href: string;
-	members: DockList;
+	mapHref: string;
 	positions: number[];
+	route: ThreadRoute;
 	slug: string;
 	summary: RenderedMarkdown<"inline">;
 	title: RenderedMarkdown<"inline">;

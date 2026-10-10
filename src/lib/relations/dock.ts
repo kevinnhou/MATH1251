@@ -16,6 +16,7 @@ import { type PageEnvs, threadId } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
 import type { Thread, ThreadIndex } from "@/lib/math-env/thread";
 import { chapterOfId, neighbours } from "./query";
+import { threadMapHref, threadRoute } from "./thread-map";
 import {
 	byDirection,
 	type CourseIndex,
@@ -30,7 +31,6 @@ const NEEDS_LIMIT = 6;
 const PRACTISED_LIMIT = 4;
 const LEADS_LIMIT = 4;
 const PAGE_LIST_LIMIT = 5;
-const THREAD_MEMBER_LIMIT = 8;
 
 interface DockSources {
 	courseIndex: CourseIndex;
@@ -106,26 +106,31 @@ export function buildPageDock(
 	};
 }
 
+// `env` is the environment being read, when there is one: it is "here" on the
+// route. Otherwise every stop on this page is.
 function dockThread(
 	ctx: DockContext,
 	thread: Thread,
-	exclude?: string
+	env?: string
 ): DockThread {
-	const members = thread.members.filter((member) => member.href !== exclude);
 	const anchor = threadAnchor(ctx, thread);
+	const here = thread.members.flatMap((member, at) =>
+		(env === undefined ? member.pageUrl === ctx.pageUrl : member.href === env)
+			? [at]
+			: []
+	);
 
 	return {
+		here,
 		href: thread.href,
-		members: refList(members, THREAD_MEMBER_LIMIT, (member) => ({
-			id: member.href,
-			title: rendered(member.title),
-			...placeOf(ctx, member.pageUrl),
-			...(member.role ? { role: rendered(member.role) } : {}),
-		})),
+		mapHref: threadMapHref(thread.slug),
 		positions: positions(
 			ctx,
-			members.map((member) => member.pageUrl)
+			thread.members
+				.filter((member) => member.href !== env)
+				.map((member) => member.pageUrl)
 		),
+		route: threadRoute(ctx.index, thread),
 		slug: thread.slug,
 		summary: rendered(thread.summary),
 		title: rendered(thread.title),

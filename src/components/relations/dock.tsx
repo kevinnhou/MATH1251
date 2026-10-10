@@ -12,6 +12,8 @@ import {
 } from "react";
 import { InlineHtml } from "@/components/markdown/html";
 import { usePublishDock } from "@/components/relations/provider";
+import { focusRouteNav, RouteStrip } from "@/components/threads/route-strip";
+import { moveKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import {
@@ -77,6 +79,7 @@ export function ReadingDock({ dock }: { dock: PageDock }) {
 			aria-label="Reading dock"
 			className="fixed right-0 bottom-0 z-30 print:hidden"
 			data-dock={state}
+			data-route-group=""
 			ref={rootRef}
 			{...focusHandlers}
 		>
@@ -180,9 +183,9 @@ function withThreads(
 const UNLINKED = "Not linked to the rest of the course yet.";
 
 function threadSubject(thread: DockThread): DockSubject {
-	const { count } = thread.members;
+	const count = thread.route.stops.length;
 	return {
-		bay: <ThreadClause thread={thread} />,
+		bay: <ThreadBlock thread={thread} />,
 		key: thread.slug,
 		strip: withThreads(
 			byDirection(() => []),
@@ -267,7 +270,14 @@ function RestBar({
 			aria-controls={bayId}
 			aria-expanded={expanded}
 			className="flex w-full flex-col gap-1.5 px-4 pt-2.5 pb-3 text-left outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground focus-visible:-outline-offset-2"
+			data-route-nav=""
 			onClick={onToggle}
+			onKeyDown={(event) => {
+				if (moveKey(event.nativeEvent) === "up") {
+					event.preventDefault();
+					focusRouteNav(event.currentTarget, -1);
+				}
+			}}
 			type="button"
 		>
 			<span
@@ -380,7 +390,7 @@ function EnvBay({ env }: { env: DockEnv }) {
 				list={env.leadsTo}
 			/>
 			{env.threads.map((thread) => (
-				<ThreadClause key={thread.slug} linked thread={thread} />
+				<ThreadBlock key={thread.slug} thread={thread} />
 			))}
 			{linked ? null : <p className="m-0">{UNLINKED}</p>}
 		</>
@@ -411,55 +421,43 @@ function PageBay({
 				lead="It leads to"
 				list={links["leads-to"]}
 			/>
-			{threads.length > 0 ? (
-				<p className="m-0">
-					{threads.length === 1 ? "A thread runs" : "Threads run"} through this
-					page:{" "}
-					{joinWords(
-						threads.map((thread) => (
-							<Fragment key={thread.slug}>
-								<RefLink color={THREAD_COLOR} href={thread.href}>
-									<InlineHtml html={thread.title.html} />
-								</RefLink>{" "}
-								({thread.members.count})
-							</Fragment>
-						))
-					)}
-					.
-				</p>
-			) : null}
+			{threads.map((thread) => (
+				<ThreadBlock key={thread.slug} thread={thread} />
+			))}
 			{linked ? null : <p className="m-0">{UNLINKED}</p>}
 		</>
 	);
 }
 
-function ThreadClause({
-	linked = false,
-	thread,
-}: {
-	linked?: boolean;
-	thread: DockThread;
-}) {
+// A thread as a summary and its route. The route is the way into the threads
+// page, at the stop under the cursor.
+function ThreadBlock({ thread }: { thread: DockThread }) {
 	return (
-		<p className="m-0" data-relations-label="">
-			{linked ? (
-				<>
-					Part of the thread{" "}
+		<section
+			className="flex flex-col gap-1.5 border-fd-border border-t pt-2.5"
+			data-relations-label=""
+		>
+			<span className="flex items-baseline justify-between gap-3 font-mono text-[10px] uppercase tracking-wider">
+				<span>
+					[THREAD]{" "}
 					<RefLink color={THREAD_COLOR} href={thread.href}>
-						<InlineHtml html={thread.title.html} />
+						<span className="font-sans normal-case tracking-normal">
+							<InlineHtml html={thread.title.html} />
+						</span>
 					</RefLink>
-					:{" "}
-				</>
-			) : null}
-			<InlineHtml html={thread.summary.html} />
-			{thread.members.count > 0 ? (
-				<>
-					{" "}
-					{linked ? "It also appears in" : "It appears in"}{" "}
-					<Refs color={THREAD_COLOR} list={thread.members} />.
-				</>
-			) : null}
-		</p>
+				</span>
+				<span>{thread.route.stops.length}</span>
+			</span>
+			<p className="m-0">
+				<InlineHtml html={thread.summary.html} />
+			</p>
+			<RouteStrip
+				here={thread.here}
+				mapHref={thread.mapHref}
+				route={thread.route}
+				title={thread.title}
+			/>
+		</section>
 	);
 }
 

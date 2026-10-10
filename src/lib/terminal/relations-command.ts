@@ -45,7 +45,7 @@ function relationsOutput({ page, threads }: PageDock): TerminalOutput {
 		{
 			heading: "threads",
 			items: threads.map((thread) => ({
-				hint: plural(thread.members.count, "place"),
+				hint: plural(thread.route.stops.length, "place"),
 				label: thread.title,
 				url: thread.href,
 			})),

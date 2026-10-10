@@ -400,13 +400,12 @@ body:has([data-dock]) {
 	height: var(--tm-channel);
 }
 
-[data-tm-dot] {
-	background: var(--tm-dot);
-	transition: background-color 200ms ease-out;
+[data-route-track] {
+	--route-bg: var(--color-fd-background);
 }
 
-[data-thread-map][data-active] [data-tm-station] {
-	opacity: 0.35;
+[data-dock] [data-route-track] {
+	--route-bg: var(--dock-cut);
 }
 
 [data-relations-label] .md-fragment-inline .katex,

@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
+import { ThreadList } from "@/components/threads/thread-list";
 import {
 	type PromptTargetLookup,
 	pageEnvContext,
@@ -25,7 +26,6 @@ import { Env } from "./env";
 import { Recall } from "./recall";
 import { Statement } from "./statement";
 import { ThreadSection } from "./thread";
-import { ThreadMap } from "./thread-map";
 
 export type MathEnvMdxOptions = KindViewRenderOptions & {
 	courseIndex?: CourseIndex;
@@ -102,7 +102,7 @@ export function getMathEnvMdxComponents(
 			);
 		},
 		ThreadMap: () =>
-			options.threadMap ? <ThreadMap map={options.threadMap} /> : null,
+			options.threadMap ? <ThreadList map={options.threadMap} /> : null,
 	};
 
 	for (const kind of Object.keys(MATH_ENV_KINDS) as MathEnvKind[]) {
