@@ -1,7 +1,8 @@
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import type { PageEnvs } from "./page-envs";
-import { type EnvRef, toEnvRef } from "./tenet";
+import type { StatementView } from "./statement-html";
+import { type EnvRef, type TenetIndex, toEnvRef } from "./tenet";
 
 export interface ThreadMember extends EnvRef {
 	pageUrl: string;
@@ -67,6 +68,15 @@ export function createThreadIndex(
 	}
 
 	return { bySlug };
+}
+
+export function memberStatement(
+	member: ThreadMember,
+	tenets: TenetIndex
+): StatementView | undefined {
+	return member.slug
+		? tenets.bySlug.get(member.slug)?.statementView
+		: undefined;
 }
 
 function registerThreads(

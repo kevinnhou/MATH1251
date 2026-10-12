@@ -5,6 +5,7 @@ import {
 	type ReactNode,
 	type RefObject,
 	useEffect,
+	useEffectEvent,
 	useMemo,
 	useRef,
 	useState,
@@ -247,18 +248,19 @@ function useHashCursor(
 	stations: readonly DiagramStation[],
 	setCursor: (id: string) => void
 ) {
-	useEffect(() => {
-		const read = () => {
-			const id = decodeURIComponent(window.location.hash.slice(1));
-			if (stations.some((entry) => entry.station.id === id)) {
-				setCursor(id);
-			}
-		};
+	const read = useEffectEvent(() => {
+		const id = decodeURIComponent(window.location.hash.slice(1));
+		if (stations.some((entry) => entry.station.id === id)) {
+			setCursor(id);
+		}
+	});
 
+	useEffect(() => {
+		const onHashChange = () => read();
 		read();
-		window.addEventListener("hashchange", read);
-		return () => window.removeEventListener("hashchange", read);
-	}, [stations, setCursor]);
+		window.addEventListener("hashchange", onHashChange);
+		return () => window.removeEventListener("hashchange", onHashChange);
+	}, []);
 }
 
 function useShownUrl(first: string | undefined) {

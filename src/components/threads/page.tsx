@@ -2,7 +2,7 @@ import { DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
 import type { ReactNode } from "react";
 import { StatementHtml } from "@/components/math-env/statement";
 import type { TenetIndex } from "@/lib/math-env/tenet";
-import type { ThreadIndex } from "@/lib/math-env/thread";
+import { memberStatement, type ThreadIndex } from "@/lib/math-env/thread";
 import { getCorpus } from "@/lib/site/corpus";
 import { ThreadsExplorer } from "./explorer";
 
@@ -32,9 +32,7 @@ function statementsByHref(
 	const statements: Record<string, ReactNode> = {};
 	for (const thread of threads.bySlug.values()) {
 		for (const member of thread.members) {
-			const view = member.slug
-				? tenets.bySlug.get(member.slug)?.statementView
-				: undefined;
+			const view = memberStatement(member, tenets);
 			if (view && !(member.href in statements)) {
 				statements[member.href] = (
 					<StatementHtml className="text-sm" html={view.html} />

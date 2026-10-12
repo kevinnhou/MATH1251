@@ -74,11 +74,7 @@ function routeMembers(
 					(right.chapter?.number ?? Number.POSITIVE_INFINITY) ||
 				strandAt(left.chapter) - strandAt(right.chapter) ||
 				left.at - right.at
-		)
-		.map(({ chapter, member }) => ({
-			member,
-			...(chapter ? { chapter } : {}),
-		}));
+		);
 }
 
 function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
@@ -96,7 +92,7 @@ function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
 				0
 			),
 			station: stationId(member.href),
-			...(chapter ? { chapter: chapter.number, place: chapter.title } : {}),
+			...(chapter ? { chapter: chapter.number } : {}),
 			...memberRole(member),
 		})),
 	};

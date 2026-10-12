@@ -5,7 +5,11 @@ import type { PromptTarget } from "@/lib/export/model";
 import { getMathEnvConfig } from "@/lib/math-env/kinds";
 import type { StatementView } from "@/lib/math-env/statement-html";
 import type { TenetIndex } from "@/lib/math-env/tenet";
-import type { Thread, ThreadMember } from "@/lib/math-env/thread";
+import {
+	memberStatement,
+	type Thread,
+	type ThreadMember,
+} from "@/lib/math-env/thread";
 import { chapterOfId } from "@/lib/relations/query";
 import type { CourseChapter, CourseIndex } from "@/lib/relations/types";
 import { StatementHtml } from "./statement";
@@ -54,9 +58,7 @@ function threadStations(
 	return thread.members.map((member) => ({
 		chapter: courseIndex && chapterOfId(courseIndex, member.pageUrl),
 		member,
-		statement: member.slug
-			? tenets?.bySlug.get(member.slug)?.statementView
-			: undefined,
+		statement: tenets && memberStatement(member, tenets),
 	}));
 }
 

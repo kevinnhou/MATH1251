@@ -22,6 +22,12 @@ export const DIAGRAM = {
 	track: 12,
 } as const;
 
+export const NAME_ANGLE = 45;
+
+const NAME = { char: 5.6, code: 6, gap: 12, max: 200 } as const;
+const SLANT = Math.cos((NAME_ANGLE * Math.PI) / 180);
+const OVERHANG = 4;
+
 const SPACING = {
 	empty: DIAGRAM.emptyChapter,
 	gap: DIAGRAM.chapterGap,
@@ -36,6 +42,7 @@ export interface DiagramMark {
 export interface DiagramStation {
 	chapter: CourseChapter;
 	marks: DiagramMark[];
+	room: number;
 	station: ThreadMapStation;
 	strand: CourseStrand;
 	x: number;
@@ -65,12 +72,15 @@ export interface DiagramLine {
 
 export interface Diagram {
 	bands: DiagramBand[];
+	bottom: number;
 	chapters: DiagramChapter[];
 	coded: boolean;
-	height: number;
+	foot: number;
+	hang: number;
 	lines: DiagramLine[];
 	slot: number;
 	stations: DiagramStation[];
+	top: number;
 	width: number;
 }
 
@@ -136,6 +146,7 @@ export function layoutDiagram(
 						? []
 						: [{ thread, y: trackY(band, track) }];
 				}),
+				room: Math.min(xs[at] / SLANT, NAME.max),
 				station,
 				strand: band.strand,
 				x: xs[at],
@@ -143,6 +154,8 @@ export function layoutDiagram(
 		)
 	);
 	const chapters = packed.map(chapterOf);
+	const bottom = (bands.at(-1)?.y1 ?? DIAGRAM.axis) + OVERHANG;
+	const hang = bottom + NAME.gap;
 
 	return {
 		bands: bands.map((band) => ({
@@ -151,14 +164,24 @@ export function layoutDiagram(
 				.filter(({ cells }) => cells.get(band.strand.id)?.chapter)
 				.map(chapterOf),
 		})),
+		bottom,
 		chapters,
 		coded,
-		height: bands.at(-1)?.y1 ?? DIAGRAM.axis,
+		foot: hang + Math.max(0, ...stations.map(nameDepth)) + NAME.gap,
+		hang,
 		lines: threads.flatMap((thread) => lineOf(thread, stations, slot)),
 		slot,
 		stations,
+		top: DIAGRAM.axis - OVERHANG,
 		width: (chapters.at(-1)?.x1 ?? label) + DIAGRAM.slotPad,
 	};
+}
+
+function nameDepth({ room, station }: DiagramStation): number {
+	const estimate =
+		(station.code.length + 1) * NAME.code +
+		station.title.plain.length * NAME.char;
+	return Math.min(estimate, room) * SLANT;
 }
 
 function chapterOf({

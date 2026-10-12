@@ -6,7 +6,7 @@ import { foregroundAt, THREAD_COLOR } from "@/components/relations/colors";
 import { cursorKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
 import { laneCode } from "./format";
-import { DIAGRAM, type Diagram, type DiagramStation } from "./layout";
+import { type Diagram, type DiagramStation, NAME_ANGLE } from "./layout";
 import { LINE, STOP, StopMarks, solidStroke, transitStroke } from "./marks";
 
 const TINT = foregroundAt(5);
@@ -14,9 +14,6 @@ const COLUMN = foregroundAt(8);
 const QUIET = foregroundAt(20);
 const NAME = foregroundAt(72);
 const NAME_QUIET = foregroundAt(32);
-
-const NAME_SIZE = { char: 5.6, code: 6, gap: 12, max: 200 } as const;
-const SLANT = Math.SQRT1_2;
 
 const SPUR = {
 	at: 4.5,
@@ -71,14 +68,7 @@ export function ThreadDiagram({
 		}
 		return highlight.length > 0 ? QUIET : LINE;
 	};
-	const top = DIAGRAM.axis - 4;
-	const bottom = diagram.height + 4;
-	const names = stations.map(nameWidth);
-	const hang = bottom + NAME_SIZE.gap;
-	const foot =
-		hang +
-		Math.max(0, ...names.map((name) => name.estimate)) * SLANT +
-		NAME_SIZE.gap;
+	const { bottom, foot, top } = diagram;
 	const column = (entry: DiagramStation) => ({
 		height: bottom - top,
 		width: diagram.slot,
@@ -165,16 +155,15 @@ export function ThreadDiagram({
 							/>
 						))}
 					</svg>
-					{stations.map((entry, index) => (
+					{stations.map((entry) => (
 						<StopName
 							colour={nameColour(entry, cursor, hover, highlight)}
 							current={entry === cursor}
 							entry={entry}
-							hang={hang}
+							hang={diagram.hang}
 							key={entry.station.id}
 							onHover={onHover}
 							onPick={onPick}
-							room={names[index]?.room}
 						/>
 					))}
 				</div>
@@ -276,14 +265,6 @@ function Lines({
 	);
 }
 
-function nameWidth(entry: DiagramStation): { estimate: number; room: number } {
-	const { code, title } = entry.station;
-	const room = Math.min(entry.x / SLANT, NAME_SIZE.max);
-	const estimate =
-		(code.length + 1) * NAME_SIZE.code + title.plain.length * NAME_SIZE.char;
-	return { estimate: Math.min(estimate, room), room };
-}
-
 function nameColour(
 	entry: DiagramStation,
 	cursor: DiagramStation | undefined,
@@ -308,7 +289,6 @@ function StopName({
 	hang,
 	onHover,
 	onPick,
-	room,
 }: {
 	colour: string;
 	current: boolean;
@@ -316,12 +296,15 @@ function StopName({
 	hang: number;
 	onHover: (id: string) => void;
 	onPick: (id: string) => void;
-	room: number | undefined;
 }) {
 	return (
 		<span
 			className="absolute size-0"
-			style={{ left: entry.x, top: hang, transform: "rotate(-45deg)" }}
+			style={{
+				left: entry.x,
+				top: hang,
+				transform: `rotate(-${NAME_ANGLE}deg)`,
+			}}
 		>
 			<button
 				className="absolute top-0 right-0 flex w-max -translate-y-1/2 items-baseline gap-1.5 whitespace-nowrap py-0.5 text-[10.5px] leading-none outline-none"
@@ -331,7 +314,7 @@ function StopName({
 				style={{
 					color: colour,
 					fontWeight: current ? 600 : undefined,
-					maxWidth: room,
+					maxWidth: entry.room,
 				}}
 				tabIndex={-1}
 				type="button"

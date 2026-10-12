@@ -10,6 +10,24 @@ import type { DiagramStation } from "./layout";
 
 export type ThreadLookup = ReadonlyMap<string, ThreadMapThread>;
 
+const TITLE = "font-semibold text-[17px] text-fd-foreground leading-snug";
+
+const STEPS = [
+	{ by: -1, glyph: "←", label: "Previous stop" },
+	{ by: 1, glyph: "→", label: "Next stop" },
+] as const;
+
+function Card({ children }: { children: ReactNode }) {
+	return (
+		<article
+			className="flex max-w-2xl flex-col gap-2.5"
+			data-relations-label=""
+		>
+			{children}
+		</article>
+	);
+}
+
 export function StopCard({
 	entry,
 	onStep,
@@ -24,12 +42,12 @@ export function StopCard({
 	threads: ThreadLookup;
 }) {
 	return (
-		<article
-			className="flex max-w-2xl flex-col gap-2.5"
-			data-relations-label=""
-		>
+		<Card>
 			<a
-				className="font-semibold text-[17px] text-fd-foreground leading-snug underline-offset-4 outline-none hover:underline focus-visible:underline"
+				className={cn(
+					TITLE,
+					"underline-offset-4 outline-none hover:underline focus-visible:underline"
+				)}
 				href={entry.station.href}
 			>
 				<InlineHtml html={entry.station.title.html} />
@@ -78,42 +96,32 @@ export function StopCard({
 				})}
 			</ul>
 			<div className="flex items-center gap-4 pt-1 text-fd-muted-foreground">
-				{pinned ? (
-					<>
-						<button
-							aria-label="Previous stop"
-							className={ACTION}
-							onClick={() => onStep(-1)}
-							type="button"
-						>
-							<Bracket>←</Bracket>
-						</button>
-						<button
-							aria-label="Next stop"
-							className={ACTION}
-							onClick={() => onStep(1)}
-							type="button"
-						>
-							<Bracket>→</Bracket>
-						</button>
-					</>
-				) : null}
+				{pinned
+					? STEPS.map(({ by, glyph, label }) => (
+							<button
+								aria-label={label}
+								className={ACTION}
+								key={by}
+								onClick={() => onStep(by)}
+								type="button"
+							>
+								<Bracket>{glyph}</Bracket>
+							</button>
+						))
+					: null}
 				<a className={ACTION} href={entry.station.href}>
 					<Bracket>Open ↗</Bracket>
 				</a>
 			</div>
-		</article>
+		</Card>
 	);
 }
 
 export function ThreadCard({ thread }: { thread: ThreadMapThread }) {
 	const stops = thread.route.stops.length;
 	return (
-		<article
-			className="flex max-w-2xl flex-col gap-2.5"
-			data-relations-label=""
-		>
-			<span className="font-semibold text-[17px] text-fd-foreground leading-snug">
+		<Card>
+			<span className={TITLE}>
 				<InlineHtml html={thread.title.html} />
 			</span>
 			<p className={cn(MONO, "m-0 text-fd-muted-foreground")}>
@@ -126,6 +134,6 @@ export function ThreadCard({ thread }: { thread: ThreadMapThread }) {
 			<p className="m-0 text-[14px] text-fd-foreground/90 leading-relaxed">
 				<InlineHtml html={thread.summary.html} />
 			</p>
-		</article>
+		</Card>
 	);
 }

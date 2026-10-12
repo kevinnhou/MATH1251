@@ -46,7 +46,8 @@ src/lib/relations/                 relation views (pure)
 
 src/components/relations/
   provider.tsx                     holds the current page's PageDock for the terminal
-  dock.tsx                         ReadingDock: the cutout (rest, bay)
+  dock.tsx                         ReadingDock: the cutout (rest, bay), the rest bar and the course strip
+  subject.tsx                      subjectAt: the DockSubject being read (env, thread, page) and its bay prose
   dock-hooks.ts                    useDockState, useActiveAnchor, useProximity, useBoxHeight
   pointer.ts                       shared mouse tracker (position, velocity) and its geometry
   colors.ts                        relation colours
@@ -64,8 +65,8 @@ src/components/threads/
   explorer.tsx                     ThreadsExplorer: the page's state (shown, preview, hover, cursor) and its layout (client)
   bracket.tsx                      Bracket, ACTION: the site's `[LABEL]` actions
   thread-index.tsx                 ThreadIndex: the key above the graph, choosing the threads shown (client)
-  layout.ts                        layoutDiagram: ThreadMap + shown threads + width > bands, chapters, stops, lines (pure)
-  diagram.tsx                      ThreadDiagram: the SVG, the hanging stop names, the spur and reading, and its keys (client)
+  layout.ts                        layoutDiagram: ThreadMap + shown threads + width > bands, chapters, stops, lines, the room and depth of the stop names (pure)
+  diagram.tsx                      ThreadDiagram: draws the layout: the SVG, the hanging stop names, the spur and reading, and its keys (client)
   marks.tsx                        StopMarks and the line strokes the diagram draws with; Marks: the key to them, drawn by the same code
   preview.tsx                      StopCard, ThreadCard: the reading's content (client)
 src/app/(docs)/threads/            the two routes
@@ -526,14 +527,14 @@ but nothing styles it yet.
 ### Subjects
 
 The rest bar summarises a `DockSubject`, built by one of three functions
-(`subjectAt` picks one):
+(`subjectAt` picks one, in `subject.tsx`):
 
 | | `envSubject` (an environment is active) | `threadSubject` (a `<Thread>` section is active) | `pageSubject` (fallback) |
 |---|---|---|---|
 | title | the environment's title or label, plus `/ recalled` for a recall | the thread's title | the page title |
 | summary | the first non-empty of "Builds on X", "Leads to X", "Practised in X" (with "and N more"), else "Part of the thread T.", else "Not linked to the rest of the course yet." | "Appears in N places." | "Builds on X" or "Leads to X" (pages), else not linked |
 | strip | `env.strip` plus its threads' pages | the thread's pages | `page.strip` plus its threads' pages |
-| bay | `EnvBay` | `ThreadBlock` | `PageBay` |
+| bay | `RelationsBay` of its clauses | `ThreadBlock` | `RelationsBay` of its clauses |
 
 All three come from `PageDock`, so they work without a fetch, on kind-view
 routes too.
@@ -563,9 +564,9 @@ out.
 
 | Subject | Sentences |
 |---|---|
-| environment (`EnvBay`) | "Builds on …." (blue), "Practised in …." (muted), "Leads to …." (orange), then one `ThreadBlock` per thread it is in |
+| environment | "Builds on …." (blue), "Practised in …." (muted), "Leads to …." (orange), then one `ThreadBlock` per thread it is in |
 | thread (`ThreadBlock`) | the thread's block (below) |
-| page (`PageBay`) | "This page builds on …." (blue), "It leads to …." (orange), then one `ThreadBlock` per thread on the page |
+| page | "This page builds on …." (blue), "It leads to …." (orange), then one `ThreadBlock` per thread on the page |
 
 If none apply, the bay says "Not linked to the rest of the course yet."
 
@@ -675,7 +676,7 @@ interface DockThread extends ThreadMapThread {
 type DockStrip = Record<Direction, number[]>; // reading-order positions; an env's needs are "builds-on"
 
 interface DockList { count: number; items: DockRef[] } // items cut to the limit
-interface DockRef { id; title; place?; difficulty?; role? } // place: the chapter title, only when it isn't this page's chapter; role is a thread member's
+interface DockRef { id; title; place?; difficulty? } // place: the chapter title, only when it isn't this page's chapter
 ```
 
 - **Markdown fields** go through `rendered()` (`html`, `mode`, `plain`), so
@@ -728,7 +729,7 @@ of it reaches the client as props, so every Markdown field goes through
 **A route** (`threadRoute(courseIndex, thread)`, `ThreadRoute` in `types.ts`)
 is the thread as a line: one stop per member in teaching order
 (`routeMembers`: chapter number, then strand, then reading order), each with
-`code`, `href`, `title`, `role`, `chapter` number, chapter title as `place`
+`code`, `href`, `title`, `role`, `chapter` number
 and `station` id, and `lanes`, the
 titles of the strands the thread visits. A stop's `lane` indexes `lanes`, so a
 route has as many lanes as it needs whatever the number of strands. The dock,
@@ -777,7 +778,7 @@ pointer, at the end of a spur drawn from its column. `ThreadsExplorer` (client) 
 | `shown` | the threads drawn, in definition order | the key; starts as all, or the one in the address |
 | `preview` | the key entry under the pointer or keyboard | the key |
 | `hover` | the stop under the pointer | the graph's columns and stop names, the reading |
-| `cursor` | the pinned stop | a click on a column or name (again to unpin), ←/→ in the graph, `#<station>` in the address; Esc unpins |
+| `cursor` | the pinned stop | a click on a column or name (again to unpin), ←/→ in the graph, `#<station>` in the address (on load and when it changes); Esc unpins |
 
 Every shown thread is drawn in the foreground. Aqua marks the threads in
 question, first match wins: the key entry under the pointer, the hovered
@@ -945,8 +946,9 @@ number, so two marked threads stay apart.
   to `DEPENDENCY_EDGES` if it is a prerequisite: it then joins NEEDS,
   `prerequisites()` and the page links.
 - **A new dock list:** add a `DockList` field to `DockEnv`, fill it in
-  `dockEnv` (`relations/dock.ts`) from `relationsOf`, add a clause to
-  `EnvBay` and add it to the `firstClause` call in `envSubject`.
+  `dockEnv` (`relations/dock.ts`) from `relationsOf`, and in `envSubject`
+  (`subject.tsx`) make it a clause and place it in the bay's and the
+  summary's clause lists.
 
 ## Tuning
 
@@ -972,7 +974,7 @@ Starting values, none yet checked in a browser:
 | diagram band labels | `DIAGRAM.label`, `narrowLabel`, `narrow` | 92px in full; 34px by code below 640px |
 | spur | `SPUR`, `threads/diagram.tsx` | turns 12px under the names, reading 28px under them, runs 4.5px from the left |
 | reading rest | `REST_MS`, `threads/explorer.tsx` | 90ms |
-| stop names | `NAME_SIZE`, `threads/diagram.tsx` | 45°, 12px below the bands, at most 200px |
+| stop names | `NAME_ANGLE`, `NAME`, `threads/layout.ts` | 45°, 12px below the bands, at most 200px |
 | page bottom padding | `global.css` | 6rem |
 
 ## Not yet built

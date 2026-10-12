@@ -47,7 +47,6 @@ export interface DockRef {
 	difficulty?: ExampleDifficulty;
 	id: string;
 	place?: string;
-	role?: RenderedMarkdown<"inline">;
 	title: RenderedMarkdown<"inline">;
 }
 
@@ -63,7 +62,6 @@ export interface RouteStop {
 	code: string;
 	href: string;
 	lane: number;
-	place?: string;
 	role?: RenderedMarkdown<"inline">;
 	station: string;
 	title: RenderedMarkdown<"inline">;
