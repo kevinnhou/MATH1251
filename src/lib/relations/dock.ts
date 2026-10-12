@@ -129,17 +129,15 @@ function dockThread(
 	{ thread, view }: DockThreadSource,
 	isHere: MemberTest
 ): DockThread {
-	const members = new Map(
-		thread.members.map((member) => [member.href, member])
+	const here = new Set(
+		thread.members.filter(isHere).map((member) => member.href)
 	);
-	const here = view.route.stops.flatMap((stop, at) => {
-		const member = members.get(stop.href);
-		return member && isHere(member) ? [at] : [];
-	});
 
 	return {
 		...view,
-		here,
+		here: view.route.stops.flatMap((stop, at) =>
+			here.has(stop.href) ? [at] : []
+		),
 		positions: positions(
 			ctx,
 			thread.members

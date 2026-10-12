@@ -25,7 +25,8 @@ export const DIAGRAM = {
 export const NAME_ANGLE = 45;
 
 const NAME = { char: 5.6, code: 6, gap: 12, max: 200 } as const;
-const SLANT = Math.cos((NAME_ANGLE * Math.PI) / 180);
+const NAME_REACH = Math.cos((NAME_ANGLE * Math.PI) / 180);
+const NAME_DROP = Math.sin((NAME_ANGLE * Math.PI) / 180);
 const OVERHANG = 4;
 
 const SPACING = {
@@ -146,7 +147,7 @@ export function layoutDiagram(
 						? []
 						: [{ thread, y: trackY(band, track) }];
 				}),
-				room: Math.min(xs[at] / SLANT, NAME.max),
+				room: Math.min(xs[at] / NAME_REACH, NAME.max),
 				station,
 				strand: band.strand,
 				x: xs[at],
@@ -181,7 +182,7 @@ function nameDepth({ room, station }: DiagramStation): number {
 	const estimate =
 		(station.code.length + 1) * NAME.code +
 		station.title.plain.length * NAME.char;
-	return Math.min(estimate, room) * SLANT;
+	return Math.min(estimate, room) * NAME_DROP;
 }
 
 function chapterOf({

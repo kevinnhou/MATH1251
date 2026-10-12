@@ -35,6 +35,8 @@ interface Clause {
 }
 
 const UNLINKED = "Not linked to the rest of the course yet.";
+const BUILDS_ON = DIRECTION_COLORS["builds-on"];
+const LEADS_TO = DIRECTION_COLORS["leads-to"];
 
 export function subjectAt(dock: PageDock, anchor: string | null): DockSubject {
 	const env = dock.envs.find((entry) => entry.anchor === anchor);
@@ -72,13 +74,9 @@ function threadSubject(thread: DockThread): DockSubject {
 
 function envSubject(env: DockEnv): DockSubject {
 	const [thread] = env.threads;
-	const needs = clause("Builds on", env.needs, "builds-on");
-	const practisedIn: Clause = {
-		color: MUTED_COLOR,
-		lead: "Practised in",
-		list: env.practisedIn,
-	};
-	const leadsTo = clause("Leads to", env.leadsTo, "leads-to");
+	const needs = clause("Builds on", env.needs, BUILDS_ON);
+	const practisedIn = clause("Practised in", env.practisedIn, MUTED_COLOR);
+	const leadsTo = clause("Leads to", env.leadsTo, LEADS_TO);
 
 	return {
 		bay: (
@@ -105,7 +103,7 @@ function envSubject(env: DockEnv): DockSubject {
 
 function pageSubject({ page, threads }: PageDock): DockSubject {
 	const link = (lead: string, direction: Direction) =>
-		clause(lead, page.links[direction], direction);
+		clause(lead, page.links[direction], DIRECTION_COLORS[direction]);
 
 	return {
 		bay: (
@@ -128,8 +126,8 @@ function pageSubject({ page, threads }: PageDock): DockSubject {
 	};
 }
 
-function clause(lead: string, list: DockList, direction: Direction): Clause {
-	return { color: DIRECTION_COLORS[direction], lead, list };
+function clause(lead: string, list: DockList, color: string): Clause {
+	return { color, lead, list };
 }
 
 function firstClause(clauses: readonly Clause[]): ReactNode | undefined {
