@@ -4,6 +4,7 @@ import { getMathEnvConfig } from "@/lib/math-env/kinds";
 import type {
 	Thread,
 	ThreadIndex,
+	ThreadMember,
 	ThreadSourcePage,
 } from "@/lib/math-env/thread";
 import { chapterOfId } from "./query";
@@ -23,8 +24,6 @@ export function threadMapHref(slug: string, station?: string): string {
 const NOT_ID = /[^a-z0-9]+/gi;
 const TRAILING_DASH = /-$/;
 
-// The DOM id of an environment's station on the threads page, so a link can
-// land on it (`/threads/<slug>#<station>`).
 export function stationId(href: string): string {
 	return `at-${href.replace(NOT_ID, "-")}`
 		.replace(TRAILING_DASH, "")
@@ -106,40 +105,54 @@ export function buildThreadMap(
 	};
 }
 
-// One stop per member, in course order. Lanes are only the strands this thread
-// visits, in course order, so a route has as many lanes as it needs whatever
-// the number of strands in the course.
+export function routeMembers(
+	index: CourseIndex,
+	thread: Thread
+): { chapter?: CourseChapter; member: ThreadMember }[] {
+	const strandAt = (chapter: CourseChapter | undefined) =>
+		index.strands.findIndex((strand) => strand.id === chapter?.strand);
+	return thread.members
+		.map((member, at) => ({
+			at,
+			chapter: chapterOfId(index, member.pageUrl),
+			member,
+		}))
+		.toSorted(
+			(left, right) =>
+				(left.chapter?.number ?? Number.POSITIVE_INFINITY) -
+					(right.chapter?.number ?? Number.POSITIVE_INFINITY) ||
+				strandAt(left.chapter) - strandAt(right.chapter) ||
+				left.at - right.at
+		)
+		.map(({ chapter, member }) => ({
+			member,
+			...(chapter ? { chapter } : {}),
+		}));
+}
+
 export function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
-	const chapters = thread.members.map((member) =>
-		chapterOfId(index, member.pageUrl)
-	);
+	const members = routeMembers(index, thread);
 	const lanes = index.strands.filter((strand) =>
-		chapters.some((chapter) => chapter?.strand === strand.id)
+		members.some(({ chapter }) => chapter?.strand === strand.id)
 	);
 
 	return {
 		lanes: lanes.map((strand) => strand.title),
-		stops: thread.members.map((member, at) => {
-			const chapter = chapters[at];
-			return {
-				code: getMathEnvConfig(member.kind).code,
-				href: member.href,
-				lane: Math.max(
-					lanes.findIndex((strand) => strand.id === chapter?.strand),
-					0
-				),
-				station: stationId(member.href),
-				title: rendered(member.title),
-				...(chapter ? { place: chapter.title } : {}),
-				...(member.role ? { role: rendered(member.role) } : {}),
-			};
-		}),
+		stops: members.map(({ chapter, member }) => ({
+			code: getMathEnvConfig(member.kind).code,
+			href: member.href,
+			lane: Math.max(
+				lanes.findIndex((strand) => strand.id === chapter?.strand),
+				0
+			),
+			station: stationId(member.href),
+			title: rendered(member.title),
+			...(chapter ? { chapter: chapter.number, place: chapter.title } : {}),
+			...(member.role ? { role: rendered(member.role) } : {}),
+		})),
 	};
 }
 
-// Rows line up chapter N of every strand, because MATH1251 teaches its strands
-// side by side. A course taught one strand after another would lay rows out by
-// reading order instead; only this function would change.
 function alignedRows(
 	index: CourseIndex,
 	placed: readonly Placed[],

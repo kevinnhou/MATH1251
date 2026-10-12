@@ -42,8 +42,6 @@ const MOVES: Record<string, Move> = {
 	w: "up",
 };
 
-// Arrows and WASD, for widgets that own them while focused (sidebar tree,
-// route strip, thread map). Nothing listens for these on the window.
 export function moveKey(event: KeyboardEvent): Move | null {
 	if (isModifiedKey(event) || event.shiftKey) {
 		return null;
@@ -52,4 +50,26 @@ export function moveKey(event: KeyboardEvent): Move | null {
 	return (
 		MOVES[event.key.length === 1 ? event.key.toLowerCase() : event.key] ?? null
 	);
+}
+
+export function cursorKey(
+	event: KeyboardEvent,
+	at: number,
+	count: number
+): number | undefined {
+	if (event.key === "Home") {
+		return 0;
+	}
+	if (event.key === "End") {
+		return count - 1;
+	}
+
+	const move = moveKey(event);
+	if (move === "left" || move === "right") {
+		return stepWithin(at, move === "left" ? -1 : 1, count);
+	}
+}
+
+export function stepWithin(at: number, by: number, count: number): number {
+	return Math.min(Math.max(at + by, 0), count - 1);
 }

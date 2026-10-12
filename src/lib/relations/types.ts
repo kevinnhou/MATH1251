@@ -59,6 +59,7 @@ export interface DockList {
 export type DockStrip = Record<Direction, number[]>;
 
 export interface RouteStop {
+	chapter?: number;
 	code: string;
 	href: string;
 	lane: number;
@@ -78,6 +79,7 @@ export interface DockThread {
 	here: number[];
 	href: string;
 	mapHref: string;
+	number: number;
 	positions: number[];
 	route: ThreadRoute;
 	slug: string;

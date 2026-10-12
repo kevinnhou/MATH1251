@@ -16,7 +16,7 @@ import { type PageEnvs, threadId } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
 import type { Thread, ThreadIndex } from "@/lib/math-env/thread";
 import { chapterOfId, neighbours } from "./query";
-import { threadMapHref, threadRoute } from "./thread-map";
+import { routeMembers, threadMapHref, threadRoute } from "./thread-map";
 import {
 	byDirection,
 	type CourseIndex,
@@ -106,15 +106,13 @@ export function buildPageDock(
 	};
 }
 
-// `env` is the environment being read, when there is one: it is "here" on the
-// route. Otherwise every stop on this page is.
 function dockThread(
 	ctx: DockContext,
 	thread: Thread,
 	env?: string
 ): DockThread {
 	const anchor = threadAnchor(ctx, thread);
-	const here = thread.members.flatMap((member, at) =>
+	const here = routeMembers(ctx.index, thread).flatMap(({ member }, at) =>
 		(env === undefined ? member.pageUrl === ctx.pageUrl : member.href === env)
 			? [at]
 			: []
@@ -124,6 +122,7 @@ function dockThread(
 		here,
 		href: thread.href,
 		mapHref: threadMapHref(thread.slug),
+		number: ctx.threads.indexOf(thread) + 1,
 		positions: positions(
 			ctx,
 			thread.members
