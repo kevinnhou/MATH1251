@@ -31,7 +31,7 @@ src/components/terminal/   terminal UI
 
 src/components/sidebar/    terminal screen
 
-src/lib/client/keybinds.ts every site wide hotkey, and moveKey (arrows and WASD for focus-scoped widgets)
+src/lib/client/keybinds.ts every site wide hotkey, moveKey (arrows and WASD for focus-scoped widgets) and cursorKey
 src/app/api/search/route.ts search endpoint (`format=terminal`)
 ```
 
@@ -244,17 +244,18 @@ each feature keeps its own window listener and ordering never matters.
 | ←→ / AD, Home/End | dock route strip | a strip focused | Move the cursor along the thread's stops |
 | ↑↓ / WS | dock route strip, rest bar | a strip or the rest bar focused | Move between the strips and the rest bar |
 | Enter | dock route strip | a strip focused | Open `/threads/<slug>` at the cursor |
-| ↑↓ / WS, Space | threads index | an index row focused | Move between rows; Space adds or removes the thread |
-| ↑↓←→ / WASD, Home/End | thread map | a station focused | Move the cursor between stations |
-| Esc | threads page | focus in the page, a thread focused | Clear focus |
+| ↑↓ / WS, Space | threads index | an index row focused | Move between rows; Space shows or hides the thread |
+| ←→ / AD, Home/End, Enter | threads diagram | the diagram focused | Move the cursor between stops; Enter opens the stop |
+| Esc | threads page | focus in the page, not every thread shown | Show all threads |
 
 In the prompt: Tab and ↑/↓ cycle completions, Enter runs (accepting the
 highlighted completion), Esc dismisses.
 
 Arrow navigation is deliberately focus-scoped (tree, route strips, threads
-index and map): global arrows would take over page scrolling. Each widget
-reads arrows and WASD through `moveKey` in `keybinds.ts`, handles them in its
-own `onKeyDown` and calls `preventDefault`, which the terminal's and sidebar's
+index and diagram): global arrows would take over page scrolling. Each widget
+reads arrows and WASD through `moveKey` in `keybinds.ts` (the route strips
+and the diagram move their cursor through `cursorKey`, which adds Home/End),
+handles them in its own `onKeyDown` and calls `preventDefault`, which the terminal's and sidebar's
 window listeners check first, so a handled key never reaches them. See
 RELATIONS.md, Threads in the dock and Threads page.
 
