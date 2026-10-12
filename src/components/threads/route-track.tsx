@@ -1,14 +1,15 @@
+import type { Ref } from "react";
 import { foregroundAt } from "@/components/relations/colors";
 import { cn } from "@/lib/cn";
 import type { ThreadRoute } from "@/lib/relations/types";
 import { laneCode } from "./format";
 import { packChapters, squareLine } from "./geometry";
+import { STOP } from "./marks";
 
 const UNIT = { gap: 4, pad: 2, slot: 10 } as const;
 const AXIS = 13;
 const BAND = 14;
 const BAND_GAP = 3;
-const STOP = 7;
 
 const TINT = foregroundAt(6);
 const COLUMN = foregroundAt(12);
@@ -68,11 +69,13 @@ function trackY(lane: number): number {
 export function RouteTrack({
 	cursor,
 	here,
+	plotRef,
 	route,
 	tone = "thread",
 }: {
 	cursor?: number;
 	here: readonly number[];
+	plotRef?: Ref<HTMLSpanElement>;
 	route: ThreadRoute;
 	tone?: "muted" | "thread";
 }) {
@@ -111,7 +114,7 @@ export function RouteTrack({
 			<span
 				aria-hidden="true"
 				className="relative block"
-				data-route-plot=""
+				ref={plotRef}
 				style={{ height }}
 			>
 				{layout.chapters.map((chapter) => (

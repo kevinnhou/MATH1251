@@ -74,17 +74,50 @@ export interface ThreadRoute {
 	stops: RouteStop[];
 }
 
-export interface DockThread {
-	anchor?: string;
-	here: number[];
+export interface ThreadMapStop {
+	role?: RenderedMarkdown<"inline">;
+	thread: string;
+}
+
+export interface ThreadMapStation {
+	code: string;
+	href: string;
+	id: string;
+	stops: ThreadMapStop[];
+	title: RenderedMarkdown<"inline">;
+}
+
+export interface ThreadMapCell {
+	chapter?: CourseChapter;
+	stations: ThreadMapStation[];
+	strand: string;
+}
+
+export interface ThreadMapRow {
+	cells: ThreadMapCell[];
+	number: number;
+}
+
+export interface ThreadMapThread {
 	href: string;
 	mapHref: string;
 	number: number;
-	positions: number[];
 	route: ThreadRoute;
 	slug: string;
 	summary: RenderedMarkdown<"inline">;
 	title: RenderedMarkdown<"inline">;
+}
+
+export interface ThreadMap {
+	rows: ThreadMapRow[];
+	strands: CourseStrand[];
+	threads: ThreadMapThread[];
+}
+
+export interface DockThread extends ThreadMapThread {
+	anchor?: string;
+	here: number[];
+	positions: number[];
 }
 
 export interface DockEnv {

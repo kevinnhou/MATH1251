@@ -28,7 +28,12 @@ const CURSOR_SLACK = 16;
 
 const APPROACH = { horizon: 220, minSpeed: 0.3, reach: 320 } as const;
 
-const CORRIDOR = { dwell: 500, margin: 24, minSpeed: 0.2, minTravel: 40 };
+const CORRIDOR = {
+	dwell: 500,
+	margin: 24,
+	minSpeed: 0.2,
+	minTravel: 40,
+} as const;
 
 const PROXIMITY = { closeDelay: 320, openDelay: 100, radius: 48 } as const;
 

@@ -14,9 +14,8 @@ import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { type RenderedMarkdown, rendered } from "@/lib/markdown/types";
 import { type PageEnvs, threadId } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
-import type { Thread, ThreadIndex } from "@/lib/math-env/thread";
+import type { Thread, ThreadIndex, ThreadMember } from "@/lib/math-env/thread";
 import { chapterOfId, neighbours } from "./query";
-import { routeMembers, threadMapHref, threadRoute } from "./thread-map";
 import {
 	byDirection,
 	type CourseIndex,
@@ -25,6 +24,8 @@ import {
 	type DockRef,
 	type DockThread,
 	type PageDock,
+	type ThreadMap,
+	type ThreadMapThread,
 } from "./types";
 
 const NEEDS_LIMIT = 6;
@@ -36,7 +37,13 @@ interface DockSources {
 	courseIndex: CourseIndex;
 	exportGraph: ExportGraph;
 	tenets: TenetIndex;
+	threadMap: ThreadMap;
 	threads: ThreadIndex;
+}
+
+interface DockThreadSource {
+	thread: Thread;
+	view: ThreadMapThread;
 }
 
 interface DockContext {
@@ -44,11 +51,19 @@ interface DockContext {
 	graph: ExportGraph;
 	index: CourseIndex;
 	pageUrl: string;
-	threads: readonly Thread[];
+	threads: readonly DockThreadSource[];
 }
 
+type MemberTest = (member: ThreadMember) => boolean;
+
 export function buildPageDock(
-	{ courseIndex: index, exportGraph: graph, tenets, threads }: DockSources,
+	{
+		courseIndex: index,
+		exportGraph: graph,
+		tenets,
+		threadMap,
+		threads,
+	}: DockSources,
 	envs: PageEnvs,
 	page: { title: string; url: string }
 ): PageDock {
@@ -57,8 +72,12 @@ export function buildPageDock(
 		graph,
 		index,
 		pageUrl: page.url,
-		threads: [...threads.bySlug.values()],
+		threads: threadMap.threads.flatMap((view) => {
+			const thread = threads.bySlug.get(view.slug);
+			return thread ? [{ thread, view }] : [];
+		}),
 	};
+	const onPage: MemberTest = (member) => member.pageUrl === page.url;
 	const own = envs.entries.flatMap((entry) => {
 		const node = graph.nodes.get(envId(page.url, entry.id));
 		return node?.type === "env" ? [dockEnv(ctx, entry.id, node, false)] : [];
@@ -98,47 +117,39 @@ export function buildPageDock(
 		},
 		threads: ctx.threads
 			.filter(
-				(thread) =>
-					thread.pageUrl === page.url ||
-					thread.members.some((member) => member.pageUrl === page.url)
+				({ thread }) =>
+					thread.pageUrl === page.url || thread.members.some(onPage)
 			)
-			.map((thread) => dockThread(ctx, thread)),
+			.map((source) => dockThread(ctx, source, onPage)),
 	};
 }
 
 function dockThread(
 	ctx: DockContext,
-	thread: Thread,
-	env?: string
+	{ thread, view }: DockThreadSource,
+	isHere: MemberTest
 ): DockThread {
-	const anchor = threadAnchor(ctx, thread);
-	const here = routeMembers(ctx.index, thread).flatMap(({ member }, at) =>
-		(env === undefined ? member.pageUrl === ctx.pageUrl : member.href === env)
-			? [at]
-			: []
+	const members = new Map(
+		thread.members.map((member) => [member.href, member])
 	);
+	const here = view.route.stops.flatMap((stop, at) => {
+		const member = members.get(stop.href);
+		return member && isHere(member) ? [at] : [];
+	});
 
 	return {
+		...view,
 		here,
-		href: thread.href,
-		mapHref: threadMapHref(thread.slug),
-		number: ctx.threads.indexOf(thread) + 1,
 		positions: positions(
 			ctx,
 			thread.members
-				.filter((member) => member.href !== env)
+				.filter((member) => !isHere(member))
 				.map((member) => member.pageUrl)
 		),
-		route: threadRoute(ctx.index, thread),
-		slug: thread.slug,
-		summary: rendered(thread.summary),
-		title: rendered(thread.title),
-		...(anchor ? { anchor } : {}),
+		...(thread.pageUrl === ctx.pageUrl
+			? { anchor: threadId(thread.slug) }
+			: {}),
 	};
-}
-
-function threadAnchor(ctx: DockContext, thread: Thread): string | undefined {
-	return thread.pageUrl === ctx.pageUrl ? threadId(thread.slug) : undefined;
 }
 
 function dockEnv(
@@ -153,6 +164,7 @@ function dockEnv(
 	const practisedIn = related(ctx, node.id, "practised_by");
 	const leadsTo = related(ctx, node.id, "used_by");
 	const ref = (target: ExportNode) => dockRef(ctx, target);
+	const isEnv: MemberTest = (member) => member.href === node.id;
 
 	return {
 		anchor,
@@ -165,10 +177,8 @@ function dockEnv(
 			"leads-to": positions(ctx, [...leadsTo, ...practisedIn].map(pageIdOf)),
 		},
 		threads: ctx.threads
-			.filter((thread) =>
-				thread.members.some((member) => member.href === node.id)
-			)
-			.map((thread) => dockThread(ctx, thread, node.id)),
+			.filter(({ thread }) => thread.members.some(isEnv))
+			.map((source) => dockThread(ctx, source, isEnv)),
 		title: inline(node.title || node.label),
 	};
 }

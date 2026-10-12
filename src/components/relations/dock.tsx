@@ -363,37 +363,30 @@ function stripTick(
 		: { color: "var(--color-fd-border)", height: 2 };
 }
 
-function isLinked(
-	lists: readonly DockList[],
-	threads: readonly DockThread[]
-): boolean {
-	return threads.length > 0 || lists.some((list) => list.count > 0);
+interface ClauseProps {
+	color: string;
+	lead: string;
+	list: DockList;
 }
 
 function EnvBay({ env }: { env: DockEnv }) {
-	const linked = isLinked(
-		[env.needs, env.practisedIn, env.leadsTo],
-		env.threads
-	);
-
 	return (
-		<>
-			<Clause
-				color={DIRECTION_COLORS["builds-on"]}
-				lead="Builds on"
-				list={env.needs}
-			/>
-			<Clause color={MUTED_COLOR} lead="Practised in" list={env.practisedIn} />
-			<Clause
-				color={DIRECTION_COLORS["leads-to"]}
-				lead="Leads to"
-				list={env.leadsTo}
-			/>
-			{env.threads.map((thread) => (
-				<ThreadBlock key={thread.slug} thread={thread} />
-			))}
-			{linked ? null : <p className="m-0">{UNLINKED}</p>}
-		</>
+		<RelationsBay
+			clauses={[
+				{
+					color: DIRECTION_COLORS["builds-on"],
+					lead: "Builds on",
+					list: env.needs,
+				},
+				{ color: MUTED_COLOR, lead: "Practised in", list: env.practisedIn },
+				{
+					color: DIRECTION_COLORS["leads-to"],
+					lead: "Leads to",
+					list: env.leadsTo,
+				},
+			]}
+			threads={env.threads}
+		/>
 	);
 }
 
@@ -404,23 +397,40 @@ function PageBay({
 	links: PageDock["page"]["links"];
 	threads: readonly DockThread[];
 }) {
-	const linked = isLinked(
-		DIRECTIONS.map((direction) => links[direction]),
-		threads
+	return (
+		<RelationsBay
+			clauses={[
+				{
+					color: DIRECTION_COLORS["builds-on"],
+					lead: "This page builds on",
+					list: links["builds-on"],
+				},
+				{
+					color: DIRECTION_COLORS["leads-to"],
+					lead: "It leads to",
+					list: links["leads-to"],
+				},
+			]}
+			threads={threads}
+		/>
 	);
+}
+
+function RelationsBay({
+	clauses,
+	threads,
+}: {
+	clauses: readonly ClauseProps[];
+	threads: readonly DockThread[];
+}) {
+	const linked =
+		threads.length > 0 || clauses.some(({ list }) => list.count > 0);
 
 	return (
 		<>
-			<Clause
-				color={DIRECTION_COLORS["builds-on"]}
-				lead="This page builds on"
-				list={links["builds-on"]}
-			/>
-			<Clause
-				color={DIRECTION_COLORS["leads-to"]}
-				lead="It leads to"
-				list={links["leads-to"]}
-			/>
+			{clauses.map((clause) => (
+				<Clause key={clause.lead} {...clause} />
+			))}
 			{threads.map((thread) => (
 				<ThreadBlock key={thread.slug} thread={thread} />
 			))}
@@ -452,15 +462,7 @@ function ThreadBlock({ thread }: { thread: DockThread }) {
 	);
 }
 
-function Clause({
-	color,
-	lead,
-	list,
-}: {
-	color: string;
-	lead: string;
-	list: DockList;
-}) {
+function Clause({ color, lead, list }: ClauseProps) {
 	return list.count === 0 ? null : (
 		<p className="m-0" data-relations-label="">
 			{lead} <Refs color={color} list={list} />.

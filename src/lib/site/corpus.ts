@@ -26,8 +26,8 @@ import {
 } from "@/lib/math-env/tenet";
 import { createThreadIndex, type ThreadIndex } from "@/lib/math-env/thread";
 import { buildCourseIndex, courseOrder } from "@/lib/relations/build";
-import { buildThreadMap, type ThreadMap } from "@/lib/relations/thread-map";
-import type { CourseIndex } from "@/lib/relations/types";
+import { buildThreadMap } from "@/lib/relations/thread-map";
+import type { CourseIndex, ThreadMap } from "@/lib/relations/types";
 import { getSourcePages, type SourcePage, source } from "./source";
 
 export type ResolvedDocs = {

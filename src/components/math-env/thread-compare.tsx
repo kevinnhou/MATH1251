@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { Bracket } from "@/components/threads/bracket";
 import type { PromptTarget } from "@/lib/export/model";
 import { AskShare } from "./share";
 
@@ -125,11 +126,7 @@ function ThreadCompare({
 						<span className="absolute top-1.5 left-1/2 h-5.25 origin-top -translate-x-1/2 scale-y-0 border-fd-border border-l transition-[scale] duration-150 ease-in group-data-open/spine:scale-y-100 group-data-open/spine:duration-200 group-data-open/spine:ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none" />
 					</span>
 					<span className="flex items-center gap-2">
-						<span>
-							<span className="text-fd-foreground">[</span>
-							COMPARE
-							<span className="text-fd-foreground">]</span>
-						</span>
+						<Bracket>COMPARE</Bracket>
 						<span className="normal-case tracking-normal">
 							{count} {count === 1 ? "Origin" : "Origins"}
 						</span>

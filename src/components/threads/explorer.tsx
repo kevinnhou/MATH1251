@@ -11,11 +11,9 @@ import {
 } from "react";
 import { stepWithin } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
-import {
-	THREADS_ROUTE,
-	type ThreadMap,
-	threadMapHref,
-} from "@/lib/relations/thread-map";
+import type { ThreadMap } from "@/lib/relations/types";
+import { threadMapHref } from "@/lib/relations/urls";
+import { threadsRoute } from "@/lib/site/config";
 import { ACTION, Bracket } from "./bracket";
 import {
 	type DiagramReading,
@@ -24,7 +22,8 @@ import {
 } from "./diagram";
 import { MONO } from "./format";
 import { type DiagramStation, layoutDiagram } from "./layout";
-import { Marks, StopCard, ThreadCard } from "./preview";
+import { Marks } from "./marks";
+import { StopCard, ThreadCard } from "./preview";
 import { type IndexActions, ThreadIndex } from "./thread-index";
 
 export function ThreadsExplorer({
@@ -41,9 +40,7 @@ export function ThreadsExplorer({
 		() => new Map(map.threads.map((thread) => [thread.slug, thread])),
 		[map]
 	);
-	const [shown, setShown] = useState<readonly string[]>(
-		initial.length > 0 ? initial : all
-	);
+	const { allShown, shown, show } = useShown(all, initial);
 	const [preview, setPreview] = useState<string | null>(null);
 	const [hover, setHover] = useState<string | null>(null);
 	const [cursor, setCursor] = useState<string | null>(null);
@@ -61,25 +58,11 @@ export function ThreadsExplorer({
 	const current = find(cursor);
 	const hovered = find(hover);
 	const resting = find(useSettled(hover, REST_MS));
-	const allShown = shown.length === all.length;
 
 	useHashCursor(stations, setCursor);
 	useShownUrl(allShown ? undefined : shown[0]);
 
-	const actions: IndexActions = {
-		all: () => setShown(all),
-		only: (slug) =>
-			setShown((previous) =>
-				previous.length === 1 && previous[0] === slug ? all : [slug]
-			),
-		preview: setPreview,
-		toggle: (slug) =>
-			setShown((previous) =>
-				previous.includes(slug)
-					? previous.filter((entry) => entry !== slug)
-					: all.filter((entry) => entry === slug || previous.includes(entry))
-			),
-	};
+	const actions: IndexActions = { ...show, preview: setPreview };
 	const step = (by: -1 | 1) => {
 		const at = current ? stations.indexOf(current) : -1;
 		const next = stations[stepWithin(at, by, stations.length)];
@@ -159,6 +142,28 @@ export function ThreadsExplorer({
 			{stations.length > 0 ? <Marks /> : null}
 		</div>
 	);
+}
+
+function useShown(all: readonly string[], initial: readonly string[]) {
+	const [shown, setShown] = useState<readonly string[]>(
+		initial.length > 0 ? initial : all
+	);
+
+	const show: Omit<IndexActions, "preview"> = {
+		all: () => setShown(all),
+		only: (slug) =>
+			setShown((previous) =>
+				previous.length === 1 && previous[0] === slug ? all : [slug]
+			),
+		toggle: (slug) =>
+			setShown((previous) =>
+				previous.includes(slug)
+					? previous.filter((entry) => entry !== slug)
+					: all.filter((entry) => entry === slug || previous.includes(entry))
+			),
+	};
+
+	return { allShown: shown.length === all.length, show, shown };
 }
 
 function spurFor(
@@ -257,7 +262,7 @@ function useHashCursor(
 }
 
 function useShownUrl(first: string | undefined) {
-	const path = first === undefined ? THREADS_ROUTE : threadMapHref(first);
+	const path = first === undefined ? threadsRoute : threadMapHref(first);
 	useEffect(() => {
 		if (window.location.pathname !== path) {
 			window.history.replaceState(null, "", path);

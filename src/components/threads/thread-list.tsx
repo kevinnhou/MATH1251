@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { InlineHtml } from "@/components/markdown/html";
-import type { ThreadMap } from "@/lib/relations/thread-map";
-import { THREADS_ROUTE } from "@/lib/relations/thread-map";
+import { cn } from "@/lib/cn";
+import type { ThreadMap } from "@/lib/relations/types";
+import { threadsRoute } from "@/lib/site/config";
+import { Bracket } from "./bracket";
+import { MONO } from "./format";
 import { RouteTrack } from "./route-track";
 
 export function ThreadList({ map }: { map: ThreadMap }) {
@@ -11,17 +14,20 @@ export function ThreadList({ map }: { map: ThreadMap }) {
 
 	return (
 		<nav aria-label="Threads" className="@container not-prose my-8">
-			<div className="flex items-baseline justify-between pb-2 font-mono text-[10px] text-fd-muted-foreground uppercase tracking-wider">
+			<div
+				className={cn(
+					MONO,
+					"flex items-baseline justify-between pb-2 text-fd-muted-foreground"
+				)}
+			>
 				<span>
-					<span className="text-fd-foreground">[</span>THREADS
-					<span className="text-fd-foreground">]</span> {map.threads.length}
+					<Bracket>THREADS</Bracket> {map.threads.length}
 				</span>
 				<Link
 					className="outline-none hover:text-fd-foreground focus-visible:outline-1 focus-visible:outline-fd-foreground"
-					href={THREADS_ROUTE}
+					href={threadsRoute}
 				>
-					<span className="text-fd-foreground">[</span>MAP
-					<span className="text-fd-foreground">]</span>
+					<Bracket>MAP</Bracket>
 				</Link>
 			</div>
 			<ol className="m-0 list-none border-fd-border border-b p-0">

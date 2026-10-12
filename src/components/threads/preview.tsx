@@ -2,9 +2,8 @@
 
 import type { ReactNode } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { foregroundAt, THREAD_COLOR } from "@/components/relations/colors";
 import { cn } from "@/lib/cn";
-import type { ThreadMapThread } from "@/lib/relations/thread-map";
+import type { ThreadMapThread } from "@/lib/relations/types";
 import { ACTION, Bracket } from "./bracket";
 import { MONO, placeLabel } from "./format";
 import type { DiagramStation } from "./layout";
@@ -42,12 +41,10 @@ export function StopCard({
 				)}
 			>
 				<span className="text-fd-foreground">{entry.station.code}</span>
-				<span>{placeLabel(entry.strand.title, entry.number)}</span>
-				{entry.chapter ? (
-					<span className="truncate font-sans text-[12px] normal-case italic tracking-normal">
-						{entry.chapter.title}
-					</span>
-				) : null}
+				<span>{placeLabel(entry.strand.title, entry.chapter.number)}</span>
+				<span className="truncate font-sans text-[12px] normal-case italic tracking-normal">
+					{entry.chapter.title}
+				</span>
 			</p>
 			{statement ? (
 				<div className="text-fd-foreground/90 [&_.math-env-statement]:mb-0">
@@ -132,94 +129,3 @@ export function ThreadCard({ thread }: { thread: ThreadMapThread }) {
 		</article>
 	);
 }
-
-const LINE = foregroundAt(55);
-
-export function Marks() {
-	return (
-		<ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 text-[11px] text-fd-muted-foreground">
-			{KEY.map(([glyph, text]) => (
-				<li className="flex items-center gap-2" key={text}>
-					<svg aria-hidden="true" className="block" height={16} width={24}>
-						{glyph}
-					</svg>
-					{text}
-				</li>
-			))}
-		</ul>
-	);
-}
-
-function square(y: number, filled = false): ReactNode {
-	return (
-		<rect
-			fill={
-				filled ? "var(--color-fd-foreground)" : "var(--color-fd-background)"
-			}
-			height={7}
-			stroke={filled ? "var(--color-fd-foreground)" : LINE}
-			strokeWidth={1.5}
-			width={7}
-			x={8.5}
-			y={y}
-		/>
-	);
-}
-
-const KEY: readonly [glyph: ReactNode, text: string][] = [
-	[
-		<line
-			key="solid"
-			stroke={LINE}
-			strokeWidth={1.5}
-			x1={1}
-			x2={23}
-			y1={8}
-			y2={8}
-		/>,
-		"Within a chapter",
-	],
-	[
-		<line
-			key="transit"
-			stroke={LINE}
-			strokeDasharray="1 4"
-			strokeLinecap="round"
-			strokeWidth={1.25}
-			x1={1}
-			x2={23}
-			y1={8}
-			y2={8}
-		/>,
-		"Waiting between chapters",
-	],
-	[square(4.5), "A stop"],
-	[
-		<g key="interchange">
-			<line
-				stroke="var(--color-fd-foreground)"
-				strokeWidth={2}
-				x1={12}
-				x2={12}
-				y1={4}
-				y2={12}
-			/>
-			{square(0.5)}
-			{square(8.5)}
-		</g>,
-		"One stop on two threads",
-	],
-	[square(4.5, true), "Pinned"],
-	[
-		<line
-			key="marked"
-			stroke={THREAD_COLOR}
-			strokeWidth={2.5}
-			x1={1}
-			x2={23}
-			y1={8}
-			y2={8}
-		/>,
-		"The thread in question",
-	],
-];

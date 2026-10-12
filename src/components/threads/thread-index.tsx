@@ -2,9 +2,9 @@
 
 import type { KeyboardEvent } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { moveKey } from "@/lib/client/keybinds";
+import { focusSibling, moveKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
-import type { ThreadMapThread } from "@/lib/relations/thread-map";
+import type { ThreadMapThread } from "@/lib/relations/types";
 import { ACTION, Bracket } from "./bracket";
 
 export interface IndexActions {
@@ -14,7 +14,7 @@ export interface IndexActions {
 	toggle: (slug: string) => void;
 }
 
-const KEY_ENTRY = "[data-index-row]";
+const KEY_ENTRY = { item: "[data-index-row]", scope: "ul" };
 
 export function ThreadIndex({
 	actions,
@@ -35,12 +35,11 @@ export function ThreadIndex({
 		const move = moveKey(event.nativeEvent);
 		if (move) {
 			event.preventDefault();
-			const list = event.currentTarget.closest("ul");
-			const entries = list
-				? [...list.querySelectorAll<HTMLElement>(KEY_ENTRY)]
-				: [];
-			const by = move === "up" || move === "left" ? -1 : 1;
-			entries[entries.indexOf(event.currentTarget) + by]?.focus();
+			focusSibling(
+				event.currentTarget,
+				KEY_ENTRY,
+				move === "up" || move === "left" ? -1 : 1
+			);
 		}
 	};
 

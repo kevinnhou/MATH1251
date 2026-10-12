@@ -1,9 +1,10 @@
 import type {
+	CourseChapter,
+	CourseStrand,
 	ThreadMap,
 	ThreadMapStation,
 	ThreadMapThread,
-} from "@/lib/relations/thread-map";
-import type { CourseChapter, CourseStrand } from "@/lib/relations/types";
+} from "@/lib/relations/types";
 import { chapterWidth, packChapters, squareLine } from "./geometry";
 
 export const DIAGRAM = {
@@ -33,9 +34,8 @@ export interface DiagramMark {
 }
 
 export interface DiagramStation {
-	chapter?: CourseChapter;
+	chapter: CourseChapter;
 	marks: DiagramMark[];
-	number: number;
 	station: ThreadMapStation;
 	strand: CourseStrand;
 	x: number;
@@ -103,11 +103,12 @@ export function layoutDiagram(
 			number: row.number,
 			placed: bands.flatMap((band) => {
 				const cell = cells.get(band.strand.id);
-				return (cell?.stations ?? []).filter(isShown).map((station) => ({
-					band,
-					chapter: cell?.chapter,
-					station,
-				}));
+				const chapter = cell?.chapter;
+				return chapter
+					? cell.stations
+							.filter(isShown)
+							.map((station) => ({ band, chapter, station }))
+					: [];
 			}),
 		};
 	});
@@ -125,20 +126,19 @@ export function layoutDiagram(
 		label
 	);
 
-	const stations = packed.flatMap(({ number, placed, xs }) =>
+	const stations = packed.flatMap(({ placed, xs }) =>
 		placed.map(
 			({ band, chapter, station }, at): DiagramStation => ({
+				chapter,
 				marks: station.stops.flatMap(({ thread }) => {
 					const track = tracks.get(thread);
 					return track === undefined
 						? []
 						: [{ thread, y: trackY(band, track) }];
 				}),
-				number,
 				station,
 				strand: band.strand,
 				x: xs[at],
-				...(chapter ? { chapter } : {}),
 			})
 		)
 	);
@@ -207,9 +207,9 @@ function lineOf(
 	stations: readonly DiagramStation[],
 	slot: number
 ): DiagramLine[] {
-	const points = stations.flatMap(({ marks, number, x }) => {
+	const points = stations.flatMap(({ chapter, marks, x }) => {
 		const mark = marks.find((each) => each.thread === thread.slug);
-		return mark ? [{ chapter: number, x, y: mark.y }] : [];
+		return mark ? [{ chapter: chapter.number, x, y: mark.y }] : [];
 	});
 	const [start] = points;
 	return start

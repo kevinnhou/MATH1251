@@ -7,11 +7,10 @@ import { cursorKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
 import { laneCode } from "./format";
 import { DIAGRAM, type Diagram, type DiagramStation } from "./layout";
+import { LINE, STOP, StopMarks, solidStroke, transitStroke } from "./marks";
 
-const STOP = 7;
 const TINT = foregroundAt(5);
 const COLUMN = foregroundAt(8);
-const LINE = foregroundAt(55);
 const QUIET = foregroundAt(20);
 const NAME = foregroundAt(72);
 const NAME_QUIET = foregroundAt(32);
@@ -66,7 +65,7 @@ export function ThreadDiagram({
 	const [scroll, setScroll] = useState(0);
 	const at = cursor ? stations.indexOf(cursor) : -1;
 	const lit = (slug: string) => highlight.includes(slug);
-	const colour = (slug: string) => {
+	const ink = (slug: string) => {
 		if (lit(slug)) {
 			return THREAD_COLOR;
 		}
@@ -76,19 +75,10 @@ export function ThreadDiagram({
 	const bottom = diagram.height + 4;
 	const names = stations.map(nameWidth);
 	const hang = bottom + NAME_SIZE.gap;
-	const depth =
-		Math.max(0, ...names.map((name) => name.estimate)) * SLANT + NAME_SIZE.gap;
-	const nameColour = (entry: DiagramStation) => {
-		if (entry === cursor || entry === hover) {
-			return "var(--color-fd-foreground)";
-		}
-		if (highlight.length === 0) {
-			return NAME;
-		}
-		return entry.marks.some(({ thread }) => lit(thread))
-			? "var(--color-fd-foreground)"
-			: NAME_QUIET;
-	};
+	const foot =
+		hang +
+		Math.max(0, ...names.map((name) => name.estimate)) * SLANT +
+		NAME_SIZE.gap;
 	const column = (entry: DiagramStation) => ({
 		height: bottom - top,
 		width: diagram.slot,
@@ -113,11 +103,6 @@ export function ThreadDiagram({
 		}
 	};
 
-	const foot = hang + depth;
-	const pinned = spur?.pinned ?? false;
-	const spurInk = pinned ? "var(--color-fd-foreground)" : LINE;
-	const active = spur?.key;
-
 	return (
 		<div className="relative">
 			<div
@@ -139,7 +124,7 @@ export function ThreadDiagram({
 				<div
 					className="relative"
 					onPointerLeave={() => onHover(null)}
-					style={{ height: hang + depth, width: diagram.width }}
+					style={{ height: foot, width: diagram.width }}
 				>
 					<svg
 						aria-hidden="true"
@@ -147,44 +132,7 @@ export function ThreadDiagram({
 						height={bottom}
 						width={diagram.width}
 					>
-						{diagram.chapters.map((chapter) => (
-							<text
-								className="text-[10px]"
-								fill={
-									chapter.empty ? QUIET : "var(--color-fd-muted-foreground)"
-								}
-								key={chapter.number}
-								x={chapter.x0}
-								y={12}
-							>
-								{chapter.empty ? "" : chapter.number}
-							</text>
-						))}
-						{diagram.bands.map((band) => (
-							<g key={band.strand.id}>
-								<text
-									className="text-[10px] uppercase tracking-wider"
-									dominantBaseline="middle"
-									fill="var(--color-fd-muted-foreground)"
-									x={0}
-									y={(band.y0 + band.y1) / 2}
-								>
-									{diagram.coded
-										? laneCode(band.strand.title)
-										: band.strand.title.toUpperCase()}
-								</text>
-								{band.segments.map((segment) => (
-									<rect
-										fill={TINT}
-										height={band.y1 - band.y0}
-										key={segment.number}
-										width={segment.x1 - segment.x0}
-										x={segment.x0}
-										y={band.y0}
-									/>
-								))}
-							</g>
-						))}
+						<Ground diagram={diagram} />
 						{cursor ? <rect fill={COLUMN} {...column(cursor)} /> : null}
 						{hover ? (
 							<line
@@ -196,47 +144,14 @@ export function ThreadDiagram({
 								y2={bottom}
 							/>
 						) : null}
-						{diagram.lines
-							.toSorted(
-								(left, right) =>
-									Number(lit(left.slug)) - Number(lit(right.slug))
-							)
-							.map((line) => (
-								<g key={line.slug} stroke={colour(line.slug)}>
-									<path
-										d={line.transit}
-										fill="none"
-										strokeDasharray="1 4"
-										strokeLinecap="round"
-										strokeWidth={lit(line.slug) ? 2 : 1.25}
-									/>
-									<path
-										d={line.solid}
-										fill="none"
-										strokeLinejoin="miter"
-										strokeWidth={lit(line.slug) ? 2.5 : 1.5}
-									/>
-								</g>
-							))}
-						{diagram.lines.map((line) => (
-							<text
-								className="text-[9px]"
-								dominantBaseline="middle"
-								fill={colour(line.slug)}
-								key={line.slug}
-								textAnchor="end"
-								x={line.start.x - STOP}
-								y={line.start.y}
-							>
-								{line.number}
-							</text>
-						))}
+						<Lines diagram={diagram} ink={ink} lit={lit} />
 						{stations.map((entry) => (
 							<StopMarks
-								colour={colour}
-								cursor={entry === cursor}
-								entry={entry}
+								filled={entry === cursor}
+								ink={ink}
 								key={entry.station.id}
+								marks={entry.marks}
+								x={entry.x}
 							/>
 						))}
 						{stations.map((entry) => (
@@ -251,35 +166,207 @@ export function ThreadDiagram({
 						))}
 					</svg>
 					{stations.map((entry, index) => (
-						<span
-							className="absolute size-0"
+						<StopName
+							colour={nameColour(entry, cursor, hover, highlight)}
+							current={entry === cursor}
+							entry={entry}
+							hang={hang}
 							key={entry.station.id}
-							style={{ left: entry.x, top: hang, transform: "rotate(-45deg)" }}
-						>
-							<button
-								className="absolute top-0 right-0 flex w-max -translate-y-1/2 items-baseline gap-1.5 whitespace-nowrap py-0.5 text-[10.5px] leading-none outline-none"
-								data-relations-label=""
-								onClick={() => onPick(entry.station.id)}
-								onPointerEnter={() => onHover(entry.station.id)}
-								style={{
-									color: nameColour(entry),
-									fontWeight: entry === cursor ? 600 : undefined,
-									maxWidth: names[index]?.room,
-								}}
-								tabIndex={-1}
-								type="button"
-							>
-								<span className="font-mono text-[9px] text-fd-muted-foreground">
-									{entry.station.code}
-								</span>
-								<span className="min-w-0 truncate">
-									<InlineHtml html={entry.station.title.html} />
-								</span>
-							</button>
-						</span>
+							onHover={onHover}
+							onPick={onPick}
+							room={names[index]?.room}
+						/>
 					))}
 				</div>
 			</div>
+			<Reading
+				bottom={bottom}
+				foot={foot}
+				onHover={onHover}
+				readings={readings}
+				scroll={scroll}
+				spur={spur}
+			/>
+		</div>
+	);
+}
+
+function Ground({ diagram }: { diagram: Diagram }) {
+	return (
+		<>
+			{diagram.chapters.map((chapter) => (
+				<text
+					className="text-[10px]"
+					fill={chapter.empty ? QUIET : "var(--color-fd-muted-foreground)"}
+					key={chapter.number}
+					x={chapter.x0}
+					y={12}
+				>
+					{chapter.empty ? "" : chapter.number}
+				</text>
+			))}
+			{diagram.bands.map((band) => (
+				<g key={band.strand.id}>
+					<text
+						className="text-[10px] uppercase tracking-wider"
+						dominantBaseline="middle"
+						fill="var(--color-fd-muted-foreground)"
+						x={0}
+						y={(band.y0 + band.y1) / 2}
+					>
+						{diagram.coded
+							? laneCode(band.strand.title)
+							: band.strand.title.toUpperCase()}
+					</text>
+					{band.segments.map((segment) => (
+						<rect
+							fill={TINT}
+							height={band.y1 - band.y0}
+							key={segment.number}
+							width={segment.x1 - segment.x0}
+							x={segment.x0}
+							y={band.y0}
+						/>
+					))}
+				</g>
+			))}
+		</>
+	);
+}
+
+function Lines({
+	diagram,
+	ink,
+	lit,
+}: {
+	diagram: Diagram;
+	ink: (slug: string) => string;
+	lit: (slug: string) => boolean;
+}) {
+	return (
+		<>
+			{diagram.lines
+				.toSorted(
+					(left, right) => Number(lit(left.slug)) - Number(lit(right.slug))
+				)
+				.map((line) => (
+					<g key={line.slug} stroke={ink(line.slug)}>
+						<path
+							d={line.transit}
+							fill="none"
+							{...transitStroke(lit(line.slug))}
+						/>
+						<path d={line.solid} fill="none" {...solidStroke(lit(line.slug))} />
+					</g>
+				))}
+			{diagram.lines.map((line) => (
+				<text
+					className="text-[9px]"
+					dominantBaseline="middle"
+					fill={ink(line.slug)}
+					key={line.slug}
+					textAnchor="end"
+					x={line.start.x - STOP}
+					y={line.start.y}
+				>
+					{line.number}
+				</text>
+			))}
+		</>
+	);
+}
+
+function nameWidth(entry: DiagramStation): { estimate: number; room: number } {
+	const { code, title } = entry.station;
+	const room = Math.min(entry.x / SLANT, NAME_SIZE.max);
+	const estimate =
+		(code.length + 1) * NAME_SIZE.code + title.plain.length * NAME_SIZE.char;
+	return { estimate: Math.min(estimate, room), room };
+}
+
+function nameColour(
+	entry: DiagramStation,
+	cursor: DiagramStation | undefined,
+	hover: DiagramStation | undefined,
+	highlight: readonly string[]
+): string {
+	if (entry === cursor || entry === hover) {
+		return "var(--color-fd-foreground)";
+	}
+	if (highlight.length === 0) {
+		return NAME;
+	}
+	return entry.marks.some(({ thread }) => highlight.includes(thread))
+		? "var(--color-fd-foreground)"
+		: NAME_QUIET;
+}
+
+function StopName({
+	colour,
+	current,
+	entry,
+	hang,
+	onHover,
+	onPick,
+	room,
+}: {
+	colour: string;
+	current: boolean;
+	entry: DiagramStation;
+	hang: number;
+	onHover: (id: string) => void;
+	onPick: (id: string) => void;
+	room: number | undefined;
+}) {
+	return (
+		<span
+			className="absolute size-0"
+			style={{ left: entry.x, top: hang, transform: "rotate(-45deg)" }}
+		>
+			<button
+				className="absolute top-0 right-0 flex w-max -translate-y-1/2 items-baseline gap-1.5 whitespace-nowrap py-0.5 text-[10.5px] leading-none outline-none"
+				data-relations-label=""
+				onClick={() => onPick(entry.station.id)}
+				onPointerEnter={() => onHover(entry.station.id)}
+				style={{
+					color: colour,
+					fontWeight: current ? 600 : undefined,
+					maxWidth: room,
+				}}
+				tabIndex={-1}
+				type="button"
+			>
+				<span className="font-mono text-[9px] text-fd-muted-foreground">
+					{entry.station.code}
+				</span>
+				<span className="min-w-0 truncate">
+					<InlineHtml html={entry.station.title.html} />
+				</span>
+			</button>
+		</span>
+	);
+}
+
+function Reading({
+	bottom,
+	foot,
+	onHover,
+	readings,
+	scroll,
+	spur,
+}: {
+	bottom: number;
+	foot: number;
+	onHover: (id: string | null) => void;
+	readings: readonly DiagramReading[];
+	scroll: number;
+	spur: DiagramSpur | undefined;
+}) {
+	const pinned = spur?.pinned ?? false;
+	const ink = pinned ? "var(--color-fd-foreground)" : LINE;
+
+	return (
+		<>
 			{spur ? (
 				<svg
 					aria-hidden="true"
@@ -290,7 +377,7 @@ export function ThreadDiagram({
 					<path
 						d={`M ${spur.anchor.x - scroll + 0.5} ${bottom} V ${foot + SPUR.turn} H ${SPUR.at} V ${foot + SPUR.drop}`}
 						fill="none"
-						stroke={spurInk}
+						stroke={ink}
 						strokeDasharray={pinned ? undefined : "1 4"}
 						strokeLinecap={pinned ? undefined : "round"}
 						strokeWidth={pinned ? 1.5 : 1.25}
@@ -302,7 +389,7 @@ export function ThreadDiagram({
 				onPointerEnter={() => spur?.hold && onHover(spur.hold)}
 				onPointerLeave={() => onHover(null)}
 				style={{
-					borderLeftColor: spur ? spurInk : "transparent",
+					borderLeftColor: spur ? ink : "transparent",
 					borderLeftStyle: pinned ? "solid" : "dotted",
 					marginLeft: SPUR.at - 0.75,
 				}}
@@ -317,12 +404,12 @@ export function ThreadDiagram({
 						background: pinned
 							? "var(--color-fd-foreground)"
 							: "var(--color-fd-background)",
-						borderColor: spurInk,
+						borderColor: ink,
 					}}
 				/>
 				<div className="grid">
 					{readings.map((reading) => {
-						const on = reading.key === active;
+						const on = reading.key === spur?.key;
 						return (
 							<div
 								aria-hidden={!on}
@@ -339,55 +426,6 @@ export function ThreadDiagram({
 					})}
 				</div>
 			</div>
-		</div>
-	);
-}
-
-function nameWidth(entry: DiagramStation): { estimate: number; room: number } {
-	const { code, title } = entry.station;
-	const room = Math.min(entry.x / SLANT, NAME_SIZE.max);
-	const estimate =
-		(code.length + 1) * NAME_SIZE.code + title.plain.length * NAME_SIZE.char;
-	return { estimate: Math.min(estimate, room), room };
-}
-
-function StopMarks({
-	colour,
-	cursor,
-	entry: { marks, x },
-}: {
-	colour: (slug: string) => string;
-	cursor: boolean;
-	entry: DiagramStation;
-}) {
-	const ys = marks.map(({ y }) => y);
-
-	return (
-		<g>
-			{marks.length > 1 ? (
-				<line
-					stroke="var(--color-fd-foreground)"
-					strokeWidth={2}
-					x1={x}
-					x2={x}
-					y1={Math.min(...ys)}
-					y2={Math.max(...ys)}
-				/>
-			) : null}
-			{marks.map(({ thread, y }) => (
-				<rect
-					fill={
-						cursor ? "var(--color-fd-foreground)" : "var(--color-fd-background)"
-					}
-					height={STOP}
-					key={y}
-					stroke={cursor ? "var(--color-fd-foreground)" : colour(thread)}
-					strokeWidth={1.5}
-					width={STOP}
-					x={x - STOP / 2}
-					y={y - STOP / 2}
-				/>
-			))}
-		</g>
+		</>
 	);
 }

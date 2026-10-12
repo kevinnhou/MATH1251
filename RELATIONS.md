@@ -37,11 +37,12 @@ src/lib/export/build.ts            site corpus > export graph (the one relation 
 src/lib/export/query.ts            prerequisites(), relationsOf()
 
 src/lib/relations/                 relation views (pure)
-  types.ts                         CourseIndex, PageDock, DIRECTIONS
+  types.ts                         CourseIndex, ThreadMap, PageDock, DIRECTIONS
   build.ts                         page tree + export graph > CourseIndex (server), PAGE_LINK_RELATIONS
   dock.ts                          page envs + CourseIndex + ThreadIndex > PageDock (server)
   query.ts                         neighbours, chapterOfId
   thread-map.ts                    CourseIndex + ThreadIndex > ThreadMap and each thread's route (server)
+  urls.ts                          threadMapHref, stationId: the threads page's addresses (client-safe)
 
 src/components/relations/
   provider.tsx                     holds the current page's PageDock for the terminal
@@ -65,11 +66,12 @@ src/components/threads/
   thread-index.tsx                 ThreadIndex: the key above the graph, choosing the threads shown (client)
   layout.ts                        layoutDiagram: ThreadMap + shown threads + width > bands, chapters, stops, lines (pure)
   diagram.tsx                      ThreadDiagram: the SVG, the hanging stop names, the spur and reading, and its keys (client)
-  preview.tsx                      StopCard, ThreadCard: the reading's content; Marks: the key to the graph's marks (client)
+  marks.tsx                        StopMarks and the line strokes the diagram draws with; Marks: the key to them, drawn by the same code
+  preview.tsx                      StopCard, ThreadCard: the reading's content (client)
 src/app/(docs)/threads/            the two routes
 src/app/(docs)/[...slug]/page.tsx  builds the page's PageDock, renders ReadingDock
 src/app/global.css                 colour tokens, the cutout's shape, the active mark, the route track's background
-src/lib/client/keybinds.ts         moveKey: the arrows and WASD every focus-scoped widget shares; cursorKey: Home/End and ←/→ along a row of stops
+src/lib/client/keybinds.ts         moveKey: the arrows and WASD every focus-scoped widget shares; cursorKey: Home/End and ←/→ along a row of stops; focusSibling: focus the previous / next item in a group
 src/lib/terminal/relations-command.ts  the `relations` command
 ```
 
@@ -87,7 +89,7 @@ flowchart LR
     threadmap --> core["&lt;ThreadMap /&gt; list on /core"]
     threads --> dock
     threads --> threadmap
-    threadmap -. threadRoute .-> dock
+    threadmap -. ThreadMapThread .-> dock
     dock --> page["page.tsx > ReadingDock"] --> terminal["RelationsProvider > relations command"]
 ```
 
@@ -664,12 +666,8 @@ interface DockEnv {
 	threads: DockThread[]; // `here` is this environment
 }
 
-interface DockThread {
+interface DockThread extends ThreadMapThread {
 	anchor?: string;   // DOM id, when the thread is defined on this page
-	href; slug; summary; title;
-	mapHref: string;   // /threads/<slug>
-	number: number;    // the thread's number, as on the threads page
-	route: ThreadRoute; // every member, in teaching order (see Threads page, Model)
 	here: number[];    // route stops that are here: the environment, else this page's members
 	positions: number[]; // reading-order positions of members' other pages
 }
@@ -947,7 +945,7 @@ number, so two marked threads stay apart.
   to `DEPENDENCY_EDGES` if it is a prerequisite: it then joins NEEDS,
   `prerequisites()` and the page links.
 - **A new dock list:** add a `DockList` field to `DockEnv`, fill it in
-  `dockEnv` (`relations/dock.ts`) from `relationsOf`, render a `Clause` in
+  `dockEnv` (`relations/dock.ts`) from `relationsOf`, add a clause to
   `EnvBay` and add it to the `firstClause` call in `envSubject`.
 
 ## Tuning

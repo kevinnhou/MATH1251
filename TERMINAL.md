@@ -31,7 +31,7 @@ src/components/terminal/   terminal UI
 
 src/components/sidebar/    terminal screen
 
-src/lib/client/keybinds.ts every site wide hotkey, moveKey (arrows and WASD for focus-scoped widgets) and cursorKey
+src/lib/client/keybinds.ts every site wide hotkey, moveKey (arrows and WASD for focus-scoped widgets), cursorKey and focusSibling
 src/app/api/search/route.ts search endpoint (`format=terminal`)
 ```
 
@@ -254,7 +254,8 @@ highlighted completion), Esc dismisses.
 Arrow navigation is deliberately focus-scoped (tree, route strips, threads
 index and diagram): global arrows would take over page scrolling. Each widget
 reads arrows and WASD through `moveKey` in `keybinds.ts` (the route strips
-and the diagram move their cursor through `cursorKey`, which adds Home/End),
+and the diagram move their cursor through `cursorKey`, which adds Home/End,
+and the route strips and threads index step focus through `focusSibling`),
 handles them in its own `onKeyDown` and calls `preventDefault`, which the terminal's and sidebar's
 window listeners check first, so a handled key never reaches them. See
 RELATIONS.md, Threads in the dock and Threads page.

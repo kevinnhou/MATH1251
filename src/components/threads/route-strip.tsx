@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { cursorKey, moveKey } from "@/lib/client/keybinds";
+import { cursorKey, focusSibling, moveKey } from "@/lib/client/keybinds";
+import { cn } from "@/lib/cn";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import type { RouteStop, ThreadRoute } from "@/lib/relations/types";
-import { placeLabel } from "./format";
+import { MONO, placeLabel } from "./format";
 import { nearestStop, RouteTrack, routeLayout } from "./route-track";
 
-const NAV = "[data-route-nav]";
-const GROUP = "[data-route-group]";
-const PLOT = "[data-route-plot]";
+const ROUTE_NAV = { item: "[data-route-nav]", scope: "[data-route-group]" };
 
 export function RouteStrip({
 	here,
@@ -26,7 +25,7 @@ export function RouteStrip({
 }) {
 	const [cursor, setCursor] = useState(here[0] ?? 0);
 	const [engaged, setEngaged] = useState<"key" | "pointer" | null>(null);
-	const trackRef = useRef<HTMLSpanElement>(null);
+	const plotRef = useRef<HTMLSpanElement>(null);
 	const stop = route.stops[cursor];
 	if (stop === undefined) {
 		return null;
@@ -48,7 +47,7 @@ export function RouteStrip({
 	};
 
 	const onPointerMove = (event: PointerEvent) => {
-		const box = trackRef.current?.querySelector(PLOT)?.getBoundingClientRect();
+		const box = plotRef.current?.getBoundingClientRect();
 		if (event.pointerType === "touch" || !box || box.width === 0) {
 			return;
 		}
@@ -79,13 +78,12 @@ export function RouteStrip({
 				}
 				onPointerMove={onPointerMove}
 			>
-				<span className="block" ref={trackRef}>
-					<RouteTrack
-						cursor={engaged ? cursor : undefined}
-						here={here}
-						route={route}
-					/>
-				</span>
+				<RouteTrack
+					cursor={engaged ? cursor : undefined}
+					here={here}
+					plotRef={plotRef}
+					route={route}
+				/>
 			</Link>
 			<RouteStatus
 				here={here.includes(cursor)}
@@ -122,7 +120,7 @@ function RouteStatus({
 				<span className="truncate italic">
 					{stop.role ? <InlineHtml html={stop.role.html} /> : null}
 				</span>
-				<span className="shrink-0 font-mono text-[10px] uppercase tracking-wider">
+				<span className={cn(MONO, "shrink-0")}>
 					{placeLabel(strand, stop.chapter)}
 					{here ? <span className="text-fd-foreground"> / Here</span> : null}
 				</span>
@@ -132,7 +130,5 @@ function RouteStatus({
 }
 
 export function focusRouteNav(from: HTMLElement, step: -1 | 1) {
-	const scope = from.closest(GROUP) ?? document;
-	const stops = [...scope.querySelectorAll<HTMLElement>(NAV)];
-	stops[stops.indexOf(from) + step]?.focus();
+	focusSibling(from, ROUTE_NAV, step);
 }

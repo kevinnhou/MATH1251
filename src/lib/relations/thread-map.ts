@@ -1,5 +1,5 @@
 import { envId } from "@/lib/export/model";
-import { type RenderedMarkdown, rendered } from "@/lib/markdown/types";
+import { rendered } from "@/lib/markdown/types";
 import { getMathEnvConfig } from "@/lib/math-env/kinds";
 import type {
 	Thread,
@@ -12,63 +12,14 @@ import type {
 	CourseChapter,
 	CourseIndex,
 	CourseStrand,
+	ThreadMap,
+	ThreadMapCell,
+	ThreadMapRow,
+	ThreadMapStation,
+	ThreadMapStop,
 	ThreadRoute,
 } from "./types";
-
-export const THREADS_ROUTE = "/threads";
-
-export function threadMapHref(slug: string, station?: string): string {
-	return `${THREADS_ROUTE}/${slug}${station ? `#${station}` : ""}`;
-}
-
-const NOT_ID = /[^a-z0-9]+/gi;
-const TRAILING_DASH = /-$/;
-
-export function stationId(href: string): string {
-	return `at-${href.replace(NOT_ID, "-")}`
-		.replace(TRAILING_DASH, "")
-		.toLowerCase();
-}
-
-export interface ThreadMapStop {
-	role?: RenderedMarkdown<"inline">;
-	thread: string;
-}
-
-export interface ThreadMapStation {
-	code: string;
-	href: string;
-	id: string;
-	stops: ThreadMapStop[];
-	title: RenderedMarkdown<"inline">;
-}
-
-export interface ThreadMapCell {
-	chapter?: CourseChapter;
-	stations: ThreadMapStation[];
-	strand: string;
-}
-
-export interface ThreadMapRow {
-	cells: ThreadMapCell[];
-	number: number;
-}
-
-export interface ThreadMapThread {
-	href: string;
-	mapHref: string;
-	number: number;
-	route: ThreadRoute;
-	slug: string;
-	summary: RenderedMarkdown<"inline">;
-	title: RenderedMarkdown<"inline">;
-}
-
-export interface ThreadMap {
-	rows: ThreadMapRow[];
-	strands: CourseStrand[];
-	threads: ThreadMapThread[];
-}
+import { stationId, threadMapHref } from "./urls";
 
 interface Placed {
 	chapter: CourseChapter;
@@ -105,7 +56,7 @@ export function buildThreadMap(
 	};
 }
 
-export function routeMembers(
+function routeMembers(
 	index: CourseIndex,
 	thread: Thread
 ): { chapter?: CourseChapter; member: ThreadMember }[] {
@@ -130,7 +81,7 @@ export function routeMembers(
 		}));
 }
 
-export function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
+function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
 	const members = routeMembers(index, thread);
 	const lanes = index.strands.filter((strand) =>
 		members.some(({ chapter }) => chapter?.strand === strand.id)
@@ -139,16 +90,14 @@ export function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
 	return {
 		lanes: lanes.map((strand) => strand.title),
 		stops: members.map(({ chapter, member }) => ({
-			code: getMathEnvConfig(member.kind).code,
-			href: member.href,
+			...memberLabel(member),
 			lane: Math.max(
 				lanes.findIndex((strand) => strand.id === chapter?.strand),
 				0
 			),
 			station: stationId(member.href),
-			title: rendered(member.title),
 			...(chapter ? { chapter: chapter.number, place: chapter.title } : {}),
-			...(member.role ? { role: rendered(member.role) } : {}),
+			...memberRole(member),
 		})),
 	};
 }
@@ -183,20 +132,29 @@ function stationsByHref(
 	for (const thread of threads) {
 		for (const member of thread.members) {
 			const station = stations.get(member.href) ?? {
-				code: getMathEnvConfig(member.kind).code,
-				href: member.href,
+				...memberLabel(member),
 				id: stationId(member.href),
 				stops: [],
-				title: rendered(member.title),
 			};
-			station.stops.push({
-				thread: thread.slug,
-				...(member.role ? { role: rendered(member.role) } : {}),
-			});
+			station.stops.push({ thread: thread.slug, ...memberRole(member) });
 			stations.set(member.href, station);
 		}
 	}
 	return stations;
+}
+
+function memberLabel(
+	member: ThreadMember
+): Pick<ThreadMapStation, "code" | "href" | "title"> {
+	return {
+		code: getMathEnvConfig(member.kind).code,
+		href: member.href,
+		title: rendered(member.title),
+	};
+}
+
+function memberRole(member: ThreadMember): Pick<ThreadMapStop, "role"> {
+	return member.role ? { role: rendered(member.role) } : {};
 }
 
 function courseEnvs(

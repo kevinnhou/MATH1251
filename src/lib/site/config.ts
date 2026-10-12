@@ -22,3 +22,4 @@ export const offlineRoute = "/~offline";
 export const catalogRoute = "/catalog.json";
 export const exportGraphRoute = "/graph.json";
 export const llmsFullRoute = "/llms-full.txt";
+export const threadsRoute = "/threads";

@@ -20,8 +20,10 @@ import {
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import type { TenetIndex } from "@/lib/math-env/tenet";
 import type { ThreadIndex } from "@/lib/math-env/thread";
-import type { ThreadMap as ThreadMapData } from "@/lib/relations/thread-map";
-import type { CourseIndex } from "@/lib/relations/types";
+import type {
+	CourseIndex,
+	ThreadMap as ThreadMapData,
+} from "@/lib/relations/types";
 import { Env } from "./env";
 import { Recall } from "./recall";
 import { Statement } from "./statement";
