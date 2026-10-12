@@ -3,19 +3,16 @@
 import Link from "next/link";
 import { type KeyboardEvent, type PointerEvent, useRef, useState } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { moveKey } from "@/lib/client/keybinds";
+import { cursorKey, moveKey } from "@/lib/client/keybinds";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import type { RouteStop, ThreadRoute } from "@/lib/relations/types";
-import { nearestStop, RouteTrack } from "./route-track";
+import { placeLabel } from "./format";
+import { nearestStop, RouteTrack, routeLayout } from "./route-track";
 
 const NAV = "[data-route-nav]";
 const GROUP = "[data-route-group]";
+const PLOT = "[data-route-plot]";
 
-// A thread's route as one link to the threads page. While it has focus,
-// ←/→ (A/D) move a cursor along the stops, Home/End jump to the ends, ↑/↓
-// (W/S) move to the next `data-route-nav` element in the same group (the other
-// strips, and whatever the group adds, like the dock's rest bar), and Enter opens the page at
-// the cursor. The pointer moves the cursor too, so a click opens the stop under it.
 export function RouteStrip({
 	here,
 	mapHref,
@@ -30,32 +27,20 @@ export function RouteStrip({
 	const [cursor, setCursor] = useState(here[0] ?? 0);
 	const [engaged, setEngaged] = useState<"key" | "pointer" | null>(null);
 	const trackRef = useRef<HTMLSpanElement>(null);
-	const last = route.stops.length - 1;
 	const stop = route.stops[cursor];
 	if (stop === undefined) {
 		return null;
 	}
 
 	const onKeyDown = (event: KeyboardEvent<HTMLAnchorElement>) => {
-		const move = moveKey(event.nativeEvent);
-		const next = (() => {
-			if (event.key === "Home") {
-				return 0;
-			}
-			if (event.key === "End") {
-				return last;
-			}
-			if (move === "left" || move === "right") {
-				return Math.min(Math.max(cursor + (move === "left" ? -1 : 1), 0), last);
-			}
-		})();
-
+		const next = cursorKey(event.nativeEvent, cursor, route.stops.length);
 		if (next !== undefined) {
 			event.preventDefault();
 			setCursor(next);
 			return;
 		}
 
+		const move = moveKey(event.nativeEvent);
 		if (move === "up" || move === "down") {
 			event.preventDefault();
 			focusRouteNav(event.currentTarget, move === "up" ? -1 : 1);
@@ -63,14 +48,14 @@ export function RouteStrip({
 	};
 
 	const onPointerMove = (event: PointerEvent) => {
-		const box = trackRef.current?.getBoundingClientRect();
+		const box = trackRef.current?.querySelector(PLOT)?.getBoundingClientRect();
 		if (event.pointerType === "touch" || !box || box.width === 0) {
 			return;
 		}
 
 		setEngaged((previous) => previous ?? "pointer");
 		setCursor(
-			nearestStop((event.clientX - box.left) / box.width, route.stops.length)
+			nearestStop((event.clientX - box.left) / box.width, routeLayout(route))
 		);
 	};
 
@@ -102,50 +87,47 @@ export function RouteStrip({
 					/>
 				</span>
 			</Link>
-			<RouteStatus here={here.includes(cursor)} stop={stop} />
-			{engaged === "key" ? <KeyHint /> : null}
+			<RouteStatus
+				here={here.includes(cursor)}
+				stop={stop}
+				strand={route.lanes[stop.lane]}
+			/>
 		</div>
 	);
 }
 
-function RouteStatus({ here, stop }: { here: boolean; stop: RouteStop }) {
+function RouteStatus({
+	here,
+	stop,
+	strand,
+}: {
+	here: boolean;
+	stop: RouteStop;
+	strand: string | undefined;
+}) {
 	return (
 		<div aria-live="polite" className="flex min-w-0 flex-col gap-0.5">
-			<span className="flex items-baseline justify-between gap-3 font-mono text-[10px] text-fd-muted-foreground leading-4">
-				<span className="truncate">
+			<span className="flex min-w-0 items-baseline gap-2.5">
+				<span className="shrink-0 font-mono text-[10px] text-fd-muted-foreground uppercase">
 					{stop.code}
-					{stop.role ? (
-						<>
-							{" / "}
-							<InlineHtml html={stop.role.html} />
-						</>
-					) : null}
-					{here ? <span className="text-fd-foreground"> · HERE</span> : null}
 				</span>
-				{stop.place ? (
-					<span className="shrink-0 truncate font-sans text-[11px] italic">
-						{stop.place}
-					</span>
-				) : null}
+				<Link
+					className="truncate text-[12px] text-fd-foreground underline-offset-[3px] outline-none hover:underline focus-visible:outline-1 focus-visible:outline-fd-foreground"
+					href={stop.href}
+				>
+					<InlineHtml html={stop.title.html} />
+				</Link>
 			</span>
-			<Link
-				className="truncate text-[12px] text-fd-foreground underline-offset-[3px] outline-none hover:underline focus-visible:outline-1 focus-visible:outline-fd-foreground"
-				href={stop.href}
-			>
-				<InlineHtml html={stop.title.html} />
-			</Link>
+			<span className="flex min-h-4 items-baseline justify-between gap-3 text-[11px] text-fd-muted-foreground leading-4">
+				<span className="truncate italic">
+					{stop.role ? <InlineHtml html={stop.role.html} /> : null}
+				</span>
+				<span className="shrink-0 font-mono text-[10px] uppercase tracking-wider">
+					{placeLabel(strand, stop.chapter)}
+					{here ? <span className="text-fd-foreground"> / Here</span> : null}
+				</span>
+			</span>
 		</div>
-	);
-}
-
-function KeyHint() {
-	return (
-		<span
-			aria-hidden="true"
-			className="font-mono text-[9px] text-fd-muted-foreground uppercase tracking-wider"
-		>
-			←→ move · ↑↓ thread · ↵ open map
-		</span>
 	);
 }
 

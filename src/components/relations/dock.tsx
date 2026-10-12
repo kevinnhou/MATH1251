@@ -289,7 +289,7 @@ function RestBar({
 				<span className="truncate text-[12px]">
 					<InlineHtml html={subject.title.html} />
 					{subject.recalled ? (
-						<span className="text-fd-muted-foreground"> · recalled</span>
+						<span className="text-fd-muted-foreground"> / recalled</span>
 					) : null}
 				</span>
 				<span className="truncate text-[11px] text-fd-muted-foreground">
@@ -429,26 +429,17 @@ function PageBay({
 	);
 }
 
-// A thread as a summary and its route. The route is the way into the threads
-// page, at the stop under the cursor.
 function ThreadBlock({ thread }: { thread: DockThread }) {
 	return (
-		<section
-			className="flex flex-col gap-1.5 border-fd-border border-t pt-2.5"
-			data-relations-label=""
-		>
-			<span className="flex items-baseline justify-between gap-3 font-mono text-[10px] uppercase tracking-wider">
-				<span>
-					[THREAD]{" "}
-					<RefLink color={THREAD_COLOR} href={thread.href}>
-						<span className="font-sans normal-case tracking-normal">
-							<InlineHtml html={thread.title.html} />
-						</span>
-					</RefLink>
-				</span>
-				<span>{thread.route.stops.length}</span>
-			</span>
+		<section className="mt-1 flex flex-col gap-2.5" data-relations-label="">
 			<p className="m-0">
+				Part of the thread{" "}
+				<RefLink color={THREAD_COLOR} href={thread.href}>
+					<InlineHtml html={thread.title.html} />
+				</RefLink>
+				, in {thread.route.stops.length} places.
+			</p>
+			<p className="m-0 border-fd-border border-l pl-2.5">
 				<InlineHtml html={thread.summary.html} />
 			</p>
 			<RouteStrip

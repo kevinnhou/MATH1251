@@ -376,32 +376,17 @@ body:has([data-dock]) {
 	border: 1px solid var(--color-fd-border);
 }
 
-[data-thread-map] {
-	--tm-dot: color-mix(in oklab, var(--color-fd-foreground) 55%, transparent);
-	container: thread-map / inline-size;
-}
-
-[data-tm-row] {
-	display: flex;
-	flex-direction: column;
-}
-
-[data-tm-cell] {
-	display: contents;
-}
-
-[data-tm-strands],
-[data-tm-channel],
-[data-tm-cell][data-empty] {
-	display: none;
-}
-
-[data-tm-channel] {
-	height: var(--tm-channel);
-}
-
 [data-route-track] {
 	--route-bg: var(--color-fd-background);
+	--route-ink: var(--relations-thread);
+}
+
+[data-route-track="muted"] {
+	--route-ink: color-mix(in oklab, var(--color-fd-foreground) 45%, transparent);
+}
+
+[data-thread-row]:is(:hover, :focus-visible) [data-route-track] {
+	--route-ink: var(--relations-thread);
 }
 
 [data-dock] [data-route-track] {
