@@ -1,25 +1,13 @@
-import {
-	DocsDescription,
-	DocsPage,
-	DocsTitle,
-} from "fumadocs-ui/layouts/docs/page";
-import { ThreadSpine, threadStations } from "@/components/math-env/thread";
+import { DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
+import type { ReactNode } from "react";
+import { StatementHtml } from "@/components/math-env/statement";
+import type { TenetIndex } from "@/lib/math-env/tenet";
+import type { ThreadIndex } from "@/lib/math-env/thread";
 import { getCorpus } from "@/lib/site/corpus";
 import { ThreadsExplorer } from "./explorer";
 
-// `/threads` and `/threads/<slug>`: the same page, with that thread focused.
-// The spines are rendered here, so statements never reach the client as data.
 export function ThreadsPage({ focus }: { focus?: string }) {
-	const { courseIndex, tenets, threadMap, threads } = getCorpus();
-	const spines = Object.fromEntries(
-		[...threads.bySlug.values()].map((thread) => [
-			thread.slug,
-			<ThreadSpine
-				key={thread.slug}
-				stations={threadStations(thread, courseIndex, tenets)}
-			/>,
-		])
-	);
+	const { tenets, threadMap, threads } = getCorpus();
 
 	return (
 		<DocsPage
@@ -28,16 +16,31 @@ export function ThreadsPage({ focus }: { focus?: string }) {
 			tableOfContentPopover={{ enabled: false }}
 		>
 			<DocsTitle>Threads</DocsTitle>
-			<DocsDescription className="mb-0">
-				Ideas that recur across the course, each drawn as a line through the
-				chapters. Focus one to follow it; rows are chapters, taught side by
-				side.
-			</DocsDescription>
 			<ThreadsExplorer
 				initial={focus ? [focus] : []}
 				map={threadMap}
-				spines={spines}
+				statements={statementsByHref(threads, tenets)}
 			/>
 		</DocsPage>
 	);
+}
+
+function statementsByHref(
+	threads: ThreadIndex,
+	tenets: TenetIndex
+): Record<string, ReactNode> {
+	const statements: Record<string, ReactNode> = {};
+	for (const thread of threads.bySlug.values()) {
+		for (const member of thread.members) {
+			const view = member.slug
+				? tenets.bySlug.get(member.slug)?.statementView
+				: undefined;
+			if (view && !(member.href in statements)) {
+				statements[member.href] = (
+					<StatementHtml className="text-sm" html={view.html} />
+				);
+			}
+		}
+	}
+	return statements;
 }

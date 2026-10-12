@@ -11,7 +11,7 @@ import type { CourseChapter, CourseIndex } from "@/lib/relations/types";
 import { StatementHtml } from "./statement";
 import { ThreadFrame } from "./thread-compare";
 
-export interface Station {
+interface Station {
 	chapter?: CourseChapter;
 	member: ThreadMember;
 	statement?: StatementView;
@@ -46,7 +46,7 @@ export function ThreadSection({
 	);
 }
 
-export function threadStations(
+function threadStations(
 	thread: Thread,
 	courseIndex?: CourseIndex,
 	tenets?: TenetIndex
@@ -60,8 +60,7 @@ export function threadStations(
 	}));
 }
 
-// The stations are hidden until an ancestor `group/spine` has `data-open`.
-export function ThreadSpine({ stations }: { stations: readonly Station[] }) {
+function ThreadSpine({ stations }: { stations: readonly Station[] }) {
 	return (
 		<ol className="m-0 list-none px-0 pt-4 pb-0">
 			{stations.map((station, number) => (
