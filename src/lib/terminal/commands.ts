@@ -21,7 +21,6 @@ import {
 	rootOf,
 	roots,
 } from "./dirs";
-import { graphCommand } from "./graph-command";
 import {
 	ambiguousOutput,
 	errorOutput,
@@ -38,6 +37,7 @@ import {
 	quoteIfNeeded,
 	tokenValues,
 } from "./parse";
+import { relationsCommand } from "./relations-command";
 import { rankPages, resolvePage } from "./resolve";
 import { searchResults } from "./search";
 import type {
@@ -80,7 +80,7 @@ function coreDescriptors(): CommandDescriptor[] {
 				`${ASK_COMMANDS[provider][0]} ${ASK_USAGE}`
 			)
 		),
-		graphCommand(),
+		relationsCommand(),
 		command(["help"], () => done(helpOutput()), undefined, "help"),
 		command(
 			["pwd"],

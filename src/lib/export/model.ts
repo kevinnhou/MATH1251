@@ -1,4 +1,4 @@
-import type { GraphModule } from "@/lib/course/strands";
+import type { Strand } from "@/lib/course/strands";
 import type { ExampleDifficulty, MathEnvKind } from "@/lib/math-env/kinds";
 
 export const COURSE = "MATH1251 Mathematics 1B (UNSW Sydney)";
@@ -14,7 +14,7 @@ export interface ExportNode {
 	page?: string;
 	slug?: string;
 	statement?: string;
-	strand?: GraphModule;
+	strand?: Strand;
 	tags?: string[];
 	title: string;
 	type: "page" | "env";
@@ -36,12 +36,19 @@ export const EXPORT_EDGE_KINDS = [
 	"contains",
 	"uses",
 	"proves",
+	"practises",
 	"see",
 	"references",
 	"recalls",
 ] as const;
 
 export type ExportEdgeKind = (typeof EXPORT_EDGE_KINDS)[number];
+
+export const DEPENDENCY_EDGES = [
+	"uses",
+	"proves",
+	"practises",
+] as const satisfies readonly ExportEdgeKind[];
 
 export interface ExportEdge {
 	kind: ExportEdgeKind;
@@ -51,6 +58,7 @@ export interface ExportEdge {
 
 export const RELATION_NAMES = {
 	contains: ["contains", "part_of"],
+	practises: ["practises", "practised_by"],
 	proves: ["proves", "proved_by"],
 	recalls: ["recalls", "recalled_by"],
 	references: ["references", "referenced_by"],
@@ -63,6 +71,8 @@ export type RelationName = (typeof RELATION_NAMES)[ExportEdgeKind][number];
 export const RELATION_LABELS: Record<RelationName, string> = {
 	contains: "Contains",
 	part_of: "Part of",
+	practised_by: "Practised by",
+	practises: "Practises",
 	proved_by: "Proved by",
 	proves: "Proves",
 	recalled_by: "Recalled by",
@@ -85,11 +95,13 @@ export const RELATION_ORDER = everyOf<RelationName>()([
 	"contains",
 	"proves",
 	"uses",
+	"practises",
 	"recalls",
 	"references",
 	"see_also",
 	"proved_by",
 	"used_by",
+	"practised_by",
 	"recalled_by",
 	"referenced_by",
 ]);
@@ -110,6 +122,26 @@ export interface ExportKindView {
 	parentId: string;
 }
 
+export interface ExportThreadMember {
+	id: string;
+	role?: string;
+}
+
+export interface ExportThread {
+	id: string;
+	label: string;
+	members: readonly ExportThreadMember[];
+	pageId: string;
+	slug: string;
+	summary: string;
+	title: string;
+}
+
+export interface ExportThreadMembership {
+	role?: string;
+	thread: ExportThread;
+}
+
 export interface ExportGraph {
 	edges: readonly ExportEdge[];
 	incoming: ReadonlyMap<string, readonly ExportEdge[]>;
@@ -118,6 +150,8 @@ export interface ExportGraph {
 	outgoing: ReadonlyMap<string, readonly ExportEdge[]>;
 	position: ReadonlyMap<string, number>;
 	segments: ReadonlyMap<string, readonly ExportSegment[]>;
+	threads: ReadonlyMap<string, ExportThread>;
+	threadsOf: ReadonlyMap<string, readonly ExportThreadMembership[]>;
 }
 
 export const CONTEXT_TIERS = [
@@ -138,9 +172,9 @@ export interface ContextBlock {
 export interface PromptTarget {
 	hasProof: boolean;
 	id: string;
-	kind: MathEnvKind | "page";
+	kind: MathEnvKind | "page" | "thread";
 	label: string;
-	type: "page" | "env" | "kind-view";
+	type: "page" | "env" | "kind-view" | "thread";
 }
 
 export interface PromptContext extends PromptTarget {

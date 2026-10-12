@@ -23,7 +23,7 @@ src/lib/export/              export logic (pure except corpus.ts and the client 
   use-prompt.ts              React hook: remembered intent and provider, launch, blocked pop-up state
   use-copy.ts                React hook: copy a node's Markdown, with copying/copied/failed status
 
-src/lib/site/corpus.ts       builds exportGraph once, next to the site graph and catalog
+src/lib/site/corpus.ts       builds exportGraph once, then the CourseIndex and thread map (RELATIONS.md) and catalog from it
 src/lib/site/config.ts       docsContentRoute, docsContextRoute, exportGraphRoute, llmsFullRoute
 
 src/app/llms.mdx/docs/[[...slug]]/route.ts      Markdown per node
@@ -35,7 +35,8 @@ src/app/graph.json/route.ts                     nodes and edges
 src/components/mdx/ask-panel.tsx       AskPopup: the shared ask panel (sentence + reels) in a popover; header button style, blocked link
 src/components/mdx/page-actions.tsx    page "Ask AI" popover
 src/components/mdx/copy-markdown.tsx   page "Copy Markdown" button
-src/components/math-env/share.tsx      environment popover (right click or the corner hint)
+src/components/math-env/share.tsx      AskShare: right-click popover and corner hint, for environments and threads
+src/components/math-env/thread-compare.tsx  ThreadFrame: a thread section wrapped in AskShare (RELATIONS.md)
 src/lib/terminal/commands.ts           `gpt`, `claude`, `cursor`, `md`
 ```
 
@@ -48,12 +49,14 @@ A node ID is the node's site path:
 | page | page URL | `/algebra/complex-numbers/complex-polynomials` |
 | environment | page URL + `#` + anchor | `/algebra/complex-numbers/complex-polynomials#theorem-1` |
 | kind view | kind-view URL | `/algebra/complex-numbers/complex-polynomials/proofs` |
+| thread | defining page URL + `#thread-<slug>` | `/core#thread-coordinates` |
 
 Pages and environments are graph nodes (`ExportNode`). Kind views are not.
 They are a filter over one page's environments, but they do get their own
 Markdown file, context file and prompt target. The graph keeps them in a side
 map, `kindViews` (`ExportKindView`: `id`, `kind`, `label`, `parentId`), keyed
 by view URL, so traversal, `pagesOf` and `graph.json` never meet them.
+Threads are kept the same way, in `threads` (see [Threads](#threads)).
 
 Every link inside an export points at a node ID, so any link can be looked up
 in `graph.json`.
@@ -83,11 +86,16 @@ so every export, page documents included, renders from the graph alone.
 | Edge kind | From > to | Source | Read forwards / backwards |
 |---|---|---|---|
 | `contains` | page > its environment | every environment | `contains` / `part_of` |
-| `uses` | env > tenet in its `of` | `of` on a non-proof | `uses` / `used_by` |
-| `proves` | proof > tenet in its `of` | `of` on a proof | `proves` / `proved_by` |
+| `uses` | env > tenet in its `of` | `of` on a kind whose relation is `uses` | `uses` / `used_by` |
+| `proves` | proof > tenet in its `of` | `of` on a kind whose relation is `proves` | `proves` / `proved_by` |
+| `practises` | example > tenet in its `of` | `of` on a kind whose relation is `practises` | `practises` / `practised_by` |
 | `see` | env > tenet in its `see` | `see` | `see_also` / `see_also` |
-| `references` | page or env > page or env | `reference` edges of the site graph (prose links) | `references` / `referenced_by` |
+| `references` | page > page | prose links (`extractedReferences`) that resolve to a strand page | `references` / `referenced_by` |
 | `recalls` | page > original environment | `<Recall of>` on another page | `recalls` / `recalled_by` |
+
+What `of` means is set per kind, by the `of` field of `MATH_ENV_KINDS`
+(`src/lib/math-env/kinds.ts`), so a new kind picks one of `ENV_RELATIONS` and
+every export follows.
 
 `buildExportGraph` drops edges whose ends are not both nodes, as well as
 self-loops and duplicates (same kind, source and target). It also indexes
@@ -102,12 +110,13 @@ only place relation names are spelled. The documents, the context and
 ### Prerequisites
 
 `prerequisites(graph, id)` (`query.ts`) collects transitive dependencies:
-everything reachable through `uses` and `proves` edges.
+everything reachable through `DEPENDENCY_EDGES` (`uses`, `proves` and
+`practises`).
 
 - **Start set:** for a page, its environments. For an environment, the
   environment itself plus its proofs, so a proof's dependencies count as the
   theorem's.
-- **Distance:** the number of `uses`/`proves` steps from the start set, found
+- **Distance:** the number of dependency steps from the start set, found
   breadth-first.
 - **Order:** a depth-first post-order, so foundations come before the results
   that build on them.
@@ -122,19 +131,20 @@ distant ones last.
 ## Formats and routes
 
 All routes are static (`revalidate = false`). The per-node routes prerender
-every page, environment and kind view (`exportStaticParams`) and set
-`dynamicParams = false`, so an unknown path returns 404. The build produces 938
-files per format: 76 pages, 621 environments and 241 kind views.
+every page, environment, kind view and thread (`exportStaticParams`) and set
+`dynamicParams = false`, so an unknown path returns 404. The build produces 943
+files per format: 76 pages, 621 environments, 241 kind views and 5 threads.
 
 | Route | Content | Built by |
 |---|---|---|
 | `/llms.mdx/docs/<page>/content.md` | page document | `pageDocument` |
 | `/llms.mdx/docs/<page>/<anchor>.md` | environment document | `envDocument` |
 | `/llms.mdx/docs/<page>/<kind>/content.md` | kind-view document | `kindViewDocument` |
+| `/llms.mdx/docs/<page>/thread-<slug>.md` | thread document | `threadDocument` |
 | `/llms.mdx/context/…/*.json` | the same paths, prompt context | `renderPromptContext` |
-| `/llms.txt` | index: conventions, data links, pages by strand | `indexDocument` |
+| `/llms.txt` | index: conventions, data links, threads, pages by strand | `indexDocument` |
 | `/llms-full.txt` | every page document, sorted by URL | `llmsFullText` |
-| `/graph.json` | every node and edge | `exportGraphJson` |
+| `/graph.json` | every node, edge and thread | `exportGraphJson` |
 
 `urls.ts` maps between IDs and files in both directions:
 `nodeFileSegments(id, format)` and `parseNodeFile(segments, format)`, where the
@@ -146,8 +156,8 @@ paths yourself.
 (`a-b-thm-x.md`).
 
 The routes resolve a request with `resolveExportTarget(segments, format)`. It
-looks the ID up in the export graph's `nodes`, then in its `kindViews`. Both
-are built together, so an ID that resolves always renders.
+looks the ID up in the export graph's `nodes`, then its `kindViews`, then its
+`threads`. All three are built together, so an ID that resolves always renders.
 
 ### Markdown documents
 
@@ -229,11 +239,43 @@ Transitive `uses`/`proves` dependencies defined elsewhere, foundations first.
   edges: { kind, source, target }[];
   nodes: (ExportNode without body/statement & { markdown: string })[];
   relations: typeof RELATION_NAMES;   // how to name each edge from either end
+  threads: (ExportThread & { markdown: string })[];
 }
 ```
 
 Bodies are left out to keep the file small. Each node's `markdown` URL gives the
 full text.
+
+## Threads
+
+A thread (RELATIONS.md, Threads) is one idea the course meets in several
+places. The export graph keeps each thread as an `ExportThread` in `threads`,
+keyed by its section's ID, and indexes `threadsOf` (environment ID to its
+memberships, `{ thread, role? }`). `buildExportGraph` takes the `ThreadIndex`, so
+`createThreadIndex` runs first in `getCorpus()`; members whose node is missing
+are dropped, and members are in course order.
+
+| Field | Notes |
+|---|---|
+| `id` | `/core#thread-<slug>`, the `<Thread>` section's anchor |
+| `label`, `title` | the heading as plain text, and its Markdown source |
+| `summary` | Markdown source of `summary` |
+| `pageId`, `slug` | the defining page and the thread slug |
+| `members` | `{ id, role? }` per place: the environment's node ID and its role source |
+
+A thread's ID has an anchor, so its files sit beside the defining page's
+(`/llms.mdx/docs/core/thread-coordinates.md`) with no change to `urls.ts`.
+
+- **Markdown** (`threadDocument`): frontmatter (`type: thread`, `page`,
+  `slug`), `# Thread: <title>`, the summary, a line naming the defining page,
+  then one `##` section per place with its role, its page and its statement.
+  No prerequisites or relations.
+- **Environment documents** list each thread they are in under
+  `## Relations` (`- Thread: [title](id) (role)`), and their prompt context
+  adds the thread's summary to the `relations` tier.
+- **Surface**: the thread section's right-click panel (see [Ask panel](#ask-panel)).
+- **`llms.txt`** lists every thread under `## Threads` with its summary and
+  number of places, and a convention line explains thread IDs.
 
 ## Prompts
 
@@ -256,7 +298,7 @@ flowchart LR
     graph["exportGraph<br/>(site/corpus.ts)"] --> target["envTarget / pageTarget /<br/>kindViewTarget"]
     target --> catalog["catalog.json<br/>(terminal)"]
     target --> page["page.tsx<br/>(PageActions)"]
-    target --> env["EnvView.prompt<br/>(EnvShare)"]
+    target --> env["EnvView.prompt<br/>(AskShare)"]
     graph --> ctx["envContext / pageContext /<br/>kindViewContext"] --> file["/llms.mdx/context/…json"]
     catalog & page & env --> open["openPrompt(target, intent, provider)"]
     file -. fetched .-> open
@@ -273,6 +315,7 @@ builders spread the matching target, so a target and its context always agree.
 | `env` | it is a proof, or something proves it | node label |
 | `page` | always `false`: the proofs kind view offers the walk | page title |
 | `kind-view` | the view's kind is `proof` | `Proofs from <page>` |
+| `thread` | always `false` | thread title |
 
 Targets reach each surface without a fetch:
 
@@ -280,7 +323,7 @@ Targets reach each surface without a fetch:
   missing target is a 404.
 - **Environments:** `page.tsx` passes `promptTargetFor` into the MDX options.
   `resolveEnv` and `resolveRecall` (`env-meta.ts`) set `EnvView.prompt`, and
-  `Env` renders `EnvShare` only when it is set. A recall's target is the
+  `Env` renders `AskShare` only when it is set. A recall's target is the
   original environment. Only anchored environments get one, and no recall in
   the content currently has an anchor.
 - **Terminal:** every `CatalogPage` has a `prompt`. A route outside the catalog
@@ -291,13 +334,13 @@ Targets reach each surface without a fetch:
 The server splits each node's material into short blocks. Each block has a
 tier, which sets the order in which blocks are kept or dropped:
 
-| Tier | Heading in the prompt | `env` | `page` | `kind-view` |
-|---|---|---|---|---|
-| `core` | none | heading, statement, body, every proof, then notes | heading, key ideas, contents | summary, contents |
-| `relations` | `Direct links:` | proves, uses, recalls, references, see also | same | none |
-| `details` | `Statements:` | none | each environment's statement | each environment's statement and body |
-| `prerequisites` | `Prerequisites the student may assume (nearest first):` | label, plus the statement if it is at most 600 characters | same | of the parent page |
-| `backlinks` | `Used elsewhere:` | used by, recalled by, referenced by | same | none |
+| Tier | Heading in the prompt | `env` | `page` | `kind-view` | `thread` |
+|---|---|---|---|---|---|
+| `core` | none | heading, statement, body, every proof, then notes | heading, key ideas, contents | summary, contents | title and summary, then the places with roles and pages |
+| `relations` | `Direct links:` | proves, uses, practises, recalls, references, see also, then each thread it is in (role and summary) | same, without threads | none | none |
+| `details` | `Statements:` | none | each environment's statement | each environment's statement and body | each place's statement, with its role |
+| `prerequisites` | `Prerequisites the student may assume (nearest first):` | label, plus the statement if it is at most 600 characters | same | of the parent page | none |
+| `backlinks` | `Used elsewhere:` | used by, practised by, recalled by, referenced by | same | none | none |
 
 The relation and backlink blocks list titles only (`Uses: A; B.`), because they
 point the tutor to the material rather than quote it.
@@ -343,6 +386,12 @@ Block text is sanitised so it cannot close `</role>`, `</context>` or
 | `proof` | Walk the proof | `hasProof` | step by step, naming the result each step uses, checking in with the student |
 | `quiz` | Quiz me | everything | one question at a time. Examples are posed as exercises, with hints on request |
 | `check` | Check my work | environments | ask for the student's attempt and check it line by line, without solving first |
+
+A thread is offered `explain` and `quiz`, and both have their own task text
+(`threadTaskText`): explain states the shared idea and its intuition, goes
+through the places in order (what plays each part there and how it links to
+the previous place), says where the analogy stops working, and ends with the
+common pattern; quiz asks about the links between places.
 
 `intentsFor(target)` is the only availability check. The menus show only the
 intents it returns, and the terminal rejects any other intent, listing the ones
@@ -397,7 +446,7 @@ context.
 | Surface | Launch | Blocked pop-up |
 |---|---|---|
 | `PageActions` | `usePrompt` | `[POP-UP BLOCKED · OPEN <PROVIDER>]` beside the header buttons |
-| `EnvShare` | `usePrompt` | the `[RIGHT CLICK]` hint becomes `[POP-UP BLOCKED · OPEN <PROVIDER>]` until clicked |
+| `AskShare` (environments, threads) | `usePrompt` | the `[RIGHT CLICK]` hint becomes `[POP-UP BLOCKED · OPEN <PROVIDER>]` until clicked |
 | terminal `gpt`/`claude`/`cursor` | `runtime.openPrompt` | message output with an `Open <provider>` action |
 
 `usePrompt(target)` holds the intent and provider, `launch`, `prefetch` and
@@ -435,6 +484,15 @@ lift onto the site's offset shadow on hover or while open. An environment opens
 the panel at the pointer on right click, or above its corner hint
 (`[RIGHT CLICK]`, or `[ASK AI]` on touch screens). Shift + right click, or
 right clicking inside a text selection, keeps the browser's own menu.
+
+A thread section works the same way (`ThreadFrame`): right click anywhere in
+the `<Thread>` section asks about the thread, and the hint sits at the right
+of the COMPARE header, shown while the section is hovered or focused. An
+environment inside a thread keeps its own panel: `AskShare` ignores a
+context menu event an inner one has already handled (`defaultPrevented`).
+`AskShare` takes the hint's placement (`className`) and the `group/<name>`
+that reveals it (`group`: `math-env` or `thread`); the reveal classes for
+each group are written out in `share.tsx`, since Tailwind needs them literal.
 
 `useCopyMarkdown(id)` copies through `copyPendingText`, which hands the
 clipboard a promised `ClipboardItem` so Safari keeps the click's gesture while
@@ -479,6 +537,12 @@ completion pick it up automatically.
 `PROVIDER_ENDPOINTS`, add a logo in `llm-logos.tsx`, and give it terminal names
 in `ASK_COMMANDS` (`commands.ts`); the command, usage line and `help` follow. Keep `URL_LIMIT` within the new endpoint's
 limit.
+
+**New target type:** extend `PromptTarget["type"]` (and `kind` if it needs
+its own), add a side map to `ExportGraph` if it is not a node, then a case in
+each switch in `corpus.ts` (`satisfies never` fails the build until you do),
+its IDs in `exportStaticParams`, a phrase in `subjectPhrase` and task text in
+`taskText`.
 
 **New fact an intent depends on:** add it to `PromptTarget`, set it in the
 three `*Target` functions. Do not work it out again in a component.

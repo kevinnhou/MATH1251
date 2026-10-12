@@ -15,7 +15,20 @@ export interface EnvOccurrence {
 	see: string[];
 	slug?: string;
 	statement?: string;
+	threads: ThreadTag[];
 	title?: string;
+}
+
+export interface ThreadTag {
+	role?: string;
+	slug: string;
+}
+
+export interface ThreadOccurrence {
+	id: string;
+	slug: string;
+	summary: string;
+	title: string;
 }
 
 export interface RecallOccurrence {
@@ -32,8 +45,13 @@ export interface PageEnvs {
 	entries: EnvOccurrence[];
 	recalls: RecallOccurrence[];
 	segments: PageSegment[];
+	threads: ThreadOccurrence[];
 }
 
 export function recallId(of: string, index: number): string {
 	return `recall-${of}-${index}`;
+}
+
+export function threadId(slug: string): string {
+	return `thread-${slug}`;
 }

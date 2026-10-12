@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { CourseRoutesProvider } from "@/components/course/provider";
-import { GraphProvider } from "@/components/graph/provider";
+import { RelationsProvider } from "@/components/relations/provider";
 import { VirtualDocsLayout } from "@/components/site/docs-layout";
 import { TerminalProvider } from "@/components/terminal/provider";
 import { getCorpus } from "@/lib/site/corpus";
@@ -12,11 +12,11 @@ export default function Layout({ children }: { children: ReactNode }) {
 
 	return (
 		<CourseRoutesProvider routes={corpus.routes}>
-			<GraphProvider>
+			<RelationsProvider>
 				<TerminalProvider>
 					<VirtualDocsLayout tree={tree}>{children}</VirtualDocsLayout>
 				</TerminalProvider>
-			</GraphProvider>
+			</RelationsProvider>
 		</CourseRoutesProvider>
 	);
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { GraphModule } from "@/lib/course/strands";
+import type { Strand } from "@/lib/course/strands";
 import { markdownToPlain } from "@/lib/markdown/plain";
 import { MATH_ENV_KINDS, type MathEnvKind } from "@/lib/math-env/kinds";
 import { siteName } from "./config";
@@ -74,7 +74,7 @@ function imageText(
 	};
 }
 
-function titlePrefix(module: GraphModule | undefined): string {
+function titlePrefix(module: Strand | undefined): string {
 	return module === undefined || module === "core"
 		? siteName
 		: `[${module.toUpperCase()}]`;

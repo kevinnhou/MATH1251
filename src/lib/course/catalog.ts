@@ -2,7 +2,7 @@ import type { PromptTarget } from "@/lib/export/model";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import { literalInlineFragment } from "@/lib/markdown/types";
 import { homeRoute } from "@/lib/site/config";
-import type { GraphModule } from "./strands";
+import type { Strand } from "./strands";
 
 export interface RoutePage {
 	aliases: string[];
@@ -10,7 +10,7 @@ export interface RoutePage {
 	description?: MarkdownFragment<"inline">;
 	kindView: boolean;
 	parentUrl: string | null;
-	strand?: GraphModule;
+	strand?: Strand;
 	title: MarkdownFragment<"inline">;
 	url: string;
 }

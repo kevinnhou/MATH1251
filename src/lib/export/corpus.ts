@@ -8,12 +8,15 @@ import {
 	kindViewTarget,
 	pageContext,
 	pageTarget,
+	threadContext,
+	threadTarget,
 } from "./context";
 import {
 	envDocument,
 	indexDocument,
 	kindViewDocument,
 	pageDocument,
+	threadDocument,
 } from "./documents";
 import {
 	COURSE,
@@ -21,6 +24,7 @@ import {
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
+	type ExportThread,
 	type PromptContext,
 	type PromptTarget,
 	RELATION_NAMES,
@@ -40,6 +44,7 @@ function exportGraph(): ExportGraph {
 export type ExportTarget = { id: string } & (
 	| { node: ExportNode; type: ExportNode["type"] }
 	| { type: "kind-view"; view: ExportKindView }
+	| { thread: ExportThread; type: "thread" }
 );
 
 export function resolveExportTarget(
@@ -58,7 +63,12 @@ function resolveNode(id: string): ExportTarget | undefined {
 	}
 
 	const view = graph.kindViews.get(id);
-	return view === undefined ? undefined : { id, type: "kind-view", view };
+	if (view !== undefined) {
+		return { id, type: "kind-view", view };
+	}
+
+	const thread = graph.threads.get(id);
+	return thread === undefined ? undefined : { id, thread, type: "thread" };
 }
 
 export function renderMarkdown(target: ExportTarget): string {
@@ -70,6 +80,8 @@ export function renderMarkdown(target: ExportTarget): string {
 			return pageDocument(target.node, graph);
 		case "kind-view":
 			return kindViewDocument(target.view, graph);
+		case "thread":
+			return threadDocument(target.thread, graph);
 		default:
 			return target satisfies never;
 	}
@@ -87,6 +99,8 @@ export function promptTargetFor(id: string): PromptTarget | undefined {
 			return pageTarget(target.node);
 		case "kind-view":
 			return kindViewTarget(target.view);
+		case "thread":
+			return threadTarget(target.thread);
 		default:
 			return target satisfies never;
 	}
@@ -101,6 +115,8 @@ export function renderPromptContext(target: ExportTarget): PromptContext {
 			return pageContext(target.node, graph);
 		case "kind-view":
 			return kindViewContext(target.view, graph);
+		case "thread":
+			return threadContext(target.thread, graph);
 		default:
 			return target satisfies never;
 	}
@@ -108,7 +124,11 @@ export function renderPromptContext(target: ExportTarget): PromptContext {
 
 export function exportStaticParams(format: ExportFormat): { slug: string[] }[] {
 	const graph = exportGraph();
-	const ids = [...graph.nodes.keys(), ...graph.kindViews.keys()];
+	const ids = [
+		...graph.nodes.keys(),
+		...graph.kindViews.keys(),
+		...graph.threads.keys(),
+	];
 	return ids.map((id) => ({ slug: nodeFileSegments(id, format) }));
 }
 
@@ -128,6 +148,7 @@ interface ExportGraphJson {
 	edges: readonly ExportEdge[];
 	nodes: (Omit<ExportNode, "body" | "statement"> & { markdown: string })[];
 	relations: typeof RELATION_NAMES;
+	threads: (ExportThread & { markdown: string })[];
 }
 
 export function exportGraphJson(): ExportGraphJson {
@@ -142,5 +163,9 @@ export function exportGraphJson(): ExportGraphJson {
 			})
 		),
 		relations: RELATION_NAMES,
+		threads: [...graph.threads.values()].map((thread) => ({
+			...thread,
+			markdown: nodeMarkdownUrl(thread.id),
+		})),
 	};
 }

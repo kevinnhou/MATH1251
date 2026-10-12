@@ -9,7 +9,7 @@ The site compiles **page metadata and page bodies separately**. They come from t
 | **Compiled by** | custom fumadocs plugin, before bundling                                         | the bundler (fumadocs MDX loader) |
 | **Pipeline**    | remark only                                                                     | remark → rehype → recma → JS      |
 | **Output**      | one JSON module, `.source/corpus-meta.ts` (~1.75 MB)                            | one lazy chunk per page           |
-| **Read by**     | sidebar, search, graph, catalog, OG images, `llms*.txt`, `content.md`, terminal | `(docs)/[...slug]/page.tsx` only  |
+| **Read by**     | sidebar, search, relations, catalog, OG images, `llms*.txt`, `content.md`, terminal | `(docs)/[...slug]/page.tsx` only  |
 
 
 The goal is that only the route that renders a page body pays for compiling and
@@ -31,12 +31,12 @@ flowchart TD
         content["site/content.ts"]
         chunks["import('…/page.mdx?collection=docs')<br/>full compile, one chunk per page"]
         light["sidebar, search, llms.txt"]
-        derived["graph, catalog, routes, tenets, OG,<br/>llms-full.txt, content.md"]
+        derived["export graph, course index, thread map, catalog, routes,<br/>tenets, OG, llms-full.txt, content.md"]
         page["(docs)/[...slug]/page.tsx<br/>ONLY body consumer"]
     end
 
     subgraph P3["Static generation · 7 workers"]
-        out["76 pages + 76 OG images + 76 content.md<br/>+ graph/catalog/llms/icons/sw.js ≈ 245 outputs"]
+        out["76 pages + 76 OG images + 76 content.md<br/>+ graph/catalog/llms/icons/sw.js ≈ 244 outputs"]
     end
 
     src --> meta
@@ -129,7 +129,7 @@ fumadocs API work without importing a single MDX module. Search, the sidebar and
 ### 6. Derived data is computed once per worker
 
 `getCorpus()` in `src/lib/site/corpus.ts` builds the page index, kind views,
-catalog, routes, graph and tenet index. It's memoised per process in production
+export graph, catalog, routes, `CourseIndex`, thread map and tenet index. It's memoised per process in production
 (`memoInProduction`) and wrapped in React `cache` in dev.
 
 **Effect:** static generation runs in 7 workers. Each builds the corpus once, and
@@ -177,20 +177,26 @@ first request, and `revalidate = false` caches them forever.
 
 ### 10. Client data is split by when it's needed
 
-The docs layout renders client components (sidebar, terminal, graph) that need
-course data. Their props are serialised into the RSC payload, which is inlined
-into every prerendered page, so the data is split in two:
+The docs layout renders client components (sidebar, terminal) that need
+course data, and the docs page renders the reading dock. Their props are
+serialised into the RSC payload, which is inlined into every prerendered page,
+so the data is split three ways:
 
 - **Render time:** `routes` (`src/lib/course/routes.ts`): page URLs and each
   page's kind views, about 10 KB. `(docs)/layout.tsx` passes it to
   `CourseRoutesProvider`; it drives the current page, sidebar sections and
   kind-view tree entries.
-- **Interaction time:** the full catalog (titles, descriptions, aliases) and the
-  graph document, served as static JSON (`/catalog.json`, `/graph-data.json`) and
-  loaded once per page load with `jsonResource` (`src/lib/client/resource.ts`).
+- **Render time, per page:** the page's `PageDock` (RELATIONS.md), built by
+  `page.tsx` from `getCorpus()` and passed to `ReadingDock`. It holds only this
+  page's environments, its page neighbours and strip positions: about
+  16 KB on average, 62 KB on the largest page. Unlike `routes` it is not the
+  same on every page, so it can't be served as one shared JSON file.
+- **Interaction time:** the full catalog (titles, descriptions, aliases),
+  served as static JSON (`/catalog.json`) and loaded once per page load with
+  `jsonResource` (`src/lib/client/resource.ts`).
 
-**Effect:** each page carries about 10 KB of course data instead of about
-400 KB, and the JSON is downloaded once, then served from the HTTP cache or the
+**Effect:** each page carries about 10 KB of shared course data plus its own
+`PageDock`, instead of about 400 KB, and the JSON is downloaded once, then served from the HTTP cache or the
 service worker.
 
 ### 11. The service worker is built by a route handler

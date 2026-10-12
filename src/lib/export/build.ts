@@ -1,50 +1,57 @@
-import type { GraphModule } from "@/lib/course/strands";
-import type { GraphDocument } from "@/lib/graph/types";
+import type { Strand } from "@/lib/course/strands";
 import type { KindViewRef } from "@/lib/math-env/kind-view";
-import { getKindLabel } from "@/lib/math-env/kinds";
+import { envRelation, getKindLabel } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
+import type { ThreadIndex } from "@/lib/math-env/thread";
 import {
 	type ExportEdge,
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
 	type ExportSegment,
+	type ExportThread,
+	type ExportThreadMembership,
 	envId,
 } from "./model";
 
 export interface ExportPageInput {
 	envs: PageEnvs;
-	module: GraphModule | undefined;
+	module: Strand | undefined;
 	page: {
 		data: {
 			description?: string;
+			extractedReferences?: ReadonlyArray<{ href: string }>;
 			ideas: string[];
 			tags: string[];
 			title: string;
 		};
+		path: string;
 		url: string;
 	};
 }
 
+export type PageHrefResolver = (
+	href: string,
+	fromPath: string
+) => string | undefined;
+
 export function buildExportGraph(
 	pages: readonly ExportPageInput[],
 	tenets: TenetIndex,
-	graph: Pick<GraphDocument, "edges">,
-	kindViews: readonly KindViewRef[]
+	resolvePageHref: PageHrefResolver,
+	kindViews: readonly KindViewRef[],
+	threadIndex: ThreadIndex
 ): ExportGraph {
 	const nodes = new Map(
 		pages.flatMap(pageNodes).map((node) => [node.id, node])
 	);
 	const edges = uniqueEdges([
 		...pages.flatMap((page) => pageEdges(page, tenets)),
-		...graph.edges.flatMap((edge): ExportEdge[] =>
-			edge.kind === "reference"
-				? [{ kind: "references", source: edge.source, target: edge.target }]
-				: []
-		),
+		...pages.flatMap((page) => referenceEdges(page, resolvePageHref)),
 	]).filter((edge) => nodes.has(edge.source) && nodes.has(edge.target));
 	labelProofs(nodes, edges);
+	const threads = exportThreads(threadIndex, nodes);
 
 	return {
 		edges,
@@ -63,6 +70,8 @@ export function buildExportGraph(
 				),
 			])
 		),
+		threads: new Map(threads.map((thread) => [thread.id, thread])),
+		threadsOf: threadsByMember(threads),
 	};
 }
 
@@ -120,6 +129,41 @@ function exportKindViews(
 	});
 }
 
+function exportThreads(
+	index: ThreadIndex,
+	nodes: ReadonlyMap<string, ExportNode>
+): ExportThread[] {
+	return [...index.bySlug.values()]
+		.filter((thread) => nodes.has(thread.pageUrl))
+		.map((thread) => ({
+			id: thread.href,
+			label: thread.title.plain,
+			members: thread.members
+				.filter((member) => nodes.has(member.href))
+				.map((member) => ({
+					id: member.href,
+					...(member.role ? { role: member.role.source } : {}),
+				})),
+			pageId: thread.pageUrl,
+			slug: thread.slug,
+			summary: thread.summary.source,
+			title: thread.title.source,
+		}));
+}
+
+function threadsByMember(
+	threads: readonly ExportThread[]
+): Map<string, ExportThreadMembership[]> {
+	const byMember = new Map<string, ExportThreadMembership[]>();
+	for (const thread of threads) {
+		for (const { id, role } of thread.members) {
+			byMember.set(id, [...(byMember.get(id) ?? []), { role, thread }]);
+		}
+	}
+
+	return byMember;
+}
+
 function pageEdges(
 	{ envs, page }: ExportPageInput,
 	tenets: TenetIndex
@@ -128,11 +172,11 @@ function pageEdges(
 
 	for (const entry of envs.entries) {
 		const id = envId(page.url, entry.id);
-		const uses = entry.kind === "proof" ? "proves" : "uses";
+		const relation = envRelation(entry.kind);
 		edges.push(
 			{ kind: "contains", source: page.url, target: id },
 			...tenetHrefs(entry.of, tenets).map(
-				(target): ExportEdge => ({ kind: uses, source: id, target })
+				(target): ExportEdge => ({ kind: relation, source: id, target })
 			),
 			...tenetHrefs(entry.see, tenets).map(
 				(target): ExportEdge => ({ kind: "see", source: id, target })
@@ -151,6 +195,28 @@ function pageEdges(
 	}
 
 	return edges;
+}
+
+function referenceEdges(
+	{ module, page }: ExportPageInput,
+	resolvePageHref: PageHrefResolver
+): ExportEdge[] {
+	if (module === undefined) {
+		return [];
+	}
+
+	return (page.data.extractedReferences ?? []).flatMap(
+		({ href }): ExportEdge[] => {
+			if (href === "" || href.startsWith("#")) {
+				return [];
+			}
+
+			const target = resolvePageHref(href, page.path);
+			return target === undefined
+				? []
+				: [{ kind: "references", source: page.url, target }];
+		}
+	);
 }
 
 function pageSegments(

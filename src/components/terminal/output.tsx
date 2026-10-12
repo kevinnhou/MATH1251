@@ -2,7 +2,6 @@
 
 import Link from "fumadocs-core/link";
 import { useState } from "react";
-import { useGraph } from "@/components/graph/provider";
 import {
 	BlockHtml,
 	InlineHtml,
@@ -11,7 +10,6 @@ import {
 import { copyText } from "@/lib/client/actions";
 import { cn } from "@/lib/cn";
 import { nodeMarkdownUrl } from "@/lib/export/urls";
-import type { RenderedMarkdown } from "@/lib/markdown/types";
 import { plainInlineLabel } from "@/lib/markdown/types";
 import { groupSearchHits } from "@/lib/terminal/search";
 import type {
@@ -94,86 +92,11 @@ function OutputBody({ output }: { output: TerminalOutput }) {
 			);
 		case "markdown":
 			return <MarkdownBlock output={output} />;
-		case "inspect":
-			return (
-				<div className="flex flex-col gap-2">
-					{output.type ? (
-						<p className="text-fd-muted-foreground uppercase tracking-wider">
-							{output.type}
-						</p>
-					) : null}
-					<p className="text-fd-foreground">
-						<InlineLabelView label={output.title} />
-					</p>
-					<InspectPreview message={output.message} preview={output.preview} />
-					<InspectActions actionUrl={output.actionUrl} nodeId={output.nodeId} />
-				</div>
-			);
 		default: {
 			const _exhaustive: never = output;
 			return _exhaustive;
 		}
 	}
-}
-
-function InspectActions({
-	actionUrl,
-	nodeId,
-}: {
-	actionUrl?: string;
-	nodeId: string;
-}) {
-	const graph = useGraph();
-	const canFocus =
-		graph.status === "ready" && graph.session.query.focus.id !== nodeId;
-
-	function focusNode() {
-		if (graph.status === "ready") {
-			graph.dispatch({ target: nodeId, type: "focus" });
-		}
-	}
-
-	if (!(canFocus || actionUrl)) {
-		return null;
-	}
-
-	return (
-		<div className="flex flex-wrap gap-3">
-			{canFocus ? <BracketButton label="FOCUS" onClick={focusNode} /> : null}
-			{actionUrl ? <BracketLink href={actionUrl} label="OPEN" /> : null}
-		</div>
-	);
-}
-
-function InspectPreview({
-	message,
-	preview,
-}: {
-	message?: string;
-	preview?: RenderedMarkdown<"block" | "inline">;
-}) {
-	if (preview) {
-		if (preview.mode === "block") {
-			return (
-				<BlockHtml
-					className="md-fragment-compact mb-0 text-[12px] text-fd-muted-foreground leading-snug"
-					html={preview.html}
-				/>
-			);
-		}
-
-		return (
-			<p className="md-fragment-compact text-[12px] text-fd-muted-foreground leading-snug">
-				<InlineHtml html={preview.html} />
-			</p>
-		);
-	}
-
-	if (!message) {
-		return null;
-	}
-
-	return <p className="text-fd-muted-foreground">{message}</p>;
 }
 
 function GroupedLinks({ groups }: { groups: LinkGroup[] }) {
@@ -370,25 +293,6 @@ function MarkdownBlock({
 				</p>
 			) : null}
 		</div>
-	);
-}
-
-function BracketButton({
-	label,
-	onClick,
-}: {
-	label: string;
-	onClick: () => void;
-}) {
-	return (
-		<button
-			aria-label={label === "FOCUS" ? "Focus node" : label}
-			className="inline-flex outline-none focus-visible:outline-1 focus-visible:outline-fd-foreground"
-			onClick={onClick}
-			type="button"
-		>
-			[{label}]
-		</button>
 	);
 }
 

@@ -3,18 +3,33 @@
 import { Popover } from "@base-ui/react/popover";
 import { type MouseEvent, type ReactElement, useRef, useState } from "react";
 import { AskPopup, BlockedLink } from "@/components/mdx/ask-panel";
+import { cn } from "@/lib/cn";
 import type { PromptTarget } from "@/lib/export/model";
 import { useCopyMarkdown } from "@/lib/export/use-copy";
 import { usePrompt } from "@/lib/export/use-prompt";
 
 type Anchor = HTMLElement | { getBoundingClientRect: () => DOMRect };
 
-interface EnvShareProps {
+const HINT_REVEAL = {
+	"math-env":
+		"pointer-events-none pointer-coarse:pointer-events-auto opacity-0 pointer-coarse:opacity-40 group-focus-within/math-env:pointer-events-auto group-focus-within/math-env:opacity-100 group-hover/math-env:pointer-events-auto group-hover/math-env:opacity-100",
+	thread:
+		"pointer-events-none pointer-coarse:pointer-events-auto opacity-0 pointer-coarse:opacity-40 group-focus-within/thread:pointer-events-auto group-focus-within/thread:opacity-100 group-hover/thread:pointer-events-auto group-hover/thread:opacity-100",
+} as const;
+
+interface AskShareProps {
 	children: (rightClickHint: ReactElement) => ReactElement;
+	className?: string;
+	group: keyof typeof HINT_REVEAL;
 	target: PromptTarget;
 }
 
-export function EnvShare({ children, target }: EnvShareProps) {
+export function AskShare({
+	children,
+	className,
+	group,
+	target,
+}: AskShareProps) {
 	const [anchor, setAnchor] = useState<{ fromHint: boolean; to: Anchor }>();
 	const [open, setOpen] = useState(false);
 	const hintRef = useRef<HTMLButtonElement>(null);
@@ -37,7 +52,7 @@ export function EnvShare({ children, target }: EnvShareProps) {
 		const inside =
 			event.target instanceof Node &&
 			event.currentTarget.contains(event.target);
-		if (!inside || event.shiftKey || selecting) {
+		if (event.defaultPrevented || !inside || event.shiftKey || selecting) {
 			return;
 		}
 		event.preventDefault();
@@ -51,7 +66,11 @@ export function EnvShare({ children, target }: EnvShareProps) {
 				aria-expanded={open}
 				aria-haspopup="dialog"
 				aria-label={`Ask AI about ${target.label}`}
-				className="pointer-events-none pointer-coarse:pointer-events-auto absolute right-0 bottom-0 flex h-5 items-center px-1 font-mono text-[10px] text-fd-muted-foreground leading-none opacity-0 pointer-coarse:opacity-40 outline-none transition-opacity duration-150 hover:text-fd-foreground focus-visible:outline-1 focus-visible:outline-fd-foreground group-focus-within/math-env:pointer-events-auto group-focus-within/math-env:opacity-100 group-hover/math-env:pointer-events-auto group-hover/math-env:opacity-100 aria-expanded:pointer-events-auto aria-expanded:text-fd-foreground aria-expanded:opacity-100 motion-reduce:transition-none"
+				className={cn(
+					"flex h-5 items-center px-1 font-mono text-[10px] text-fd-muted-foreground leading-none outline-none transition-opacity duration-150 hover:text-fd-foreground focus-visible:outline-1 focus-visible:outline-fd-foreground aria-expanded:pointer-events-auto aria-expanded:text-fd-foreground aria-expanded:opacity-100 motion-reduce:transition-none",
+					HINT_REVEAL[group],
+					className
+				)}
 				onClick={(event) => openAt(event.currentTarget, true)}
 				onFocus={prompt.prefetch}
 				onPointerEnter={prompt.prefetch}
@@ -62,7 +81,7 @@ export function EnvShare({ children, target }: EnvShareProps) {
 				<span className="pointer-coarse:inline hidden">[ASK AI]</span>
 			</button>
 		) : (
-			<BlockedLink className="absolute right-0 bottom-0 px-1" prompt={prompt} />
+			<BlockedLink className={cn("px-1", className)} prompt={prompt} />
 		);
 
 	return (

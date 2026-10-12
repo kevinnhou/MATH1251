@@ -4,8 +4,8 @@ import type {
 	PageCatalog,
 } from "@/lib/course/catalog";
 import type { OpenPromptRequest, OpenPromptResult } from "@/lib/export/client";
-import type { GraphRuntime } from "@/lib/graph/runtime";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
+import type { PageDock } from "@/lib/relations/types";
 
 export const TERMINAL_HISTORY_LIMIT = 50;
 export const TERMINAL_HISTORY_KEY = "math1251-terminal-history";
@@ -91,15 +91,6 @@ export type TerminalOutput =
 			kind: "markdown";
 			markdown: string;
 			title: string;
-	  }
-	| {
-			actionUrl?: string;
-			kind: "inspect";
-			message?: string;
-			nodeId: string;
-			preview?: RenderedMarkdown<"block" | "inline">;
-			title: InlineLabel;
-			type?: string;
 	  };
 
 export interface CommandRuntime {
@@ -112,11 +103,11 @@ export interface CompleteContext {
 	catalog: PageCatalog;
 	current: CurrentPages;
 	cwd: string;
-	graph: GraphRuntime;
 	parsed: ParsedLine;
 }
 
 export interface ExecuteContext extends CompleteContext {
+	dock: PageDock | undefined;
 	runtime: CommandRuntime;
 	signal: AbortSignal;
 }

@@ -1,10 +1,10 @@
 import { Logomark } from "@/components/site/logomark";
-import type { GraphModule } from "@/lib/course/strands";
+import type { Strand } from "@/lib/course/strands";
 import { MATH_ENV_KINDS } from "@/lib/math-env/kinds";
 import type { ResolvedDocs } from "@/lib/site/corpus";
 import { describeDocsPage } from "@/lib/site/docs-page";
 
-const ACCENT: Record<GraphModule, string> = {
+const ACCENT: Record<Strand, string> = {
 	algebra: "#ffadad",
 	calculus: "#a8c7e8",
 	core: "#74828a",

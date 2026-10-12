@@ -1,10 +1,9 @@
-import { GRAPH_MODULES, STRAND_LABELS } from "@/lib/course/strands";
+import { STRAND_LABELS, STRANDS } from "@/lib/course/strands";
 import { getKindLabel, type MathEnvKind } from "@/lib/math-env/kinds";
 import {
 	catalogRoute,
 	docsContextRoute,
 	exportGraphRoute,
-	graphDataRoute,
 	llmsFullRoute,
 } from "@/lib/site/config";
 import {
@@ -22,6 +21,7 @@ import {
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
+	type ExportThread,
 	RELATION_NAMES,
 	RELATION_ORDER,
 	type Relation,
@@ -36,6 +36,7 @@ import {
 	prerequisites,
 	relationsOf,
 	requireNode,
+	threadsOf,
 } from "./query";
 import { nodeContextUrl, nodeMarkdownUrl } from "./urls";
 
@@ -129,13 +130,52 @@ export function envDocument(node: ExportNode, graph: ExportGraph): string {
 		id: node.id,
 		prerequisites: prerequisites(graph, node.id),
 		relations: relationsOf(graph, node.id, LISTED_RELATIONS),
+		threads: threadLines(graph, node.id),
+	});
+}
+
+export function threadDocument(
+	thread: ExportThread,
+	graph: ExportGraph
+): string {
+	const page = requireNode(graph, thread.pageId);
+	const places = thread.members.map((member) => {
+		const node = requireNode(graph, member.id);
+		return joinBlocks([
+			`## ${node.label}`,
+			[
+				member.role === undefined ? "" : `Role: ${member.role}.`,
+				`From ${nodeLink(pageOf(graph, node) ?? node)}.`,
+			]
+				.filter(Boolean)
+				.join(" "),
+			node.statement ?? "",
+		]);
+	});
+
+	return document(graph, {
+		body: [
+			thread.summary,
+			`Defined in ${nodeLink(page)}. The same idea in ${thread.members.length} places, in reading order; each \`##\` section is one place, with its role in the thread and its statement.`,
+			...places,
+		],
+		fields: {
+			page: page.id,
+			slug: thread.slug,
+			title: thread.title,
+			type: "thread",
+		},
+		heading: `Thread: ${thread.label}`,
+		id: thread.id,
+		prerequisites: [],
+		relations: [],
 	});
 }
 
 export function indexDocument(graph: ExportGraph): string {
 	const pages = pagesOf(graph);
 	const sections = [
-		...GRAPH_MODULES.map((strand) => ({
+		...STRANDS.map((strand) => ({
 			pages: pages.filter((page) => page.strand === strand),
 			title: STRAND_LABELS[strand],
 		})),
@@ -154,6 +194,7 @@ export function indexDocument(graph: ExportGraph): string {
 		"- Node IDs are site paths: a page is `/strand/page`, an environment is `/strand/page#anchor`. Every link in the exports points at a node ID.",
 		`- Markdown for any node: \`${nodeMarkdownUrl("/algebra/x")}\` for a page, \`${nodeMarkdownUrl("/algebra/x#thm-y")}\` for one environment.`,
 		`- Ranked prompt context (JSON blocks by tier) at the same paths under \`${docsContextRoute}\`, e.g. \`${nodeContextUrl("/algebra/x#thm-y")}\`.`,
+		"- A thread (`/core#thread-<slug>`) is one idea that recurs across the course; its Markdown lists every place it appears, with a role and statement for each.",
 		"- Each Markdown export starts with YAML frontmatter (`id`, `type`, `kind`, `strand`, `page`, …), then content, `## Prerequisites` (transitive dependencies from other pages) and `## Relations`.",
 		`- Relations: ${EXPORT_EDGE_KINDS.map((kind) => {
 			const [out, inverse] = RELATION_NAMES[kind];
@@ -165,8 +206,17 @@ export function indexDocument(graph: ExportGraph): string {
 		`- [Knowledge graph](${exportGraphRoute}): every node and typed edge as JSON`,
 		`- [Full notes](${llmsFullRoute}): every page document concatenated`,
 		`- [Catalog](${catalogRoute}): page and kind-view index used by site search`,
-		`- [Site graph](${graphDataRoute}): the rendered graph behind the site's graph view`,
 	];
+
+	if (graph.threads.size > 0) {
+		lines.push("", "## Threads", "");
+		lines.push(
+			...[...graph.threads.values()].map(
+				(thread) =>
+					`- ${markdownLink(thread.label, nodeMarkdownUrl(thread.id))}: ${thread.summary} (${thread.members.length} places)`
+			)
+		);
+	}
 
 	for (const section of sections) {
 		if (section.pages.length > 0) {
@@ -210,6 +260,7 @@ function document(
 		id: string;
 		prerequisites: readonly Prerequisite[];
 		relations: readonly Relation[];
+		threads?: readonly string[];
 	}
 ): string {
 	const needs = nearest(parts.prerequisites, PREREQUISITE_LIMIT);
@@ -220,7 +271,10 @@ function document(
 		needsLines.push(`- +${needs.omitted} more distant prerequisites`);
 	}
 
-	const relations = relationLines(parts.relations);
+	const relations = [
+		...relationLines(parts.relations),
+		...(parts.threads ?? []),
+	];
 
 	return `${joinBlocks([
 		frontmatter({
@@ -236,6 +290,13 @@ function document(
 			: `## Prerequisites\n\nTransitive \`uses\`/\`proves\` dependencies defined elsewhere, foundations first.\n\n${needsLines.join("\n")}`,
 		relations.length === 0 ? "" : `## Relations\n\n${relations.join("\n")}`,
 	])}\n`;
+}
+
+function threadLines(graph: ExportGraph, id: string): string[] {
+	return threadsOf(graph, id).map(({ role, thread }) => {
+		const link = markdownLink(thread.label, thread.id);
+		return `- Thread: ${link}${role === undefined ? "" : ` (${role})`}`;
+	});
 }
 
 function nearest(

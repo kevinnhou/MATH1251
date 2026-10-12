@@ -9,8 +9,7 @@ src/lib/terminal/          terminal logic (pure, no React)
   commands.ts              command registry, completion
   dirs.ts                  directories and path resolution
   location.ts              working directory and tree view transitions
-  graph-command.ts         the `graph` command
-  graph-output.ts          graph node > inspect output
+  relations-command.ts     the `relations` command (see RELATIONS.md)
   parse.ts                 tokenising, applying completions
   resolve.ts               page lookup and ranking for arguments
   mode.ts                  surface helpers (draft, output, dismiss)
@@ -32,13 +31,13 @@ src/components/terminal/   terminal UI
 
 src/components/sidebar/    terminal screen
 
-src/lib/client/keybinds.ts every site wide hotkey
+src/lib/client/keybinds.ts every site wide hotkey, moveKey (arrows and WASD for focus-scoped widgets), cursorKey and focusSibling
 src/app/api/search/route.ts search endpoint (`format=terminal`)
 ```
 
-`src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `GraphProvider` ›
+`src/app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `RelationsProvider` ›
 `TerminalProvider` › `VirtualDocsLayout`. The terminal sits above the Fumadocs
-layout, so it can serve the graph and the page, while the sidebar lives inside
+layout, so it can read the page's relations and the page, while the sidebar lives inside
 the layout.
 
 The terminal works from two sources of course data (see COMPILE.md §10):
@@ -65,7 +64,7 @@ The terminal works from two sources of course data (see COMPILE.md §10):
 | `pwd` | Prints the working directory |
 | `md <page\|.>` | Shows the page's Markdown source |
 | `gpt`, `claude`, `cursor [explain\|proof\|quiz\|check] <page\|.>` | Opens the page in that assistant with that prompt (default `explain`); Tab offers the intents first |
-| `graph <depth\|strand\|focus\|find\|immerse\|collapse\|reset>` | Drives the course graph |
+| `relations` | Lists what the current page builds on and leads to, and the threads through it |
 | `help` | Lists commands |
 | `clear` | Clears output |
 | anything else | Full-text search; matching pages replace the tree |
@@ -169,7 +168,7 @@ in the tree falls back to the output pane.
   result row last focused or hovered, with highlighted snippets and links to
   each section. One delegated `pointerover`/`focusin` listener on the pane
   picks the row, so moving between rows re-renders only the preview.
-- **Page:** `SearchHighlight` marks the query terms in `[data-graph-prose]`
+- **Page:** `SearchHighlight` marks the query terms in `[data-prose]`
   with the CSS Custom Highlight API: no DOM changes, cleared with the view.
   Its `::highlight()` rule is rendered inline because the CSS pipeline does
   not parse it yet.
@@ -184,7 +183,7 @@ so typing re-renders only the prompt:
 
 | Hook | Changes | Holds | Used by |
 |---|---|---|---|
-| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `clearInspectOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers, graph |
+| `useTerminalApi()` | never | `focusPrompt`, `publishOutput`, `showTree`, `changeDirectory`, `bindSidebar`, `inputRef`, `outputRef` | sidebar, tree, launchers |
 | `useTerminalScreen()` | when output or the directory changes | `pane`, `output`, `echo`, `hadOutput`, `cwd`, `view` | sidebar, panes, tree, prompt, output pane |
 | `useTerminal()` | every keystroke | everything above, plus surface, completions, history focus | `TerminalPrompt` only |
 
@@ -237,17 +236,29 @@ each feature keeps its own window listener and ordering never matters.
 | ⌘K / Ctrl+K | terminal | anywhere except other text fields | Focus the prompt |
 | `1`–`9`, `0` | sidebar | anywhere outside a text field | Leave output, reveal the sidebar, focus that top-level section (in a chapter: that page) |
 | Esc | terminal | prompt unfocused, something to dismiss | Dismiss one layer |
-| Esc | graph | graph engaged (capture phase) | Graph's own escape |
+| Esc | reading dock | bay open (capture phase) | Close the bay |
 | printable keys, ↑/↓, paste | terminal | output showing, no text selected | Continue in the prompt (digits excluded) |
 | ↑↓←→ / WASD | tree | a tree row focused | Move; ←/→ fold and unfold |
 | Space | tree | a link row focused | Open |
 | Esc | tree | a tree row focused | Leave the tree |
+| ←→ / AD, Home/End | dock route strip | a strip focused | Move the cursor along the thread's stops |
+| ↑↓ / WS | dock route strip, rest bar | a strip or the rest bar focused | Move between the strips and the rest bar |
+| Enter | dock route strip | a strip focused | Open `/threads/<slug>` at the cursor |
+| ↑↓ / WS, Space | threads index | an index row focused | Move between rows; Space shows or hides the thread |
+| ←→ / AD, Home/End, Enter | threads diagram | the diagram focused | Move the cursor between stops; Enter opens the stop |
+| Esc | threads page | focus in the page, not every thread shown | Show all threads |
 
 In the prompt: Tab and ↑/↓ cycle completions, Enter runs (accepting the
 highlighted completion), Esc dismisses.
 
-Tree navigation is deliberately focus-scoped: global arrows would take over
-page scrolling.
+Arrow navigation is deliberately focus-scoped (tree, route strips, threads
+index and diagram): global arrows would take over page scrolling. Each widget
+reads arrows and WASD through `moveKey` in `keybinds.ts` (the route strips
+and the diagram move their cursor through `cursorKey`, which adds Home/End,
+and the route strips and threads index step focus through `focusSibling`),
+handles them in its own `onKeyDown` and calls `preventDefault`, which the terminal's and sidebar's
+window listeners check first, so a handled key never reaches them. See
+RELATIONS.md, Threads in the dock and Threads page.
 
 ## Performance
 

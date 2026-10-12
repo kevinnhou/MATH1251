@@ -28,7 +28,7 @@ export function SearchHighlight({
 		}
 
 		const frame = requestAnimationFrame(() => {
-			const body = document.querySelector("[data-graph-prose]");
+			const body = document.querySelector("[data-prose]");
 			if (body) {
 				CSS.highlights.set(
 					HIGHLIGHT,

@@ -16,11 +16,13 @@ import type {
 	CommandResult,
 	CommandRuntime,
 	CompleteContext,
+	ExecuteContext,
 	TerminalOutput,
 } from "@/lib/terminal/types";
 
 export interface RunContext
-	extends Omit<CompleteContext, "catalog" | "current" | "parsed"> {
+	extends Omit<CompleteContext, "catalog" | "current" | "parsed">,
+		Pick<ExecuteContext, "dock"> {
 	abortRef: RefObject<AbortController | null>;
 	announce: (message: string) => void;
 	closeDrawer: () => void;
@@ -78,7 +80,7 @@ export async function runTerminalLine(
 		catalog,
 		current: currentPagesFromUrl(catalog, ctx.route),
 		cwd: ctx.cwd,
-		graph: ctx.graph,
+		dock: ctx.dock,
 		parsed,
 		runtime: browserRuntime,
 		signal: controller.signal,

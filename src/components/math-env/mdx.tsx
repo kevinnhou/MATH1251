@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
+import { ThreadList } from "@/components/threads/thread-list";
 import {
 	type PromptTargetLookup,
 	pageEnvContext,
@@ -18,15 +19,24 @@ import {
 } from "@/lib/math-env/kinds";
 import type { PageEnvs } from "@/lib/math-env/page-envs";
 import type { TenetIndex } from "@/lib/math-env/tenet";
+import type { ThreadIndex } from "@/lib/math-env/thread";
+import type {
+	CourseIndex,
+	ThreadMap as ThreadMapData,
+} from "@/lib/relations/types";
 import { Env } from "./env";
 import { Recall } from "./recall";
 import { Statement } from "./statement";
+import { ThreadSection } from "./thread";
 
 export type MathEnvMdxOptions = KindViewRenderOptions & {
+	courseIndex?: CourseIndex;
 	pageEnvs?: PageEnvs;
 	pageTitle?: string;
 	promptTarget?: PromptTargetLookup;
 	tenetIndex?: TenetIndex;
+	threadIndex?: ThreadIndex;
+	threadMap?: ThreadMapData;
 };
 
 export function getMathEnvMdxComponents(
@@ -71,6 +81,30 @@ export function getMathEnvMdxComponents(
 			return recall ? <Recall recall={recall} /> : null;
 		},
 		Statement,
+		Thread: ({
+			children,
+			id,
+			slug,
+		}: {
+			children?: ReactNode;
+			id?: string;
+			slug: string;
+		}) => {
+			const thread = options.threadIndex?.bySlug.get(slug);
+			return (
+				<ThreadSection
+					courseIndex={options.courseIndex}
+					id={id}
+					target={thread && options.promptTarget?.(thread.href)}
+					tenets={options.tenetIndex}
+					thread={thread}
+				>
+					{children}
+				</ThreadSection>
+			);
+		},
+		ThreadMap: () =>
+			options.threadMap ? <ThreadList map={options.threadMap} /> : null,
 	};
 
 	for (const kind of Object.keys(MATH_ENV_KINDS) as MathEnvKind[]) {
