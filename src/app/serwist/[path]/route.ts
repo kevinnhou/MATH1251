@@ -1,5 +1,5 @@
 import { createSerwistRoute } from "@serwist/turbopack";
-import { offlineRoute } from "@/lib/site/config";
+import { offlineRoute } from "@/lib/pwa/protocol";
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
 	createSerwistRoute({

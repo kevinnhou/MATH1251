@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { OfflineActions } from "@/components/pwa/offline";
 import { Logomark } from "@/components/site/logomark";
-import { siteName } from "@/lib/site/config";
+import { course } from "@/lib/course/config";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
 	robots: { follow: false, index: false },
-	title: `${siteName} Offline`,
+	title: `${course.name} Offline`,
 };
 
 export default function OfflinePage() {

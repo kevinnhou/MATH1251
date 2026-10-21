@@ -1,5 +1,5 @@
 import type { ReactNode, SVGAttributes } from "react";
-import { foregroundAt, THREAD_COLOR } from "@/components/relations/colors";
+import { foregroundAt, THREAD_COLOR } from "./colors";
 import type { DiagramMark } from "./layout";
 
 export const STOP = 7;

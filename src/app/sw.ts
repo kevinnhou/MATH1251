@@ -1,5 +1,6 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
+
 import type {
 	PrecacheEntry,
 	SerwistGlobalConfig,
@@ -13,13 +14,14 @@ import {
 	NetworkOnly,
 	Serwist,
 } from "serwist";
+import { catalogRoute } from "../lib/course/urls";
 import {
 	isPageRequest,
 	type NetworkStatus,
 	networkStatusMessage,
+	offlineRoute,
 	pwaCaches,
 } from "../lib/pwa/protocol";
-import { catalogRoute, offlineRoute } from "../lib/site/config";
 
 declare global {
 	interface WorkerGlobalScope extends SerwistGlobalConfig {

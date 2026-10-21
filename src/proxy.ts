@@ -1,9 +1,9 @@
 import { isMarkdownPreferred, rewritePath } from "fumadocs-core/negotiation";
 import { type NextRequest, NextResponse } from "next/server";
 import { STRANDS } from "@/lib/course/strands";
-import { docsContentRoute } from "@/lib/site/config";
+import { docsContentRoute } from "@/lib/export/urls";
 
-const docsRoutes = STRANDS.map((module) => `/${module}` as const);
+const docsRoutes = STRANDS.map((strand) => `/${strand}` as const);
 const rewriteDocs = docsRoutes.map(
 	(route) =>
 		rewritePath(

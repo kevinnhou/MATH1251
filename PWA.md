@@ -15,8 +15,8 @@ src/components/pwa/
   network.ts       offline state and saved paths; useUnsaved, reportUnreachable, onReconnect
   offline.tsx      offline page: sidebar section, reconnect, drawer button
 
-src/lib/site/config.ts       routes (shared with the worker)
-src/lib/pwa/protocol.ts      cache names, page request marker, network status message (shared with the worker)
+src/lib/course/urls.ts       catalogRoute (shared with the worker)
+src/lib/pwa/protocol.ts      offlineRoute, cache names, page request marker, network status message (shared with the worker)
 src/lib/client/resource.ts   jsonResource and useResource (catalog)
 ```
 

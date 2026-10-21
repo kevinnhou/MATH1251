@@ -1,7 +1,7 @@
 import type { Ref } from "react";
-import { foregroundAt } from "@/components/relations/colors";
 import { cn } from "@/lib/cn";
 import type { ThreadRoute } from "@/lib/relations/types";
+import { foregroundAt } from "./colors";
 import { laneCode } from "./format";
 import { packChapters, squareLine } from "./geometry";
 import { STOP } from "./marks";

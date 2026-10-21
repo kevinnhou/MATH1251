@@ -1,5 +1,6 @@
 import type { Root, RootContent } from "mdast";
 import { cloneMarkdownTree } from "./parse";
+import { literalLength } from "./syntaxes";
 
 export function truncateMarkdownTree(
 	tree: Root,
@@ -54,13 +55,14 @@ function keepTruncatedNode(
 		return keepTruncatedText(node, nodes, index, maxChars, state);
 	}
 
-	if (node.type === "inlineMath" || node.type === "math") {
+	const length = "value" in node ? literalLength(node) : undefined;
+	if (length !== undefined) {
 		if (state.used >= maxChars && index > 0) {
 			cutFrom(nodes, index, state);
 			return false;
 		}
 
-		state.used += node.value.length + (node.type === "math" ? 4 : 2);
+		state.used += length;
 		return true;
 	}
 

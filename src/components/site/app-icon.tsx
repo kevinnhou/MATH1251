@@ -1,5 +1,5 @@
 import { Logomark } from "@/components/site/logomark";
-import { themeBackground } from "@/lib/site/config";
+import { course } from "@/lib/course/config";
 
 export function AppIcon({
 	maskable = false,
@@ -14,7 +14,7 @@ export function AppIcon({
 		<div
 			style={{
 				alignItems: "center",
-				backgroundColor: themeBackground.light,
+				backgroundColor: course.theme.light,
 				display: "flex",
 				height: "100%",
 				justifyContent: "center",

@@ -1,5 +1,9 @@
-import { docsContentRoute, docsContextRoute } from "@/lib/site/config";
 import { envId } from "./model";
+
+export const docsContentRoute = "/llms.mdx/docs";
+export const docsContextRoute = "/llms.mdx/context";
+export const exportGraphRoute = "/graph.json";
+export const llmsFullRoute = "/llms-full.txt";
 
 const EXPORT_FORMATS = {
 	context: { ext: ".json", route: docsContextRoute },

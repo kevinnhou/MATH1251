@@ -13,8 +13,7 @@ import {
 import { stepWithin } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
 import type { ThreadMap } from "@/lib/relations/types";
-import { threadMapHref } from "@/lib/relations/urls";
-import { threadsRoute } from "@/lib/site/config";
+import { threadMapHref, threadsRoute } from "@/lib/relations/urls";
 import { ACTION, Bracket } from "./bracket";
 import {
 	type DiagramReading,

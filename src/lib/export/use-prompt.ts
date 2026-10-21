@@ -1,6 +1,6 @@
 import { useState, useSyncExternalStore } from "react";
+import type { PromptTarget } from "@/lib/mdx-env/target";
 import { openPrompt, prefetchContext } from "./client";
-import type { PromptTarget } from "./model";
 import {
 	DEFAULT_INTENT,
 	DEFAULT_PROVIDER,
@@ -18,14 +18,16 @@ interface BlockedPrompt {
 function storedPreference<T extends string>(
 	key: string,
 	fallback: T,
-	isValid: (value: unknown) => value is T
+	isValid: (value: unknown) => value is T,
+	aliases: Readonly<Record<string, T>> = {}
 ) {
 	const listeners = new Set<() => void>();
 
 	function read(): T {
 		try {
 			const stored = window.localStorage.getItem(key);
-			return isValid(stored) ? stored : fallback;
+			const value = stored === null ? stored : (aliases[stored] ?? stored);
+			return isValid(value) ? value : fallback;
 		} catch {
 			return fallback;
 		}
@@ -60,7 +62,8 @@ function storedPreference<T extends string>(
 const intentPreference = storedPreference(
 	"export:intent",
 	DEFAULT_INTENT,
-	isPromptIntent
+	isPromptIntent,
+	{ proof: "derive" }
 );
 const providerPreference = storedPreference(
 	"export:provider",

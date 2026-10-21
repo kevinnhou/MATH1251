@@ -1,14 +1,22 @@
 import { DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
 import type { ReactNode } from "react";
-import { StatementHtml } from "@/components/math-env/statement";
-import type { TenetIndex } from "@/lib/math-env/tenet";
-import { memberStatement, type ThreadIndex } from "@/lib/math-env/thread";
-import { getCorpus } from "@/lib/site/corpus";
+import { StatementHtml } from "@/components/mdx-env/statement";
+import type { TenetIndex } from "@/lib/mdx-env/tenet";
+import { memberStatement, type ThreadIndex } from "@/lib/mdx-env/thread";
+import type { ThreadMap } from "@/lib/relations/types";
 import { ThreadsExplorer } from "./explorer";
 
-export function ThreadsPage({ focus }: { focus?: string }) {
-	const { tenets, threadMap, threads } = getCorpus();
-
+export function ThreadsPage({
+	focus,
+	tenets,
+	threadMap,
+	threads,
+}: {
+	focus?: string;
+	tenets: TenetIndex;
+	threadMap: ThreadMap;
+	threads: ThreadIndex;
+}) {
 	return (
 		<DocsPage
 			full

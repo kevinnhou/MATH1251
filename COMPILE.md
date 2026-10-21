@@ -26,9 +26,9 @@ flowchart TD
     end
 
     subgraph P2["Phase 2 · Turbopack"]
-        source["site/source.ts"]
+        source["compile/source.ts"]
         corpus["site/corpus.ts"]
-        content["site/content.ts"]
+        content["compile/content.ts"]
         chunks["import('…/page.mdx?collection=docs')<br/>full compile, one chunk per page"]
         light["sidebar, search, llms.txt"]
         derived["export graph, course index, thread map, catalog, routes,<br/>tenets, OG, llms-full.txt, content.md"]
@@ -59,8 +59,8 @@ flowchart TD
 
 ### 1. Metadata is compiled in phase 1, not by the bundler
 
-`src/lib/site/corpus-meta/plugin.ts` is a fumadocs-mdx plugin (`plugins: [corpusMeta()]` in `source.config.ts`). Its `emit` hook runs when Next loads
-`next.config.mjs`, before Turbopack starts, and writes `.source/corpus-meta.ts`.
+`src/lib/compile/corpus-meta/plugin.ts` is a fumadocs-mdx plugin (`plugins: [corpusMeta()]` in `source.config.ts`). Its `emit` hook runs when Next loads
+`next.config.ts`, before Turbopack starts, and writes `.source/corpus-meta.ts`.
 
 **Effect:** by the time bundling begins, every non-body consumer already has a
 plain data module to import. The bundler never has to compile an MDX page just to
@@ -74,10 +74,11 @@ instead, so the dev server stays up and shows the error.
 
 `generate.ts` builds an `@mdx-js/mdx` processor with `rehypePlugins: []` and
 `recmaPlugins: []`. It runs `remarkInclude`, then the **resolved** remark plugins
-(the fumadocs preset plus `remarkMath`, `remarkMdxMermaid`, `remarkMathEnv`), then
+(the fumadocs preset plus the course's markdown syntax plugins (math: `remarkMath`),
+`remarkMdxMermaid`, `remarkMdxEnv`), then
 `remarkCapture`, which copies what the other plugins left on `file.data`:
 
-- `envs` from `remarkMathEnv`: environment occurrences, recalls, and prose segments
+- `envs` from `remarkMdxEnv`: environment occurrences, recalls, and prose segments
 - `structuredData` from fumadocs' `remarkStructure`: the search index
 - `extractedReferences`: every link href, used for graph edges
 
@@ -112,13 +113,13 @@ runs.
 (`.next/server/chunks/ssr/content_docs_…_mdx_*.js`).
 
 **Effect:** a body is compiled and evaluated only when something calls
-`entry.load()`. The only caller is `loadPageContent` in `src/lib/site/content.ts`,
+`entry.load()`. The only caller is `loadPageContent` in `src/lib/compile/content.ts`,
 and the only importer of that module is the docs page. That's why the docs page is
 the only route whose trace includes body chunks.
 
 ### 5. The fumadocs loader is built from corpus-meta, not from `collections/server`
 
-`src/lib/site/source.ts` builds `loader()` from **virtual files** made out of
+`src/lib/compile/source.ts` builds `loader()` from **virtual files** made out of
 corpus-meta. `page.data` is frontmatter + `envs` + `structuredData` +
 `extractedReferences`.
 
@@ -139,7 +140,7 @@ every page, OG image and `content.md` in that worker reuses it.
 
 `content.md`, per-environment `.md` files and `llms-full.txt` (`src/lib/export/`,
 see EXPORT.md) are rebuilt from
-`envs.segments`. `remarkMathEnv` serialises prose back to markdown at compile time,
+`envs.segments`. `remarkMdxEnv` serialises prose back to markdown at compile time,
 so exporting a page never needs its compiled body. OG images use the title,
 description, `ideas` and an environment census from `envs`.
 
@@ -205,7 +206,7 @@ service worker.
 static generation it globs `.next/static/**/*.{js,css,woff2}`, injects the list
 into `src/app/sw.ts` as `self.__SW_MANIFEST`, and bundles the worker with
 esbuild into `/serwist/sw.js`. `/~offline` is added with `BUILD_REVISION` as
-its revision: a UUID that `next.config.mjs` generates once per build and inlines
+its revision: a UUID that `next.config.ts` generates once per build and inlines
 through `env`. It can't be the commit SHA, because a build with uncommitted
 changes would keep serving the old offline page, and it can't be read from
 `.next/BUILD_ID`, because route modules are first evaluated while collecting
@@ -266,7 +267,7 @@ gets bigger, or metadata quietly disagrees with bodies.
 
 ### Bundle boundaries
 
-1. Importing `@/lib/site/content` or `collections/server` anywhere other than the
+1. Importing `@/lib/compile/content` or `collections/server` anywhere other than the
   docs page. That route would trace all 76 body chunks. Calling  `loadPageContent` 
   in a loop (e.g. in `llms-full.txt`) would evaluate every compiled body during 
   the build. If a new consumer needs something from the body, add it to corpus-meta instead.
@@ -282,7 +283,7 @@ gets bigger, or metadata quietly disagrees with bodies.
   `sw.ts` so it works offline.
 5. Importing anything that isn't worker-safe into `sw.ts`. esbuild bundles
   whatever it imports, so React, DOM or `server-only` code fails in the worker or
-  bloats it. It imports `src/lib/site/config.ts` and `src/lib/pwa/protocol.ts`
+  bloats it. It imports `src/lib/course/urls.ts` and `src/lib/pwa/protocol.ts`
   by relative path; keep both free of React, DOM and server imports.
 
 ### Metadata/body consistency

@@ -2,13 +2,13 @@
 
 import { usePathname } from "fumadocs-core/framework";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
+import { homeRoute } from "@/lib/course/config";
 import {
 	type CourseRoutes,
 	indexRoutes,
 	type RouteIndex,
 	type RouteMatch,
 } from "@/lib/course/routes";
-import { homeRoute } from "@/lib/site/config";
 
 const CourseRoutesContext = createContext<RouteIndex | null>(null);
 

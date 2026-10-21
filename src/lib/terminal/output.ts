@@ -1,5 +1,5 @@
 import type { CatalogPage } from "@/lib/course/catalog";
-import { isSafeInternalUrl } from "@/lib/site/url";
+import { isSafeInternalUrl } from "@/lib/url";
 import type { LinkGroup, OutputLink, SearchHit, TerminalOutput } from "./types";
 
 export function errorOutput(message: string): TerminalOutput {

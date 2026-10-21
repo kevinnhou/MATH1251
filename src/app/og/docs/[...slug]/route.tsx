@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
-import { OgImage, toOgImageProps } from "@/lib/og";
+import { OgImage, toOgImageProps } from "@/components/site/og-image";
 import { docsStaticParams, resolveDocsPage } from "@/lib/site/corpus";
 
 export const revalidate = false;

@@ -1,5 +1,5 @@
 import type { MarkdownFragment, RenderedMarkdown } from "@/lib/markdown/types";
-import type { ExampleDifficulty } from "@/lib/math-env/kinds";
+import type { Difficulty } from "@/lib/mdx-env/kinds";
 
 export const DIRECTIONS = ["builds-on", "leads-to"] as const;
 
@@ -44,7 +44,7 @@ export interface CourseIndex {
 }
 
 export interface DockRef {
-	difficulty?: ExampleDifficulty;
+	difficulty?: Difficulty;
 	id: string;
 	place?: string;
 	title: RenderedMarkdown<"inline">;

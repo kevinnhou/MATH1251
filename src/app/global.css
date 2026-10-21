@@ -59,7 +59,7 @@ html > body[data-scroll-locked] {
 	margin-right: 0px !important;
 }
 
-.prose .math-env-body > :is(h1, h2, h3, h4, h5, h6):first-of-type {
+.prose .mdx-env-body > :is(h1, h2, h3, h4, h5, h6):first-of-type {
 	margin-top: 0;
 	margin-bottom: 0.65rem;
 	font-size: 0.95rem;
@@ -71,45 +71,45 @@ html > body[data-scroll-locked] {
 }
 
 .prose
-	.math-env[data-math-style="theory"]
-	.math-env-body
+	.mdx-env[data-env-style="emphasis"]
+	.mdx-env-body
 	> :is(h1, h2, h3, h4, h5, h6):first-of-type {
 	font-weight: 700;
 }
 
-.math-env-statement {
+.mdx-env-statement {
 	font-size: 0.95rem;
 	line-height: 1.55;
 }
 
-.math-env-statement p {
+.mdx-env-statement p {
 	margin: 0;
 }
 
-.math-env-statement p + p {
+.mdx-env-statement p + p {
 	margin-top: 0.5rem;
 }
 
-.math-env-statement :is(ul, ol) {
+.mdx-env-statement :is(ul, ol) {
 	padding-left: 1.5rem;
 	margin: 0.5rem 0;
 }
 
-.math-env-statement li + li {
+.mdx-env-statement li + li {
 	margin-top: 0.25rem;
 }
 
-.math-env-statement :is(ul, ol) :is(ul, ol) {
+.mdx-env-statement :is(ul, ol) :is(ul, ol) {
 	margin: 0.25rem 0 0;
 }
 
-.math-env-footnotes ol {
+.mdx-env-footnotes ol {
 	display: flex;
 	flex-direction: column;
 	gap: 0.15rem;
 }
 
-.math-env-footnotes .font-mono {
+.mdx-env-footnotes .font-mono {
 	font-family: var(--font-geist-mono), monospace;
 }
 
@@ -164,7 +164,7 @@ body:has([data-dock]) {
 	animation: dock-swap 180ms ease-out;
 }
 
-.math-env::before {
+.mdx-env::before {
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -180,12 +180,12 @@ body:has([data-dock]) {
 		transform 240ms ease-out;
 }
 
-.math-env[data-dock-active]::before {
+.mdx-env[data-dock-active]::before {
 	opacity: 0.25;
 	transform: none;
 }
 
-.math-env[data-dock-active="bay"]::before {
+.mdx-env[data-dock-active="bay"]::before {
 	opacity: 0.8;
 }
 
@@ -194,13 +194,13 @@ body:has([data-dock]) {
 		animation: none;
 	}
 
-	.math-env::before {
+	.mdx-env::before {
 		transition: none;
 	}
 }
 
 @media print {
-	.math-env::before {
+	.mdx-env::before {
 		display: none;
 	}
 }
@@ -360,7 +360,7 @@ body:has([data-dock]) {
 	font-size: 0.85em;
 }
 
-.math-env-statement table,
+.mdx-env-statement table,
 .md-fragment-block table {
 	display: block;
 	max-width: 100%;
@@ -368,8 +368,8 @@ body:has([data-dock]) {
 	border-collapse: collapse;
 }
 
-.math-env-statement th,
-.math-env-statement td,
+.mdx-env-statement th,
+.mdx-env-statement td,
 .md-fragment-block th,
 .md-fragment-block td {
 	padding: 0.2rem 0.5rem;

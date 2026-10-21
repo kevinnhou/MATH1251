@@ -2,13 +2,14 @@ import "server-only";
 
 import { posix } from "node:path";
 import { cache } from "react";
+import { getSourcePages, type SourcePage, source } from "@/lib/compile/source";
 import {
 	type CatalogPage,
 	type PageCatalog,
 	parentPath,
 } from "@/lib/course/catalog";
 import type { CourseRoutes } from "@/lib/course/routes";
-import { getStrand } from "@/lib/course/strands";
+import { assertStrands, getStrand } from "@/lib/course/strands";
 import { buildExportGraph } from "@/lib/export/build";
 import { kindViewTarget, pageTarget } from "@/lib/export/context";
 import type { ExportGraph } from "@/lib/export/model";
@@ -18,17 +19,16 @@ import {
 	type KindView,
 	kindViewsFromPages,
 	uniqueTrimmed,
-} from "@/lib/math-env/kind-view";
+} from "@/lib/mdx-env/kind-view";
 import {
 	assertTenetIndex,
 	createTenetIndex,
 	type TenetIndex,
-} from "@/lib/math-env/tenet";
-import { createThreadIndex, type ThreadIndex } from "@/lib/math-env/thread";
+} from "@/lib/mdx-env/tenet";
+import { createThreadIndex, type ThreadIndex } from "@/lib/mdx-env/thread";
 import { buildCourseIndex, courseOrder } from "@/lib/relations/build";
 import { buildThreadMap } from "@/lib/relations/thread-map";
 import type { CourseIndex, ThreadMap } from "@/lib/relations/types";
-import { getSourcePages, type SourcePage, source } from "./source";
 
 export type ResolvedDocs = {
 	source: SourcePage;
@@ -82,6 +82,7 @@ export const getCorpus = memoInProduction((): Corpus => {
 	assertTenetIndex(tenets);
 
 	const order = courseOrder(source.getPageTree());
+	assertStrands(order.strands.map(({ id }) => id));
 	const threads = createThreadIndex(
 		index.pages,
 		order.order.map(({ url }) => url)
@@ -191,9 +192,9 @@ function buildCatalog(
 }
 
 function catalogPage(resolved: ResolvedDocs, graph: ExportGraph): CatalogPage {
-	const { module, page } = resolved.source;
+	const { page, strand } = resolved.source;
 	const title = compileMarkdownFragment(resolved.title, "inline");
-	const common = { strand: module, title };
+	const common = { strand, title };
 
 	if (resolved.kind === "kind-view") {
 		const { view } = resolved;

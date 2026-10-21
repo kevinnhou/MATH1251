@@ -1,6 +1,7 @@
 import type { RootContent } from "mdast";
 import { remember } from "./cache";
 import { parseMarkdown } from "./parse";
+import { literalPlain } from "./syntaxes";
 
 const PHRASING_PARENTS = new Set([
 	"delete",
@@ -26,25 +27,6 @@ export function markdownToPlain(source: string): string {
 	);
 }
 
-export function simplifyTex(tex: string): string {
-	return tex
-		.replace(/\\mathrm\{([^}]+)\}/g, "$1")
-		.replace(/\\operatorname\{([^}]+)\}/g, "$1")
-		.replace(/\\text\{([^}]+)\}/g, "$1")
-		.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "$1/$2")
-		.replace(/\\left/g, "")
-		.replace(/\\right/g, "")
-		.replace(/\\,/g, " ")
-		.replace(/\\;/g, " ")
-		.replace(/\\!/g, "")
-		.replace(/\\ /g, " ")
-		.replace(/\\([a-zA-Z]+)/g, " $1")
-		.replace(/[{}]/g, "")
-		.replace(/~/g, " ")
-		.replaceAll(/\s+/g, " ")
-		.trim();
-}
-
 function plainFromNodes(nodes: RootContent[]): string {
 	return nodes.map(plainFromNode).filter(Boolean).join(" ");
 }
@@ -58,12 +40,13 @@ function plainFromNode(node: RootContent): string {
 		case "inlineCode":
 		case "code":
 			return node.value;
-		case "inlineMath":
-		case "math":
-			return simplifyTex(node.value);
 		case "html":
 			return "";
 		default:
+			if ("value" in node) {
+				return literalPlain(node) ?? "";
+			}
+
 			if ("children" in node) {
 				const joined = node.children
 					.map((child) => plainFromNode(child as RootContent))

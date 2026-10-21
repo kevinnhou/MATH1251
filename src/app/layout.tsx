@@ -1,11 +1,11 @@
 import { RootProvider } from "fumadocs-ui/provider/next";
 import type { Metadata, Viewport } from "next";
+import { course } from "@/lib/course/config";
 import "katex/dist/katex.css";
 import "./global.css";
 import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { PwaProvider } from "@/components/pwa/provider";
-import { siteName, themeBackground } from "@/lib/site/config";
 
 const alliance = localFont({
 	src: [
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
 	appleWebApp: {
 		capable: true,
 		statusBarStyle: "default",
-		title: siteName,
+		title: course.name,
 	},
-	applicationName: siteName,
+	applicationName: course.name,
 };
 
 export const viewport: Viewport = {
 	themeColor: [
-		{ color: themeBackground.light, media: "(prefers-color-scheme: light)" },
-		{ color: themeBackground.dark, media: "(prefers-color-scheme: dark)" },
+		{ color: course.theme.light, media: "(prefers-color-scheme: light)" },
+		{ color: course.theme.dark, media: "(prefers-color-scheme: dark)" },
 	],
 };
 

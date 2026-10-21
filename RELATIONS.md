@@ -29,9 +29,9 @@ Both read the same relations as the exports (EXPORT.md), from one place.
 ## Layout
 
 ```
-src/lib/math-env/kinds.ts          MATH_ENV_KINDS: what `of` means per kind (ENV_RELATIONS)
-src/lib/math-env/remark.ts         reads env metadata, `<Thread>` sections and `thread=` tags
-src/lib/math-env/thread.ts         ThreadIndex: threads and their members (getCorpus().threads)
+src/lib/mdx-env/kinds.ts           env registry built from the course's pack: what `of` means per kind (ENV_RELATIONS)
+src/lib/mdx-env/remark.ts          reads env metadata, `<Thread>` sections and `thread=` tags
+src/lib/mdx-env/thread.ts          ThreadIndex: threads and their members (getCorpus().threads)
 src/lib/export/model.ts            edge kinds, DEPENDENCY_EDGES, relation names
 src/lib/export/build.ts            site corpus > export graph (the one relation graph)
 src/lib/export/query.ts            prerequisites(), relationsOf()
@@ -50,18 +50,19 @@ src/components/relations/
   subject.tsx                      subjectAt: the DockSubject being read (env, thread, page) and its bay prose
   dock-hooks.ts                    useDockState, useActiveAnchor, useProximity, useBoxHeight
   pointer.ts                       shared mouse tracker (position, velocity) and its geometry
-  colors.ts                        relation colours
-
-src/components/math-env/thread.tsx ThreadSection: a `<Thread>` with its COMPARE spine
-src/components/math-env/thread-compare.tsx  ThreadFrame (section + right-click ask) and ThreadCompare (toggle, reveal)
+  colors.ts                        relation direction colours
 
 src/components/threads/
+  mdx.tsx                          the `<Thread>` and `<ThreadMap>` MDX components
+  thread-section.tsx               ThreadSection: a `<Thread>` with its COMPARE spine
+  thread-compare.tsx               ThreadFrame (section + right-click ask) and ThreadCompare (toggle, reveal)
+  colors.ts                        THREAD_COLOR, foregroundAt
   format.ts                        laneCode, placeLabel: the labels every drawing of a thread shares (numbers never zero-padded, separators `/`, never `·`)
   geometry.ts                      packChapters, squareLine: chapter packing and square lines, shared by the diagram and the track (pure)
   route-track.tsx                  RouteTrack and routeLayout: a route in the diagram's language, in percentages (server-safe, no state)
   route-strip.tsx                  RouteStrip: a RouteTrack with a cursor and keys, linking to the threads page (client)
   thread-list.tsx                  ThreadList: `<ThreadMap />` on /core, an index linking to /threads/<slug>
-  page.tsx                         ThreadsPage: /threads and /threads/<slug>, statements (server)
+  page.tsx                         ThreadsPage: /threads and /threads/<slug>, statements (server; the route passes the corpus data)
   explorer.tsx                     ThreadsExplorer: the page's state (shown, preview, hover, cursor) and its layout (client)
   bracket.tsx                      Bracket, ACTION: the site's `[LABEL]` actions
   thread-index.tsx                 ThreadIndex: the key above the graph, choosing the threads shown (client)
@@ -80,9 +81,9 @@ src/lib/terminal/relations-command.ts  the `relations` command
 
 ```mermaid
 flowchart LR
-    mdx["MDX: of=, see=, &lt;Recall of&gt;"] --> tenets["tenet index<br/>(math-env/tenet.ts)"]
-    tmdx["MDX: &lt;Thread&gt;, thread="] --> threads["ThreadIndex<br/>(math-env/thread.ts)"]
-    kinds["MATH_ENV_KINDS.of<br/>(kinds.ts)"] --> export
+    mdx["MDX: of=, see=, &lt;Recall of&gt;"] --> tenets["tenet index<br/>(mdx-env/tenet.ts)"]
+    tmdx["MDX: &lt;Thread&gt;, thread="] --> threads["ThreadIndex<br/>(mdx-env/thread.ts)"]
+    kinds["EnvPack.kinds[].of<br/>(course pack)"] --> export
     tenets --> export["export graph<br/>(export/build.ts)"]
     export --> exports["Markdown, prompt context,<br/>llms.txt, graph.json"]
     export --> index["CourseIndex<br/>(relations/build.ts)"] --> dock["PageDock per page<br/>(relations/dock.ts)"]
@@ -104,8 +105,8 @@ Nothing about relations is fetched on the client.
 ### What `of` means
 
 Every environment can cite tenets with `of="slug,…"`. What that citation means
-depends on the citing kind, and is set in one place: the `of` field of
-`MATH_ENV_KINDS`.
+depends on the citing kind, and is set in one place: the `of` field of the
+kind in the course's environment pack (MATH1251: `src/lib/packs/math/env.ts`).
 
 | Kind | Code | `of` means | Edge |
 |---|---|---|---|
@@ -119,7 +120,7 @@ depends on the citing kind, and is set in one place: the `of` field of
 | example | EG | practises | `practises` |
 
 `ENV_RELATIONS` (`uses`, `proves`, `practises`) is the set a kind can pick from.
-`build.ts` reads `envRelation(kind)` for every `of` citation, so no consumer
+`build.ts` reads the kind's `of` relation for every `of` citation, so no consumer
 special-cases a kind. Proof and example are also the kinds with
 `optionalSlug: true`. Every other kind must declare a `slug` so it can be cited.
 
@@ -297,7 +298,7 @@ The page tree (`source.getPageTree()`, the same order as the sidebar) is walked
 depth-first. Every top-level folder is a **strand**: its `id` is the first URL
 segment of its pages and its `title` is the folder's name from `meta.json`.
 Nothing here names the strands, so a new top-level folder is a new strand.
-(`src/lib/course/strands.ts` still lists them for routing, OG images and the
+(`course.config.ts` still lists them for routing, OG images and the
 exports.)
 
 Each strand gets an intro chapter (number 0), and each folder inside it a
@@ -369,7 +370,7 @@ calm. The contents change with what is being read; the position doesn't.
 | `top` corner | above the surface, at the viewport's right edge |
 | `left` corner | left of the surface, at the viewport's bottom edge |
 | `body:has([data-dock])` | `padding-bottom: 6rem`, so the end of a page can scroll clear of the dock |
-| `.math-env::before` | the active mark (see [The active mark](#the-active-mark)) |
+| `.mdx-env::before` | the active mark (see [The active mark](#the-active-mark)) |
 | `[data-dock-swap]` | a 180ms fade-in, replayed whenever the subject changes |
 
 The corners belong to `<aside data-dock>`, which is positioned fixed, so they
@@ -519,7 +520,7 @@ cursor expires.
 The environment the dock is showing gets `data-dock-active` (`rest` or `bay`,
 the dock's state), set straight on the DOM so the page's content never
 re-renders. It draws a hairline between the environment's rail and its body
-(`.math-env::before`): 25% foreground at rest, 80% while the bay is open, so
+(`.mdx-env::before`): 25% foreground at rest, 80% while the bay is open, so
 opening the dock shows exactly what it describes. The line fades and grows in
 over 200ms. A `<Thread>` section the dock is following gets the attribute too,
 but nothing styles it yet.
@@ -929,8 +930,9 @@ number, so two marked threads stay apart.
 
 ## Extending
 
-- **A new environment kind:** add it to `MATH_ENV_KINDS` with an `of`
-  relation, plus `optionalSlug` if it needn't be citable. Its citations reach
+- **A new environment kind:** add it to the course's pack (`EnvPack.kinds`,
+  see MDX-ENV.md) with an `of` relation, plus `optionalSlug` if it needn't be
+  citable. Its citations reach
   the exports and the dock with no other change.
 - **A new thread:** wrap the prose that explains it in `<Thread slug summary>`
   and tag each member environment with `thread="<slug>: <role>"`. A thread is
@@ -940,7 +942,7 @@ number, so two marked threads stay apart.
 - **A new strand:** add a top-level folder with a `meta.json`. The `CourseIndex`,
   the dock's strip, routes (a lane wherever a thread visits it) and the map
   pick it up; routing, OG images and the
-  exports still need it in `src/lib/course/strands.ts`.
+  exports still need it in `course.config.ts`.
 - **A new relation:** add it to `ENV_RELATIONS`, `EXPORT_EDGE_KINDS`,
   `RELATION_NAMES`, `RELATION_LABELS` and `RELATION_ORDER` (EXPORT.md). Add it
   to `DEPENDENCY_EDGES` if it is a prerequisite: it then joins NEEDS,
@@ -963,7 +965,7 @@ Starting values, none yet checked in a browser:
 | open / close delay | `PROXIMITY` | 100ms / 320ms |
 | approach | `APPROACH`, `dock-hooks.ts` | ≥ 0.3 px/ms, ≤ 320px, arriving within 220ms |
 | corridor | `CORRIDOR`, `dock-hooks.ts` | 24px margin, 40px travel, 0.2 px/ms closing, 500ms rest |
-| active mark | `.math-env::before`, `global.css` | 25% / 80% foreground |
+| active mark | `.mdx-env::before`, `global.css` | 25% / 80% foreground |
 | cutout depth | `--dock-cut`, `global.css` | 5% darker (light), 45% (dark) |
 | notch radius | `--dock-radius` | 14px |
 | dock width | `dock.tsx` | 19rem |

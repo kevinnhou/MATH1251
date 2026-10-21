@@ -9,22 +9,22 @@ prompts on pages, on environments and in the terminal.
 ## Layout
 
 ```
-src/lib/export/              export logic (pure except corpus.ts and the client files)
-  model.ts                   nodes, edges, relations, prompt target and context types
+src/lib/export/              export logic (pure except server.ts and the client files)
+  model.ts                   nodes, edges, relations and prompt context types
   build.ts                   site corpus > export graph
   query.ts                   graph traversal: children, proofs, relations, prerequisites
-  urls.ts                    node ID <> file URL, for both formats
+  urls.ts                    export routes; node ID <> file URL, for both formats
   format.ts                  frontmatter, links, relation lines
   documents.ts               Markdown renderers (page, env, kind view, llms.txt)
   context.ts                 prompt targets and ranked prompt context
   prompt.ts                  intents, providers, prompt text, URL budget packing
-  corpus.ts                  server-only: binds renderers to the site corpus, for routes
+  server.ts                  server-only: resolves and renders targets against a given ExportGraph, for routes
   client.ts                  browser: cached fetches, fallback context, openPrompt
   use-prompt.ts              React hook: remembered intent and provider, launch, blocked pop-up state
   use-copy.ts                React hook: copy a node's Markdown, with copying/copied/failed status
 
 src/lib/site/corpus.ts       builds exportGraph once, then the CourseIndex and thread map (RELATIONS.md) and catalog from it
-src/lib/site/config.ts       docsContentRoute, docsContextRoute, exportGraphRoute, llmsFullRoute
+src/lib/mdx-env/target.ts    PromptTarget (shared with the catalog and environments)
 
 src/app/llms.mdx/docs/[[...slug]]/route.ts      Markdown per node
 src/app/llms.mdx/context/[[...slug]]/route.ts   prompt context per node
@@ -32,11 +32,11 @@ src/app/llms.txt/route.ts                       index
 src/app/llms-full.txt/route.ts                  every page document
 src/app/graph.json/route.ts                     nodes and edges
 
-src/components/mdx/ask-panel.tsx       AskPopup: the shared ask panel (sentence + reels) in a popover; header button style, blocked link
-src/components/mdx/page-actions.tsx    page "Ask AI" popover
-src/components/mdx/copy-markdown.tsx   page "Copy Markdown" button
-src/components/math-env/share.tsx      AskShare: right-click popover and corner hint, for environments and threads
-src/components/math-env/thread-compare.tsx  ThreadFrame: a thread section wrapped in AskShare (RELATIONS.md)
+src/components/export/ask-panel.tsx    AskPopup: the shared ask panel (sentence + reels) in a popover; header button style, blocked link
+src/components/export/page-actions.tsx page "Ask AI" popover
+src/components/export/copy-markdown.tsx page "Copy Markdown" button
+src/components/export/share.tsx        AskShare: right-click popover and corner hint, for environments and threads
+src/components/threads/thread-compare.tsx  ThreadFrame: a thread section wrapped in AskShare (RELATIONS.md)
 src/lib/terminal/commands.ts           `gpt`, `claude`, `cursor`, `md`
 ```
 
@@ -93,9 +93,11 @@ so every export, page documents included, renders from the graph alone.
 | `references` | page > page | prose links (`extractedReferences`) that resolve to a strand page | `references` / `referenced_by` |
 | `recalls` | page > original environment | `<Recall of>` on another page | `recalls` / `recalled_by` |
 
-What `of` means is set per kind, by the `of` field of `MATH_ENV_KINDS`
-(`src/lib/math-env/kinds.ts`), so a new kind picks one of `ENV_RELATIONS` and
-every export follows.
+What `of` means is set per kind, by the `of` field of the course's environment
+pack (`EnvPack.kinds`, see MDX-ENV.md), so a new kind picks one of
+`ENV_RELATIONS` and every export follows. A kind with `of: "proves"` is a
+*derivation* (math: Proof) and one with `of: "practises"` is *practice* (math:
+Example); the export code keys off those roles, never off kind names.
 
 `buildExportGraph` drops edges whose ends are not both nodes, as well as
 self-loops and duplicates (same kind, source and target). It also indexes
@@ -282,7 +284,7 @@ A thread's ID has an anchor, so its files sit beside the defining page's
 A prompt is an ordinary provider URL with the prompt in its query string, so no
 API key or backend is needed. There are three pieces:
 
-1. **Target** (`PromptTarget`): `id`, `label`, `kind`, `type` and `hasProof`.
+1. **Target** (`PromptTarget`): `id`, `label`, `kind`, `type` and `hasDerivation`.
    It is small, computed on the server, and available before anything is
    fetched. It decides which intents are offered.
 2. **Context** (`PromptContext`): the target plus ranked `blocks`. The file
@@ -310,11 +312,11 @@ flowchart LR
 `context.ts` is the only place that decides target facts. The context
 builders spread the matching target, so a target and its context always agree.
 
-| Type | `hasProof` | `label` |
+| Type | `hasDerivation` | `label` |
 |---|---|---|
-| `env` | it is a proof, or something proves it | node label |
-| `page` | always `false`: the proofs kind view offers the walk | page title |
-| `kind-view` | the view's kind is `proof` | `Proofs from <page>` |
+| `env` | it is a derivation (a proof), or a derivation proves it | node label |
+| `page` | always `false`: the derivation kind view offers the walk | page title |
+| `kind-view` | the view's kind is a derivation | `Proofs from <page>` |
 | `thread` | always `false` | thread title |
 
 Targets reach each surface without a fetch:
@@ -382,10 +384,15 @@ Block text is sanitised so it cannot close `</role>`, `</context>` or
 
 | Intent | Label | Offered for | Task |
 |---|---|---|---|
-| `explain` | Explain | everything (the default) | env: what it says, why, what it rests on. Example: work it step by step. Page or view: a map of the ideas, then ask where to start |
-| `proof` | Walk the proof | `hasProof` | step by step, naming the result each step uses, checking in with the student |
-| `quiz` | Quiz me | everything | one question at a time. Examples are posed as exercises, with hints on request |
+| `explain` | Explain | everything (the default) | env: what it says, why, what it rests on. Practice: work it step by step. Page or view: a map of the ideas, then ask where to start |
+| `derive` | pack's `derivation.label` (math: Walk the proof) | `hasDerivation` | step by step, naming the result each step uses, checking in with the student |
+| `quiz` | Quiz me | everything | one question at a time. Practice is posed as an exercise, with hints on request |
 | `check` | Check my work | environments | ask for the student's attempt and check it line by line, without solving first |
+
+The env-level task texts (`explain`, `explainPractice`, `quizPractice`, `check`),
+the `derive` wording and the subject noun ("this result") come from the pack's
+`prompts` and `derivation`; page and thread texts are the engine's own. The
+terminal accepts each intent's `word` (math: `proof` for `derive`).
 
 A thread is offered `explain` and `quiz`, and both have their own task text
 (`threadTaskText`): explain states the shared idea and its intuition, goes
@@ -396,7 +403,8 @@ common pattern; quiz asks about the links between places.
 `intentsFor(target)` is the only availability check. The menus show only the
 intents it returns, and the terminal rejects any other intent, listing the ones
 that are available. The ask panel phrases each intent with `intentPhrase` and
-the target with `subjectPhrase`.
+the target with `subjectPhrase`; the terminal names intents with `intentWord`
+(parsed back by `intentFromWord`) and `intentLabel`.
 
 ### Providers
 
@@ -454,7 +462,8 @@ context.
 (`export:intent`, `export:provider`, defaulting to `explain` and `claude`), so
 a student who quizzes themselves in ChatGPT keeps doing that from page to
 page. A target that doesn't offer the stored intent shows `explain` without
-overwriting it.
+overwriting it. A stored `proof` (the derive intent's old name) reads as
+`derive`.
 
 ### Ask panel
 
@@ -491,7 +500,7 @@ of the COMPARE header, shown while the section is hovered or focused. An
 environment inside a thread keeps its own panel: `AskShare` ignores a
 context menu event an inner one has already handled (`defaultPrevented`).
 `AskShare` takes the hint's placement (`className`) and the `group/<name>`
-that reveals it (`group`: `math-env` or `thread`); the reveal classes for
+that reveals it (`group`: `mdx-env` or `thread`); the reveal classes for
 each group are written out in `share.tsx`, since Tailwind needs them literal.
 
 `useCopyMarkdown(id)` copies through `copyPendingText`, which hands the
@@ -528,9 +537,11 @@ only), which the provider can't open offline anyway.
 
 ## Changing things
 
-**New intent:** add it to `PROMPT_INTENTS` and `PROMPT_INTENT_LABELS`, give it a
-rule in `INTENT_APPLIES` and a case in `taskText` (the `satisfies never` there
-fails the build until you do). The menus, the terminal usage line and Tab
+**New intent:** add it to `PROMPT_INTENTS`, give it an entry in
+`PROMPT_INTENT_SPECS` (when it applies, its menu label, prompt opener and
+terminal word; callers read it through `intentsFor`, `intentLabel`,
+`intentPhrase` and `intentWord`) and a case in `taskText` (the `satisfies never` there fails the
+build until you do). The menus, the terminal usage line and Tab
 completion pick it up automatically.
 
 **New provider:** add it to `LLM_PROVIDERS`, `LLM_PROVIDER_LABELS` and
@@ -540,7 +551,7 @@ limit.
 
 **New target type:** extend `PromptTarget["type"]` (and `kind` if it needs
 its own), add a side map to `ExportGraph` if it is not a node, then a case in
-each switch in `corpus.ts` (`satisfies never` fails the build until you do),
+each switch in `server.ts` (`satisfies never` fails the build until you do),
 its IDs in `exportStaticParams`, a phrase in `subjectPhrase` and task text in
 `taskText`.
 
@@ -565,10 +576,11 @@ prompt, but a client with stale code may send links only until it reloads.
 - Every export URL comes from `urls.ts`, and every link in an export is a node ID.
   No model stores an export URL: `PromptContext`, `CatalogPage` and terminal
   output carry the node ID, and the URL is derived where it is used.
-- `hasProof` and the other intent facts are decided only in `context.ts`, from
+- `hasDerivation` and the other intent facts are decided only in `context.ts`, from
   the target the surface holds, never from a fetched file.
-- Which proofs belong to a node is decided by `attachedProofs` (`query.ts`) for
-  both the Markdown and the prompt context: none for a proof itself.
+- Which derivations belong to a node is decided by `attachedDerivations`
+  (`query.ts`) for both the Markdown and the prompt context: none for a
+  derivation itself. Each is headed by its kind's label ("Proof").
 - Graph readers throw on an unknown node ID or a node without a position, rather
   than returning an empty result.
 - The export graph is built once per worker, in `getCorpus()` (see COMPILE.md §6).

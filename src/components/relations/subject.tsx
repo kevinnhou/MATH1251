@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { InlineHtml } from "@/components/markdown/html";
+import { THREAD_COLOR } from "@/components/threads/colors";
 import { RouteStrip } from "@/components/threads/route-strip";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import {
@@ -13,7 +14,7 @@ import {
 	type DockThread,
 	type PageDock,
 } from "@/lib/relations/types";
-import { DIRECTION_COLORS, MUTED_COLOR, THREAD_COLOR } from "./colors";
+import { DIRECTION_COLORS, MUTED_COLOR } from "./colors";
 
 export interface DockSubject {
 	bay: ReactNode;

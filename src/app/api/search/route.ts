@@ -1,6 +1,6 @@
 import { createFromSource } from "fumadocs-core/search/server";
+import { source } from "@/lib/compile/source";
 import { getCorpus } from "@/lib/site/corpus";
-import { source } from "@/lib/site/source";
 import { isTerminalSearchRequest } from "@/lib/terminal/search";
 import {
 	projectSearchHits,

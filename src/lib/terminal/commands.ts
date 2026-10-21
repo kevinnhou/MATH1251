@@ -2,12 +2,13 @@ import type { CatalogPage } from "@/lib/course/catalog";
 import { findPageByUrl } from "@/lib/course/catalog";
 import {
 	DEFAULT_INTENT,
+	intentFromWord,
+	intentLabel,
 	intentsFor,
-	isPromptIntent,
+	intentWord,
 	LLM_PROVIDER_LABELS,
 	LLM_PROVIDERS,
 	type LlmProvider,
-	PROMPT_INTENT_LABELS,
 	PROMPT_INTENTS,
 	type PromptIntent,
 } from "@/lib/export/prompt";
@@ -52,7 +53,7 @@ import type {
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
-const ASK_USAGE = `[${PROMPT_INTENTS.join("|")}] <page|.>`;
+const ASK_USAGE = `[${PROMPT_INTENTS.map(intentWord).join("|")}] <page|.>`;
 
 const ASK_COMMANDS: Record<LlmProvider, readonly [string, ...string[]]> = {
 	chatgpt: ["gpt", "chatgpt"],
@@ -351,7 +352,7 @@ async function executeAsk(
 	if (!allowed.includes(intent)) {
 		return done(
 			errorOutput(
-				`${name}: "${intent}" is not available here; try ${allowed.join(", ")}.`
+				`${name}: "${intentWord(intent)}" is not available here; try ${allowed.map(intentWord).join(", ")}.`
 			)
 		);
 	}
@@ -361,7 +362,7 @@ async function executeAsk(
 	if (result.status === "opened") {
 		return done(
 			messageOutput(
-				`Opened ${page.title.plain} in ${label} (${PROMPT_INTENT_LABELS[intent]}).`
+				`Opened ${page.title.plain} in ${label} (${intentLabel(intent)}).`
 			),
 			{ closeDrawer: true }
 		);
@@ -380,8 +381,8 @@ function askArguments(parsed: ParsedLine): {
 	query: string;
 } {
 	const [first = "", ...rest] = tokenValues(parsed).slice(1);
-	const intent = first.toLowerCase();
-	return isPromptIntent(intent)
+	const intent = intentFromWord(first);
+	return intent
 		? { intent, query: rest.join(" ").trim() }
 		: { intent: DEFAULT_INTENT, query: argumentText(parsed) };
 }
@@ -487,13 +488,13 @@ function completeAskArgument(ctx: CompleteContext): Completion[] {
 
 function intentCompletions(partial: string): Completion[] {
 	const needle = partial.toLowerCase();
-	return PROMPT_INTENTS.filter((intent) => intent.startsWith(needle)).map(
-		(intent) => ({
-			detail: PROMPT_INTENT_LABELS[intent],
-			label: intent,
-			replace: intent,
-		})
-	);
+	return PROMPT_INTENTS.filter((intent) =>
+		intentWord(intent).startsWith(needle)
+	).map((intent) => ({
+		detail: intentLabel(intent),
+		label: intentWord(intent),
+		replace: intentWord(intent),
+	}));
 }
 
 function pageCompletions(ctx: CompleteContext, partial: string): Completion[] {
