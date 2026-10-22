@@ -9,7 +9,7 @@ import type { VFile } from "vfile";
 import { TO_MARKDOWN_EXTENSIONS } from "@/lib/markdown/syntaxes";
 import { isRecord, type ParseResult } from "@/lib/result";
 import { ENV, type EnvKind, type EnvRegistry } from "./kinds";
-import type { EnvKindConfig } from "./pack";
+import type { EngineTag, EnvKindConfig } from "./pack";
 import {
 	type EnvHeading,
 	type EnvOccurrence,
@@ -327,7 +327,11 @@ function splitEnvMarkdown(node: MdxJsxFlowElement): {
 	};
 }
 
-const ROOT_ELEMENTS = ["Recall", "Thread", "ThreadMap"] as const;
+const ROOT_ELEMENTS = [
+	"Recall",
+	"Thread",
+	"ThreadMap",
+] as const satisfies readonly EngineTag[];
 
 function validateRootNesting(tree: Root, file: VFile, env: EnvRegistry) {
 	visit(tree, "mdxJsxFlowElement", (node, _index, parent) => {
@@ -385,7 +389,7 @@ function envKind(node: Node, env: EnvRegistry): EnvKind | undefined {
 		: undefined;
 }
 
-function isElement(node: Node, name: string): node is MdxJsxFlowElement {
+function isElement(node: Node, name: EngineTag): node is MdxJsxFlowElement {
 	return (
 		node.type === "mdxJsxFlowElement" &&
 		(node as MdxJsxFlowElement).name === name
@@ -452,7 +456,7 @@ function attribute(name: string, value: string): MdxJsxAttribute {
 }
 
 function wrapper(
-	name: string,
+	name: EngineTag,
 	children: FlowChild[],
 	attributes: MdxJsxAttribute[] = []
 ): MdxJsxFlowElement {

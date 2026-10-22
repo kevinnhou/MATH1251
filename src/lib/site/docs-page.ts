@@ -8,6 +8,8 @@ import type { ResolvedDocs } from "./corpus";
 
 const docsImageRoute = "/og/docs";
 
+export const docsImageFile = "image.png";
+
 export interface DocsImageText {
 	chip?: string;
 	description?: string;
@@ -91,7 +93,7 @@ function pageImageUrl(page: SourcePage["page"], viewKind?: EnvKind): string {
 		...docsImageRoute.split("/"),
 		...page.slugs,
 		...view,
-		"image.png",
+		docsImageFile,
 	];
 
 	return `/${segments.filter(Boolean).join("/")}`;

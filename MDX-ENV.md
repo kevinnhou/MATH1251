@@ -23,7 +23,7 @@ and the `course.config` binding (for the pack), and is imported by `packs`
 
 ```
 src/lib/mdx-env/
-  pack.ts              EnvPack contract, ENV_RELATIONS, ENV_STYLES, assertEnvPack
+  pack.ts              EnvPack contract, ENV_RELATIONS, ENV_STYLES, ENGINE_TAGS, assertEnvPack
   kinds.ts             createEnvRegistry(pack); the course's registry (ENV) and its helpers
   remark.ts            remarkMdxEnv: validates, indexes and rewrites each page
   page-envs.ts         PageEnvs: what remark leaves on each page; id helpers
@@ -216,13 +216,13 @@ of `kinds.ts`, i.e. the build. It rejects:
 
 - kind names that are not lower-case words or that the engine uses itself
   (`page`, `recall`, `thread`);
-- labels that are not PascalCase or that the engine defines (`KindFilter`,
-  `Prose`, `Recall`, `Statement`, `Thread`, `ThreadMap`);
+- labels that are not PascalCase or that the engine defines (`ENGINE_TAGS`:
+  `KindFilter`, `Prose`, `Recall`, `Statement`, `Thread`, `ThreadMap`);
 - duplicate codes, labels or plurals (plurals compared lower-cased), and plurals
   that are not letters and hyphens (they name URLs);
 - unknown relations or styles;
-- a derivation intent that is not one lower-case word or that the export layer
-  already uses (`explain`, `quiz`, `check`);
+- a derivation intent that is not one lower-case word (`export/prompt.ts`
+  checks it against the other intents' words; EXPORT.md);
 - difficulties that are blank, padded or repeated, or missing when the pack has
   a practice kind.
 
@@ -423,9 +423,10 @@ read it in `readEnv`, store it on `EnvOccurrence`, and carry it into `Tenet` or
 **A new role:** add it to `ENV_RELATIONS`, give it engine behaviour (a role check
 in `kinds.ts`, its edges in the export graph), and use it from a pack.
 
-**A new engine element:** handle it in `rewriteDocument`, add it to
-`ROOT_ELEMENTS` if it must be top-level and to `RESERVED_TAGS` in `pack.ts` so no
-pack can claim its name, and register its component.
+**A new engine element:** add its tag to `ENGINE_TAGS` in `pack.ts` (no pack can
+then claim the name, and `remark.ts` accepts it as an `EngineTag`), handle it in
+`rewriteDocument`, add it to `ROOT_ELEMENTS` if it must be top-level, and
+register its component.
 
 ## Invariants
 

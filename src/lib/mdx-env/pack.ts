@@ -42,18 +42,20 @@ export interface EnvPack {
 	summary: string;
 }
 
-const RESERVED_KINDS = new Set(["page", "recall", "thread"]);
-
-const RESERVED_TAGS = new Set([
+export const ENGINE_TAGS = [
 	"KindFilter",
 	"Prose",
 	"Recall",
 	"Statement",
 	"Thread",
 	"ThreadMap",
-]);
+] as const;
 
-const RESERVED_INTENTS = new Set(["check", "explain", "quiz"]);
+export type EngineTag = (typeof ENGINE_TAGS)[number];
+
+const RESERVED_KINDS = new Set(["page", "recall", "thread"]);
+
+const RESERVED_TAGS = new Set<string>(ENGINE_TAGS);
 
 const KIND_NAME = /^[a-z][a-z-]*$/;
 const TAG_NAME = /^[A-Z][A-Za-z]*$/;
@@ -120,11 +122,9 @@ function kindProblems(pack: EnvPack): string[] {
 
 function derivationProblems(pack: EnvPack): string[] {
 	const { intent } = pack.derivation;
-	return !KIND_NAME.test(intent) || RESERVED_INTENTS.has(intent)
-		? [
-				`derivation intent "${intent}" must be one lower-case word the export layer does not define`,
-			]
-		: [];
+	return KIND_NAME.test(intent)
+		? []
+		: [`derivation intent "${intent}" must be one lower-case word`];
 }
 
 function difficultyProblems(pack: EnvPack): string[] {

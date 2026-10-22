@@ -2,12 +2,13 @@ import { remarkMdxMermaid } from "fumadocs-core/mdx-plugins";
 import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { z } from "zod";
+import { contentDir } from "./src/lib/compile/content-dir";
 import { corpusMeta } from "./src/lib/compile/corpus-meta/plugin";
 import { REHYPE_PLUGINS, REMARK_PLUGINS } from "./src/lib/markdown/syntaxes";
 import { remarkMdxEnv } from "./src/lib/mdx-env/remark";
 
 export const docs = defineDocs({
-	dir: "content/docs",
+	dir: contentDir,
 	docs: {
 		async: true,
 		schema: pageSchema.extend({

@@ -546,9 +546,10 @@ environment.
 
 The pack supplies everything about `derive` except its internal name.
 `assertEnvPack` (MDX-ENV.md) requires `derivation.intent` to be one
-lower-case word that is not `explain`, `quiz` or `check`, so
-`intentFromWord` can never confuse it with an engine word. That reserved
-list lives in `mdx-env/pack.ts` because `mdx-env` cannot import `export`.
+lower-case word, and `prompt.ts` throws on load if it equals another
+intent's word (`explain`, `quiz`, `check`), so `intentFromWord` can never
+confuse the two. The check lives here, next to the words, because
+`mdx-env` cannot import `export`.
 
 ### Providers
 
@@ -919,12 +920,11 @@ renderers; importing `server.ts` fails the build.
 
 ## Changing things
 
-**New intent.** Add it to `PROMPT_INTENTS` and `PROMPT_INTENT_SPECS`
-(`applies`, `label`, `phrase`, `word`), and add cases to `taskText` and
-`threadTaskText` (`satisfies never` fails the build until you do). Add its
-word to `RESERVED_INTENTS` in `lib/mdx-env/pack.ts`, which cannot import
-this list. The panel, the terminal usage line, Tab completion and the
-availability check follow.
+**New intent.** Add it to `PROMPT_INTENTS` and give it an entry in
+`PROMPT_INTENT_SPECS` (`applies`, `label`, `phrase`, `task`, `word`, and
+`threadTask` if threads should not get the shared thread tour); the type
+checker asks for the entry. The word-uniqueness check, the panel, the
+terminal usage line, Tab completion and the availability check follow.
 
 **New provider.** Add it to `LLM_PROVIDERS`; the type checker then asks for
 `LLM_PROVIDER_LABELS`, `PROVIDER_ENDPOINTS`, `LOGOS` (`llm-logos.tsx`) and
@@ -935,7 +935,8 @@ of `URL_LIMIT` characters.
 side map to `ExportGraph` if it is not a node, extend `ExportTarget` and
 `resolveNode`, add a case to each switch in `server.ts`, its IDs to
 `exportStaticParams`, a `*Target`, a `*Context` and a `*Document` function,
-and cases in `subjectPhrase` and `taskText`. `subjectPhrase` falls back to
+a case in `subjectPhrase`, and handle it in the specs' `task` functions
+(`taskText` routes only threads separately). `subjectPhrase` falls back to
 `getKindLabel`, which throws on a kind the registry does not know, so a new
 `kind` literal needs its own branch there.
 

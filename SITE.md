@@ -111,7 +111,8 @@ too.
    - the title and description as Markdown labels (`MarkdownLabel`, server
      rendered);
    - `PageActions` (the ask menu; on notes pages its panel also has a "SOURCE"
-     link to `content/docs/<path>` on GitHub at the configured branch),
+     link from `contentSourceUrl`: the page's file on GitHub at the configured
+     branch),
      `LLMCopyButton`, and on a kind view a "Back to <page>" link;
    - the MDX body in `DocsBody data-prose`, with `getMDXComponents` given the
      relative-link resolver, the page's environments, the course indexes, the
@@ -249,7 +250,7 @@ MDX options), so feature components don't depend on how the site is composed.
 - Per-course assets are global: the logomark (an integral sign), the fonts, the
   app icons and `favicon.ico`, `katex.css` in the root layout, and KaTeX rules
   in `global.css`.
-- The source link hardcodes `content/docs`.
+- The content folder (`contentDir`, COMPILE.md) is engine-wide, not per course.
 - `course.theme` must be kept in step with the Fumadocs preset by hand.
 - The OG image uses Satori's default font, not the site's.
 

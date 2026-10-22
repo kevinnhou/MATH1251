@@ -44,16 +44,22 @@ interface IntentSpec {
 	applies: (target: PromptTarget) => boolean;
 	label: string;
 	phrase: (target: PromptTarget) => string;
+	task: (context: PromptContext) => string;
+	threadTask?: string;
 	word: string;
 }
 
 const { derivation, prompts } = ENV.pack;
+
+const THREAD_TOUR =
+	"<context> is a thread: one idea the course meets in several places. First state the shared idea in plain words and the intuition for why it keeps appearing. Then go through the places in order: for each, say what plays each part of the idea there, using its role and statement, and how it connects to the previous place. Say where the analogy stops working. End with a short summary of the common pattern, then ask which connection the student wants to explore.";
 
 const PROMPT_INTENT_SPECS: Record<PromptIntent, IntentSpec> = {
 	check: {
 		applies: (target) => target.type === "env",
 		label: "Check my work",
 		phrase: () => "Check my work on",
+		task: () => prompts.check,
 		word: "check",
 	},
 	derive: {
@@ -61,21 +67,50 @@ const PROMPT_INTENT_SPECS: Record<PromptIntent, IntentSpec> = {
 		label: derivation.label,
 		phrase: (target) =>
 			isDerivation(target.kind) ? derivation.selfPhrase : derivation.phrase,
+		task: () => derivation.task,
 		word: derivation.intent,
 	},
 	explain: {
 		applies: () => true,
 		label: "Explain",
 		phrase: () => "Explain",
+		task: (context) => {
+			if (context.type !== "env") {
+				return "Give a short map of how the ideas in <context> build on each other, in the order they appear. Then ask which part the student wants to work through; do not lecture the whole page unprompted.";
+			}
+
+			return isPractice(context.kind)
+				? prompts.explainPractice
+				: prompts.explain;
+		},
 		word: "explain",
 	},
 	quiz: {
 		applies: () => true,
 		label: "Quiz me",
 		phrase: () => "Quiz me on",
+		task: (context) => {
+			if (isPractice(context.kind)) {
+				return prompts.quizPractice;
+			}
+
+			const subject =
+				context.type === "env" ? prompts.subject : "this material";
+			return `Quiz the student on ${subject}, one question at a time, from recall through to application. Wait for each answer and give feedback before the next question. Never reveal an answer before the student attempts it.`;
+		},
+		threadTask:
+			"Quiz the student on the links between the places in <context>, one question at a time: name a setting and ask what plays each part of the shared idea there, or give two places and ask what carries over and what changes. Wait for each answer and give feedback before the next question.",
 		word: "quiz",
 	},
 };
+
+const INTENT_WORDS = PROMPT_INTENTS.map(intentWord);
+
+if (new Set(INTENT_WORDS).size !== INTENT_WORDS.length) {
+	throw new Error(
+		`Prompt intent words must be unique; the pack's derivation intent "${derivation.intent}" collides with one of ${INTENT_WORDS.join(", ")}.`
+	);
+}
 
 export function intentLabel(intent: PromptIntent): string {
 	return PROMPT_INTENT_SPECS[intent].label;
@@ -210,44 +245,10 @@ function buildPrompt(request: PromptRequest): string {
 }
 
 function taskText(intent: PromptIntent, context: PromptContext): string {
-	if (context.type === "thread") {
-		return threadTaskText(intent);
-	}
-
-	const subject = context.type === "env" ? prompts.subject : "this material";
-	const practice = isPractice(context.kind);
-
-	switch (intent) {
-		case "derive":
-			return derivation.task;
-		case "quiz":
-			return practice
-				? prompts.quizPractice
-				: `Quiz the student on ${subject}, one question at a time, from recall through to application. Wait for each answer and give feedback before the next question. Never reveal an answer before the student attempts it.`;
-		case "check":
-			return prompts.check;
-		case "explain":
-			if (context.type !== "env") {
-				return "Give a short map of how the ideas in <context> build on each other, in the order they appear. Then ask which part the student wants to work through; do not lecture the whole page unprompted.";
-			}
-
-			return practice ? prompts.explainPractice : prompts.explain;
-		default:
-			return intent satisfies never;
-	}
-}
-
-function threadTaskText(intent: PromptIntent): string {
-	switch (intent) {
-		case "quiz":
-			return "Quiz the student on the links between the places in <context>, one question at a time: name a setting and ask what plays each part of the shared idea there, or give two places and ask what carries over and what changes. Wait for each answer and give feedback before the next question.";
-		case "explain":
-		case "derive":
-		case "check":
-			return "<context> is a thread: one idea the course meets in several places. First state the shared idea in plain words and the intuition for why it keeps appearing. Then go through the places in order: for each, say what plays each part of the idea there, using its role and statement, and how it connects to the previous place. Say where the analogy stops working. End with a short summary of the common pattern, then ask which connection the student wants to explore.";
-		default:
-			return intent satisfies never;
-	}
+	const spec = PROMPT_INTENT_SPECS[intent];
+	return context.type === "thread"
+		? (spec.threadTask ?? THREAD_TOUR)
+		: spec.task(context);
 }
 
 function emptyNote(markdownUrl: string): string {

@@ -15,8 +15,8 @@ import { MarkdownLabel } from "@/components/markdown/label";
 import { getMDXComponents } from "@/components/mdx";
 import { ReadingDock } from "@/components/relations/dock";
 import { loadPageContent } from "@/lib/compile/content";
+import { contentSourceUrl } from "@/lib/compile/content-dir";
 import { source } from "@/lib/compile/source";
-import { course, repoUrl } from "@/lib/course/config";
 import { promptTargetFor } from "@/lib/export/server";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { getKindViewToc } from "@/lib/mdx-env/kind-view";
@@ -65,9 +65,7 @@ export default async function Page(props: PageProps<"/[...slug]">) {
 			<div className="flex flex-row flex-wrap items-center gap-2 border-b pb-6">
 				<PageActions
 					githubUrl={
-						view === undefined
-							? `${repoUrl}/blob/${course.repo.branch}/content/docs/${page.path}`
-							: undefined
+						view === undefined ? contentSourceUrl(page.path) : undefined
 					}
 					target={target}
 				/>

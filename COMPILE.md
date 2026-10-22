@@ -26,6 +26,7 @@ src/lib/compile/
   corpus-meta/types.ts              CorpusMeta, CorpusMetaPage, CorpusMetaFile, DocsFrontmatter, DocsMeta
   source.ts                         the Fumadocs loader built from corpus-meta; getSourcePages; docsRoute
   content.ts                        loadPageContent: the only way to a compiled body
+  content-dir.ts                    contentDir (the collection folder) and contentSourceUrl (its GitHub link)
 src/lib/site/corpus.ts              getCorpus: every derived index; resolveDocsPage, docsStaticParams
 src/lib/course/
   routes.ts                         CourseRoutes and indexRoutes: the render-time route index
@@ -319,9 +320,9 @@ that needs equivalent data must get it from a remark plugin.
 **Exactly one docs collection.** Corpus-meta, `source.ts` and `content.ts` all
 assume a single corpus, and `getDocsCollection` throws otherwise.
 
-**The content path is fixed.** `content/docs` is hardcoded in
-`source.config.ts` (and in the source link), which a multi-course setup will have
-to parameterise.
+**The content path is fixed.** `contentDir` (`content/docs`) is one constant,
+read by `source.config.ts` and the source link, but it is not part of
+`course.config.ts`, which a multi-course setup will have to change.
 
 ## Changing things
 
