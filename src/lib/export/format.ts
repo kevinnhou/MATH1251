@@ -67,10 +67,13 @@ export function joinBlocks(blocks: readonly string[]): string {
 }
 
 const YAML_PLAIN = /^[\w/#. -]+$/;
-const YAML_AMBIGUOUS = /^[\d.-]|: | $/;
+const YAML_AMBIGUOUS = /^[\d.-]|: | #| $/;
+const YAML_RESERVED = /^(?:true|false|yes|no|on|off|null|y|n)$/i;
 
 function yamlString(value: string): string {
-	return YAML_PLAIN.test(value) && !YAML_AMBIGUOUS.test(value)
+	return YAML_PLAIN.test(value) &&
+		!YAML_AMBIGUOUS.test(value) &&
+		!YAML_RESERVED.test(value)
 		? value
 		: JSON.stringify(value);
 }
