@@ -19,10 +19,6 @@ export function messageOutput(
 		: { kind: "message", message };
 }
 
-export function mutedMessage(message: string): TerminalOutput {
-	return { kind: "message", message, tone: "muted" };
-}
-
 export function loadingOutput(message: string): TerminalOutput {
 	return { kind: "loading", message };
 }

@@ -42,7 +42,7 @@ src/components/export/
   page-actions.tsx   PageActions: the page header's "Ask AI" popover
   copy-markdown.tsx  LLMCopyButton: the page header's "Copy Markdown"
   share.tsx          AskShare: right-click panel and corner hint (environments, threads)
-  llm-logos.tsx      provider logos (and the GitHub logo)
+  llm-logos.tsx      provider logos
 
 src/app/llms.mdx/docs/[[...slug]]/route.ts     Markdown per node
 src/app/llms.mdx/context/[[...slug]]/route.ts  prompt context per node

@@ -78,7 +78,6 @@ export type TerminalOutput =
 			action?: OutputAction;
 			kind: "message";
 			message: string;
-			tone?: "muted";
 	  }
 	| { kind: "link-list"; groups: LinkGroup[]; message?: string; title?: string }
 	| {
