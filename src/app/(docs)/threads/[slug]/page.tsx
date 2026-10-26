@@ -6,19 +6,12 @@ import { getCorpus } from "@/lib/site/corpus";
 
 export default async function Page(props: PageProps<"/threads/[slug]">) {
 	const { slug } = await props.params;
-	const { tenets, threadMap, threads } = getCorpus();
+	const { threadMap, threads } = getCorpus();
 	if (!threads.bySlug.has(slug)) {
 		notFound();
 	}
 
-	return (
-		<ThreadsPage
-			focus={slug}
-			tenets={tenets}
-			threadMap={threadMap}
-			threads={threads}
-		/>
-	);
+	return <ThreadsPage focus={slug} threadMap={threadMap} threads={threads} />;
 }
 
 export const dynamicParams = false;

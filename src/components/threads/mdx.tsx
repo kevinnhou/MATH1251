@@ -1,7 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import type { PromptTargetLookup } from "@/lib/mdx-env/env-meta";
-import type { TenetIndex } from "@/lib/mdx-env/tenet";
 import type { ThreadIndex } from "@/lib/mdx-env/thread";
 import type {
 	CourseIndex,
@@ -13,7 +12,6 @@ import { ThreadSection } from "./thread-section";
 export interface ThreadMdxOptions {
 	courseIndex?: CourseIndex;
 	promptTarget?: PromptTargetLookup;
-	tenetIndex?: TenetIndex;
 	threadIndex?: ThreadIndex;
 	threadMap?: ThreadMapData;
 }
@@ -37,7 +35,6 @@ export function getThreadMdxComponents(
 					courseIndex={options.courseIndex}
 					id={id}
 					target={thread && options.promptTarget?.(thread.href)}
-					tenets={options.tenetIndex}
 					thread={thread}
 				>
 					{children}

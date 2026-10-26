@@ -3,14 +3,8 @@ import { InlineHtml } from "@/components/markdown/html";
 import { StatementHtml } from "@/components/mdx-env/statement";
 import { cn } from "@/lib/cn";
 import { getEnvConfig } from "@/lib/mdx-env/kinds";
-import type { StatementView } from "@/lib/mdx-env/statement-html";
 import type { PromptTarget } from "@/lib/mdx-env/target";
-import type { TenetIndex } from "@/lib/mdx-env/tenet";
-import {
-	memberStatement,
-	type Thread,
-	type ThreadMember,
-} from "@/lib/mdx-env/thread";
+import type { Thread, ThreadMember } from "@/lib/mdx-env/thread";
 import { chapterOfId } from "@/lib/relations/query";
 import type { CourseChapter, CourseIndex } from "@/lib/relations/types";
 import { ThreadFrame } from "./thread-compare";
@@ -18,7 +12,6 @@ import { ThreadFrame } from "./thread-compare";
 interface Station {
 	chapter?: CourseChapter;
 	member: ThreadMember;
-	statement?: StatementView;
 }
 
 export function ThreadSection({
@@ -26,17 +19,15 @@ export function ThreadSection({
 	courseIndex,
 	id,
 	target,
-	tenets,
 	thread,
 }: {
 	children?: ReactNode;
 	courseIndex?: CourseIndex;
 	id?: string;
 	target?: PromptTarget;
-	tenets?: TenetIndex;
 	thread?: Thread;
 }) {
-	const stations = thread ? threadStations(thread, courseIndex, tenets) : [];
+	const stations = thread ? threadStations(thread, courseIndex) : [];
 
 	return (
 		<ThreadFrame
@@ -50,15 +41,10 @@ export function ThreadSection({
 	);
 }
 
-function threadStations(
-	thread: Thread,
-	courseIndex?: CourseIndex,
-	tenets?: TenetIndex
-): Station[] {
+function threadStations(thread: Thread, courseIndex?: CourseIndex): Station[] {
 	return thread.members.map((member) => ({
 		chapter: courseIndex && chapterOfId(courseIndex, member.pageUrl),
 		member,
-		statement: tenets && memberStatement(member, tenets),
 	}));
 }
 
@@ -95,7 +81,7 @@ function ThreadStation({
 	newChapter,
 	number,
 	segment,
-	station: { chapter, member, statement },
+	station: { chapter, member },
 }: {
 	newChapter: boolean;
 	number: number;
@@ -154,10 +140,10 @@ function ThreadStation({
 				>
 					<InlineHtml html={member.title.html} />
 				</a>
-				{statement ? (
+				{member.statement ? (
 					<StatementHtml
 						className="mb-0 text-fd-muted-foreground transition-colors duration-300 group-hover/station:text-fd-foreground group-data-[state=current]/station:text-fd-foreground"
-						html={statement.html}
+						html={member.statement.html}
 					/>
 				) : null}
 			</div>

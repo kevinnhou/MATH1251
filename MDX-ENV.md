@@ -162,7 +162,9 @@ slug twice, or citing one that doesn't exist, fails the build
 
 **`ThreadIndex`** (`thread.ts`): each `<Thread>` definition, with members
 collected from the `thread` attributes of environments anywhere in the course,
-sorted by reading order. A tag naming an undefined thread fails the build.
+sorted by reading order. Each member carries its role and its compiled
+statement, so members need no slug. A tag naming an undefined thread fails the
+build.
 
 Titles fall back to the slug (or the kind label) as a literal fragment when an
 environment has no heading.
@@ -389,7 +391,7 @@ pages with dozens of environments.
 - `remarkMdxEnv` runs twice per page (corpus-meta pass and MDX compile); see
   COMPILE.md for why and what it costs.
 - Statements are compiled to fragments, with previews, once per slug in the
-  tenet index, not per use.
+  tenet index, not per use (thread members compile their own once more).
 - `EnvMark` measurement is cached by key and invalidated only when fonts load;
   `ResizeObserver` callbacks re-check only the environments that resized.
 - Kind views add no compile work. They are not prerendered: each renders the

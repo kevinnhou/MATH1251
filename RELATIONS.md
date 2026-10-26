@@ -486,8 +486,10 @@ spine of every member in course order:
   environment (right click, or `[ASK AI]` on touch screens), for the thread's
   prompt target (EXPORT.md). An environment inside keeps its own menu.
 
-The spine is rendered on the server from the thread index, the tenet index and
-the course index, so statements never travel to the client as data.
+The spine is rendered on the server from the thread index and the course index,
+so statements never travel to the client as data. Each member carries its own
+compiled statement, so a member without a slug (an Example, a Proof) shows its
+statement here and on the threads page as it does in the exports.
 
 ## Threads page
 

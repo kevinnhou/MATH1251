@@ -1,13 +1,13 @@
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import type { PageEnvs } from "./page-envs";
-import type { StatementView } from "./statement-html";
-import { type EnvRef, type TenetIndex, toEnvRef } from "./tenet";
+import { compileStatement, type StatementView } from "./statement-html";
+import { type EnvRef, toEnvRef } from "./tenet";
 
 export interface ThreadMember extends EnvRef {
 	pageUrl: string;
 	role?: MarkdownFragment<"inline">;
-	slug?: string;
+	statement?: StatementView;
 }
 
 export interface Thread {
@@ -50,7 +50,9 @@ export function createThreadIndex(
 					...(tag.role
 						? { role: compileMarkdownFragment(tag.role, "inline") }
 						: {}),
-					...(entry.slug ? { slug: entry.slug } : {}),
+					...(entry.statement
+						? { statement: compileStatement(entry.statement) }
+						: {}),
 				});
 			}
 		}
@@ -68,15 +70,6 @@ export function createThreadIndex(
 	}
 
 	return { bySlug };
-}
-
-export function memberStatement(
-	member: ThreadMember,
-	tenets: TenetIndex
-): StatementView | undefined {
-	return member.slug
-		? tenets.bySlug.get(member.slug)?.statementView
-		: undefined;
 }
 
 function registerThreads(

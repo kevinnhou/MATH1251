@@ -9,8 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-	const { tenets, threadMap, threads } = getCorpus();
-	return (
-		<ThreadsPage tenets={tenets} threadMap={threadMap} threads={threads} />
-	);
+	const { threadMap, threads } = getCorpus();
+	return <ThreadsPage threadMap={threadMap} threads={threads} />;
 }
