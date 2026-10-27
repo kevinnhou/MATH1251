@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { ThreadsPage } from "@/components/threads/page";
-import { siteName } from "@/lib/site/config";
+import { course } from "@/lib/course/config";
+import { getCorpus } from "@/lib/site/corpus";
 
 export const metadata: Metadata = {
 	description: "Ideas that recur across the course.",
-	title: `${siteName} Threads`,
+	title: `${course.name} Threads`,
 };
 
 export default function Page() {
-	return <ThreadsPage />;
+	const { threadMap, threads } = getCorpus();
+	return <ThreadsPage threadMap={threadMap} threads={threads} />;
 }

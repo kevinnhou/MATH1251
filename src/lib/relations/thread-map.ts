@@ -1,12 +1,12 @@
 import { envId } from "@/lib/export/model";
 import { rendered } from "@/lib/markdown/types";
-import { getMathEnvConfig } from "@/lib/math-env/kinds";
+import { getEnvConfig } from "@/lib/mdx-env/kinds";
 import type {
 	Thread,
 	ThreadIndex,
 	ThreadMember,
 	ThreadSourcePage,
-} from "@/lib/math-env/thread";
+} from "@/lib/mdx-env/thread";
 import { chapterOfId } from "./query";
 import type {
 	CourseChapter,
@@ -143,7 +143,7 @@ function memberLabel(
 	member: ThreadMember
 ): Pick<ThreadMapStation, "code" | "href" | "title"> {
 	return {
-		code: getMathEnvConfig(member.kind).code,
+		code: getEnvConfig(member.kind).code,
 		href: member.href,
 		title: rendered(member.title),
 	};

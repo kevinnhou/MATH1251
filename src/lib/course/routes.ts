@@ -1,9 +1,9 @@
-import { getKindViewUrl, type KindViewRef } from "@/lib/math-env/kind-view";
-import type { MathEnvKind } from "@/lib/math-env/kinds";
+import { getKindViewUrl, type KindViewRef } from "@/lib/mdx-env/kind-view";
+import type { EnvKind } from "@/lib/mdx-env/kinds";
 import { normalisePath, withoutHash } from "./catalog";
 
 export interface CourseRoutes {
-	kindViews: Record<string, MathEnvKind[]>;
+	kindViews: Record<string, EnvKind[]>;
 	pages: string[];
 }
 

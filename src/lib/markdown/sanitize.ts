@@ -1,5 +1,5 @@
 import type { ElementContent, Properties, Root, RootContent } from "hast";
-import { elementChildren } from "./hast";
+import { elementChildren } from "./element";
 
 const UNSAFE_PROTOCOL = /^(javascript|data|vbscript):/i;
 const UNSAFE_TAGS = new Set(["script", "iframe", "object", "embed", "link"]);

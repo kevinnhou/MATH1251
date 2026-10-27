@@ -1,8 +1,8 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { gitConfig } from "./config";
+import { repoUrl } from "@/lib/course/config";
 
 export const baseOptions: BaseLayoutProps = {
-	githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
+	githubUrl: repoUrl,
 	nav: {
 		transparentMode: "always",
 	},

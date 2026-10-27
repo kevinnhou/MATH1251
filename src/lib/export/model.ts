@@ -1,15 +1,19 @@
 import type { Strand } from "@/lib/course/strands";
-import type { ExampleDifficulty, MathEnvKind } from "@/lib/math-env/kinds";
-
-export const COURSE = "MATH1251 Mathematics 1B (UNSW Sydney)";
+import {
+	type Difficulty,
+	type EnvKind,
+	getKindLabel,
+	isDerivation,
+} from "@/lib/mdx-env/kinds";
+import type { PromptTarget } from "@/lib/mdx-env/target";
 
 export interface ExportNode {
 	body?: string;
 	description?: string;
-	difficulty?: ExampleDifficulty;
+	difficulty?: Difficulty;
 	id: string;
 	ideas?: string[];
-	kind: MathEnvKind | "page";
+	kind: EnvKind | "page";
 	label: string;
 	page?: string;
 	slug?: string;
@@ -24,9 +28,9 @@ export function envId(pageUrl: string, anchor: string): string {
 	return `${pageUrl}#${anchor}`;
 }
 
-export function bodyRole(node: ExportNode): "Proof" | "Notes" | undefined {
-	if (node.kind === "proof") {
-		return "Proof";
+export function bodyRole(node: ExportNode): string | undefined {
+	if (isDerivation(node.kind)) {
+		return getKindLabel(node.kind);
 	}
 
 	return node.statement === undefined ? undefined : "Notes";
@@ -117,7 +121,7 @@ export type ExportSegment =
 
 export interface ExportKindView {
 	id: string;
-	kind: MathEnvKind;
+	kind: EnvKind;
 	label: string;
 	parentId: string;
 }
@@ -167,14 +171,6 @@ export type ContextTier = (typeof CONTEXT_TIERS)[number];
 export interface ContextBlock {
 	text: string;
 	tier: ContextTier;
-}
-
-export interface PromptTarget {
-	hasProof: boolean;
-	id: string;
-	kind: MathEnvKind | "page" | "thread";
-	label: string;
-	type: "page" | "env" | "kind-view" | "thread";
 }
 
 export interface PromptContext extends PromptTarget {

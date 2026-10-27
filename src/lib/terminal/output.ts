@@ -1,5 +1,5 @@
 import type { CatalogPage } from "@/lib/course/catalog";
-import { isSafeInternalUrl } from "@/lib/site/url";
+import { isSafeInternalUrl } from "@/lib/url";
 import type { LinkGroup, OutputLink, SearchHit, TerminalOutput } from "./types";
 
 export function errorOutput(message: string): TerminalOutput {
@@ -17,10 +17,6 @@ export function messageOutput(
 	return action
 		? { action, kind: "message", message }
 		: { kind: "message", message };
-}
-
-export function mutedMessage(message: string): TerminalOutput {
-	return { kind: "message", message, tone: "muted" };
 }
 
 export function loadingOutput(message: string): TerminalOutput {

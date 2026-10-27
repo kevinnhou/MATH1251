@@ -65,7 +65,7 @@ export function StopCard({
 				</span>
 			</p>
 			{statement ? (
-				<div className="text-fd-foreground/90 [&_.math-env-statement]:mb-0">
+				<div className="text-fd-foreground/90 [&_.mdx-env-statement]:mb-0">
 					{statement}
 				</div>
 			) : null}

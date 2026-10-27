@@ -1,4 +1,4 @@
-import type { MathEnvKind } from "@/lib/math-env/kinds";
+import { type EnvKind, isDerivation } from "@/lib/mdx-env/kinds";
 import {
 	DEPENDENCY_EDGES,
 	type ExportEdgeKind,
@@ -75,22 +75,22 @@ export function childrenOf(graph: ExportGraph, id: string): ExportNode[] {
 export function envsOfKind(
 	graph: ExportGraph,
 	pageId: string,
-	kind: MathEnvKind
+	kind: EnvKind
 ): ExportNode[] {
 	return childrenOf(graph, pageId).filter((env) => env.kind === kind);
 }
 
-export function proofsOf(graph: ExportGraph, id: string): ExportNode[] {
-	return neighbours(graph, id, "incoming", ["proves"]).map((proof) =>
-		requireNode(graph, proof)
+export function derivationsOf(graph: ExportGraph, id: string): ExportNode[] {
+	return neighbours(graph, id, "incoming", ["proves"]).map((derivation) =>
+		requireNode(graph, derivation)
 	);
 }
 
-export function attachedProofs(
+export function attachedDerivations(
 	graph: ExportGraph,
 	node: ExportNode
 ): ExportNode[] {
-	return node.kind === "proof" ? [] : proofsOf(graph, node.id);
+	return isDerivation(node.kind) ? [] : derivationsOf(graph, node.id);
 }
 
 export function relationsOf(
@@ -135,7 +135,7 @@ export function prerequisites(graph: ExportGraph, id: string): Prerequisite[] {
 	const roots =
 		root.type === "page"
 			? childrenOf(graph, id).map((node) => node.id)
-			: [id, ...proofsOf(graph, id).map((proof) => proof.id)];
+			: [id, ...derivationsOf(graph, id).map((derivation) => derivation.id)];
 	const distances = dependencyDistances(graph, roots);
 	const sorted: string[] = [];
 	const visited = new Set<string>();

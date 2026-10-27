@@ -1,4 +1,4 @@
-import { threadsRoute } from "@/lib/site/config";
+export const threadsRoute = "/threads";
 
 export function threadMapHref(slug: string): string {
 	return `${threadsRoute}/${slug}`;

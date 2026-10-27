@@ -1,10 +1,6 @@
 import { fetchText } from "@/lib/client/actions";
-import {
-	CONTEXT_TIERS,
-	type ContextBlock,
-	type PromptContext,
-	type PromptTarget,
-} from "./model";
+import type { PromptTarget } from "@/lib/mdx-env/target";
+import { CONTEXT_TIERS, type ContextBlock, type PromptContext } from "./model";
 import {
 	LLM_PROVIDER_LABELS,
 	type LlmProvider,

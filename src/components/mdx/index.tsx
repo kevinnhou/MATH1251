@@ -1,18 +1,23 @@
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import {
-	getMathEnvMdxComponents,
-	type MathEnvMdxOptions,
-} from "@/components/math-env/mdx";
+	type EnvMdxOptions,
+	getEnvMdxComponents,
+} from "@/components/mdx-env/mdx";
+import {
+	getThreadMdxComponents,
+	type ThreadMdxOptions,
+} from "@/components/threads/mdx";
 import { Mermaid } from "./mermaid";
 
 export function getMDXComponents(
 	components?: MDXComponents,
-	options: MathEnvMdxOptions = {}
+	options: EnvMdxOptions & ThreadMdxOptions = {}
 ) {
 	return {
 		...defaultMdxComponents,
-		...getMathEnvMdxComponents(options),
+		...getEnvMdxComponents(options),
+		...getThreadMdxComponents(options),
 		Mermaid,
 		...components,
 	} satisfies MDXComponents;

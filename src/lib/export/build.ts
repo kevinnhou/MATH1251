@@ -1,9 +1,9 @@
 import type { Strand } from "@/lib/course/strands";
-import type { KindViewRef } from "@/lib/math-env/kind-view";
-import { envRelation, getKindLabel } from "@/lib/math-env/kinds";
-import type { PageEnvs } from "@/lib/math-env/page-envs";
-import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
-import type { ThreadIndex } from "@/lib/math-env/thread";
+import type { KindViewRef } from "@/lib/mdx-env/kind-view";
+import { getEnvConfig, getKindLabel } from "@/lib/mdx-env/kinds";
+import type { PageEnvs } from "@/lib/mdx-env/page-envs";
+import { getTenetHref, type TenetIndex } from "@/lib/mdx-env/tenet";
+import type { ThreadIndex } from "@/lib/mdx-env/thread";
 import {
 	type ExportEdge,
 	type ExportGraph,
@@ -17,7 +17,6 @@ import {
 
 export interface ExportPageInput {
 	envs: PageEnvs;
-	module: Strand | undefined;
 	page: {
 		data: {
 			description?: string;
@@ -29,6 +28,7 @@ export interface ExportPageInput {
 		path: string;
 		url: string;
 	};
+	strand: Strand | undefined;
 }
 
 export type PageHrefResolver = (
@@ -50,7 +50,7 @@ export function buildExportGraph(
 		...pages.flatMap((page) => pageEdges(page, tenets)),
 		...pages.flatMap((page) => referenceEdges(page, resolvePageHref)),
 	]).filter((edge) => nodes.has(edge.source) && nodes.has(edge.target));
-	labelProofs(nodes, edges);
+	labelDerivations(nodes, edges);
 	const threads = exportThreads(threadIndex, nodes);
 
 	return {
@@ -75,16 +75,16 @@ export function buildExportGraph(
 	};
 }
 
-function pageNodes({ envs, module, page }: ExportPageInput): ExportNode[] {
+function pageNodes({ envs, page, strand }: ExportPageInput): ExportNode[] {
 	const { description, ideas, tags, title } = page.data;
-	const strand = module === undefined ? {} : { strand: module };
+	const strandField = strand === undefined ? {} : { strand };
 	const pageNode: ExportNode = {
 		id: page.url,
 		kind: "page",
 		label: title,
 		title,
 		type: "page",
-		...strand,
+		...strandField,
 		...(description ? { description } : {}),
 		...(ideas.length > 0 ? { ideas } : {}),
 		...(tags.length > 0 ? { tags } : {}),
@@ -100,7 +100,7 @@ function pageNodes({ envs, module, page }: ExportPageInput): ExportNode[] {
 				page: page.url,
 				title: entry.title ?? "",
 				type: "env",
-				...strand,
+				...strandField,
 				...(entry.slug ? { slug: entry.slug } : {}),
 				...(entry.difficulty ? { difficulty: entry.difficulty } : {}),
 				...(entry.statement ? { statement: entry.statement } : {}),
@@ -172,7 +172,7 @@ function pageEdges(
 
 	for (const entry of envs.entries) {
 		const id = envId(page.url, entry.id);
-		const relation = envRelation(entry.kind);
+		const relation = getEnvConfig(entry.kind).of;
 		edges.push(
 			{ kind: "contains", source: page.url, target: id },
 			...tenetHrefs(entry.of, tenets).map(
@@ -198,10 +198,10 @@ function pageEdges(
 }
 
 function referenceEdges(
-	{ module, page }: ExportPageInput,
+	{ page, strand }: ExportPageInput,
 	resolvePageHref: PageHrefResolver
 ): ExportEdge[] {
-	if (module === undefined) {
+	if (strand === undefined) {
 		return [];
 	}
 
@@ -246,20 +246,20 @@ function envLabel(kind: string, title: string | undefined): string {
 
 const LABEL_LIST = new Intl.ListFormat("en", { type: "conjunction" });
 
-function labelProofs(nodes: Map<string, ExportNode>, edges: ExportEdge[]) {
+function labelDerivations(nodes: Map<string, ExportNode>, edges: ExportEdge[]) {
 	const proves = Map.groupBy(
 		edges.filter((edge) => edge.kind === "proves"),
 		(edge) => edge.source
 	);
 	for (const [id, proved] of proves) {
-		const proof = nodes.get(id);
+		const derivation = nodes.get(id);
 		const labels = proved.flatMap(
 			(edge) => nodes.get(edge.target)?.label ?? []
 		);
-		if (proof?.title === "" && labels.length > 0) {
+		if (derivation?.title === "" && labels.length > 0) {
 			nodes.set(id, {
-				...proof,
-				label: `Proof of ${LABEL_LIST.format(labels)}`,
+				...derivation,
+				label: `${getKindLabel(derivation.kind)} of ${LABEL_LIST.format(labels)}`,
 			});
 		}
 	}

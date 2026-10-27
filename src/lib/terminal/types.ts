@@ -3,12 +3,13 @@ import type {
 	CurrentPages,
 	PageCatalog,
 } from "@/lib/course/catalog";
+import { course } from "@/lib/course/config";
 import type { OpenPromptRequest, OpenPromptResult } from "@/lib/export/client";
 import type { InlineLabel, RenderedMarkdown } from "@/lib/markdown/types";
 import type { PageDock } from "@/lib/relations/types";
 
 export const TERMINAL_HISTORY_LIMIT = 50;
-export const TERMINAL_HISTORY_KEY = "math1251-terminal-history";
+export const TERMINAL_HISTORY_KEY = `${course.code.toLowerCase()}-terminal-history`;
 export const TERMINAL_COMPLETION_LIMIT = 8;
 
 export type TerminalMode = "browse" | "edit" | "output";
@@ -77,7 +78,6 @@ export type TerminalOutput =
 			action?: OutputAction;
 			kind: "message";
 			message: string;
-			tone?: "muted";
 	  }
 	| { kind: "link-list"; groups: LinkGroup[]; message?: string; title?: string }
 	| {

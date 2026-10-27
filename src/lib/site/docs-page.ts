@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import type { Strand } from "@/lib/course/strands";
+import type { SourcePage } from "@/lib/compile/source";
+import { course } from "@/lib/course/config";
+import { STRAND_LABELS, type Strand } from "@/lib/course/strands";
 import { markdownToPlain } from "@/lib/markdown/plain";
-import { MATH_ENV_KINDS, type MathEnvKind } from "@/lib/math-env/kinds";
-import { siteName } from "./config";
+import { ENV_KINDS, type EnvKind, getKindViewSlug } from "@/lib/mdx-env/kinds";
 import type { ResolvedDocs } from "./corpus";
-import { getPageImageUrl, type SourcePage } from "./source";
 
-const MATH_ENV_KIND_ORDER = Object.keys(MATH_ENV_KINDS) as MathEnvKind[];
+const docsImageRoute = "/og/docs";
+
+export const docsImageFile = "image.png";
 
 export interface DocsImageText {
 	chip?: string;
 	description?: string;
 	ideas: string[];
-	kinds: readonly MathEnvKind[];
+	kinds: readonly EnvKind[];
 	title: string;
 }
 
@@ -22,7 +24,7 @@ export interface DocsPageModel {
 }
 
 export function describeDocsPage(resolved: ResolvedDocs): DocsPageModel {
-	const { module, page } = resolved.source;
+	const { page, strand } = resolved.source;
 	const description = resolved.description
 		? markdownToPlain(resolved.description)
 		: undefined;
@@ -30,14 +32,14 @@ export function describeDocsPage(resolved: ResolvedDocs): DocsPageModel {
 	if (resolved.kind === "notes") {
 		return {
 			image: imageText(page, {
-				chip: module?.toUpperCase(),
+				chip: strand && strandTag(strand),
 				ideas: page.data.ideas.filter(Boolean),
-				kinds: MATH_ENV_KIND_ORDER,
+				kinds: ENV_KINDS,
 			}),
 			metadata: {
 				description,
-				openGraph: { images: getPageImageUrl(page).url },
-				title: `${titlePrefix(module)} ${markdownToPlain(page.data.title)}`,
+				openGraph: { images: pageImageUrl(page) },
+				title: `${titlePrefix(strand)} ${markdownToPlain(page.data.title)}`,
 			},
 		};
 	}
@@ -48,7 +50,7 @@ export function describeDocsPage(resolved: ResolvedDocs): DocsPageModel {
 		metadata: {
 			alternates: { canonical: page.url },
 			description,
-			openGraph: { images: getPageImageUrl(page, view.kind).url },
+			openGraph: { images: pageImageUrl(page, view.kind) },
 			robots: { follow: true, index: false },
 			title: markdownToPlain(view.tabTitle),
 		},
@@ -74,8 +76,25 @@ function imageText(
 	};
 }
 
-function titlePrefix(module: Strand | undefined): string {
-	return module === undefined || module === "core"
-		? siteName
-		: `[${module.toUpperCase()}]`;
+function titlePrefix(strand: Strand | undefined): string {
+	return strand === undefined || strand === course.home
+		? course.name
+		: `[${strandTag(strand)}]`;
+}
+
+function strandTag(strand: Strand): string {
+	return STRAND_LABELS[strand].toUpperCase();
+}
+
+function pageImageUrl(page: SourcePage["page"], viewKind?: EnvKind): string {
+	const view = viewKind === undefined ? [] : [getKindViewSlug(viewKind)];
+	const segments = [
+		page.locale,
+		...docsImageRoute.split("/"),
+		...page.slugs,
+		...view,
+		docsImageFile,
+	];
+
+	return `/${segments.filter(Boolean).join("/")}`;
 }

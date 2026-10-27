@@ -10,7 +10,7 @@ import {
 } from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { type ReactNode, useMemo } from "react";
 import { useCourseRoutes } from "@/components/course/provider";
-import { withActiveKindViewPages } from "@/lib/math-env/kind-view-tree";
+import { withActiveKindViewPages } from "@/lib/mdx-env/kind-view-tree";
 import { baseOptions } from "@/lib/site/layout";
 import { Sidebar } from "../sidebar/sidebar";
 import { Header } from "./header";

@@ -3,7 +3,8 @@ import {
 	exportStaticParams,
 	renderPromptContext,
 	resolveExportTarget,
-} from "@/lib/export/corpus";
+} from "@/lib/export/server";
+import { getCorpus } from "@/lib/site/corpus";
 
 export const revalidate = false;
 export const dynamicParams = false;
@@ -13,14 +14,15 @@ export async function GET(
 	{ params }: RouteContext<"/llms.mdx/context/[[...slug]]">
 ) {
 	const { slug = [] } = await params;
-	const target = resolveExportTarget(slug, "context");
+	const graph = getCorpus().exportGraph;
+	const target = resolveExportTarget(graph, slug, "context");
 	if (target === undefined) {
 		notFound();
 	}
 
-	return Response.json(renderPromptContext(target));
+	return Response.json(renderPromptContext(graph, target));
 }
 
 export function generateStaticParams() {
-	return exportStaticParams("context");
+	return exportStaticParams(getCorpus().exportGraph, "context");
 }

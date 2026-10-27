@@ -1,4 +1,4 @@
-import { homeRoute } from "@/lib/site/config";
+import { homeRoute } from "@/lib/course/config";
 import { rootOf } from "./dirs";
 import type { CommandResult, TerminalLocation } from "./types";
 

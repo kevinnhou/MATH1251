@@ -1,17 +1,14 @@
 import { remarkMdxMermaid } from "fumadocs-core/mdx-plugins";
 import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
-import rehypeKatex from "rehype-katex";
-import remarkMath from "remark-math";
 import { z } from "zod";
-import { rehypeKatexDisplayScroll } from "./src/lib/markdown/katex-display";
-import { rehypeKatexHtml } from "./src/lib/markdown/katex-html";
-import { KATEX_OPTIONS, REMARK_MATH_OPTIONS } from "./src/lib/markdown/math";
-import { remarkMathEnv } from "./src/lib/math-env/remark";
-import { corpusMeta } from "./src/lib/site/corpus-meta/plugin";
+import { contentDir } from "./src/lib/compile/content-dir";
+import { corpusMeta } from "./src/lib/compile/corpus-meta/plugin";
+import { REHYPE_PLUGINS, REMARK_PLUGINS } from "./src/lib/markdown/syntaxes";
+import { remarkMdxEnv } from "./src/lib/mdx-env/remark";
 
 export const docs = defineDocs({
-	dir: "content/docs",
+	dir: contentDir,
 	docs: {
 		async: true,
 		schema: pageSchema.extend({
@@ -26,17 +23,8 @@ export const docs = defineDocs({
 
 export default defineConfig({
 	mdxOptions: {
-		rehypePlugins: (v) => [
-			[rehypeKatex, KATEX_OPTIONS],
-			rehypeKatexDisplayScroll,
-			rehypeKatexHtml,
-			...v,
-		],
-		remarkPlugins: [
-			[remarkMath, REMARK_MATH_OPTIONS],
-			remarkMdxMermaid,
-			remarkMathEnv,
-		],
+		rehypePlugins: (v) => [...REHYPE_PLUGINS, ...v],
+		remarkPlugins: [...REMARK_PLUGINS, remarkMdxMermaid, remarkMdxEnv],
 	},
 	plugins: [corpusMeta()],
 });

@@ -2,9 +2,9 @@
 
 import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { InlineHtml } from "@/components/markdown/html";
-import { foregroundAt, THREAD_COLOR } from "@/components/relations/colors";
 import { cursorKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
+import { foregroundAt, THREAD_COLOR } from "./colors";
 import { laneCode } from "./format";
 import { type Diagram, type DiagramStation, NAME_ANGLE } from "./layout";
 import { LINE, STOP, StopMarks, solidStroke, transitStroke } from "./marks";

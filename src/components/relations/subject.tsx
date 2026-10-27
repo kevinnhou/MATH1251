@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 import { InlineHtml } from "@/components/markdown/html";
+import { THREAD_COLOR } from "@/components/threads/colors";
 import { RouteStrip } from "@/components/threads/route-strip";
 import type { RenderedMarkdown } from "@/lib/markdown/types";
 import {
@@ -13,7 +14,7 @@ import {
 	type DockThread,
 	type PageDock,
 } from "@/lib/relations/types";
-import { DIRECTION_COLORS, MUTED_COLOR, THREAD_COLOR } from "./colors";
+import { DIRECTION_COLORS, MUTED_COLOR } from "./colors";
 
 export interface DockSubject {
 	bay: ReactNode;
@@ -59,7 +60,6 @@ function withThreads(
 }
 
 function threadSubject(thread: DockThread): DockSubject {
-	const count = thread.route.stops.length;
 	return {
 		bay: <ThreadBlock thread={thread} />,
 		key: thread.slug,
@@ -67,7 +67,7 @@ function threadSubject(thread: DockThread): DockSubject {
 			byDirection(() => []),
 			[thread]
 		),
-		summary: `Appears in ${count} ${count === 1 ? "place" : "places"}.`,
+		summary: `Appears in ${placeCount(thread.route.stops.length)}.`,
 		title: thread.title,
 	};
 }
@@ -126,6 +126,10 @@ function pageSubject({ page, threads }: PageDock): DockSubject {
 	};
 }
 
+function placeCount(count: number): string {
+	return `${count} ${count === 1 ? "place" : "places"}`;
+}
+
 function clause(lead: string, list: DockList, color: string): Clause {
 	return { color, lead, list };
 }
@@ -177,7 +181,7 @@ function ThreadBlock({ thread }: { thread: DockThread }) {
 				<RefLink color={THREAD_COLOR} href={thread.href}>
 					<InlineHtml html={thread.title.html} />
 				</RefLink>
-				, in {thread.route.stops.length} places.
+				, in {placeCount(thread.route.stops.length)}.
 			</p>
 			<p className="m-0 border-fd-border border-l pl-2.5">
 				<InlineHtml html={thread.summary.html} />

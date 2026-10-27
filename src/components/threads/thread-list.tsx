@@ -2,7 +2,7 @@ import Link from "next/link";
 import { InlineHtml } from "@/components/markdown/html";
 import { cn } from "@/lib/cn";
 import type { ThreadMap } from "@/lib/relations/types";
-import { threadsRoute } from "@/lib/site/config";
+import { threadsRoute } from "@/lib/relations/urls";
 import { Bracket } from "./bracket";
 import { MONO } from "./format";
 import { RouteTrack } from "./route-track";

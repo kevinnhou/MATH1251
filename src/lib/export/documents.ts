@@ -1,11 +1,7 @@
+import { course, homeRoute } from "@/lib/course/config";
 import { STRAND_LABELS, STRANDS } from "@/lib/course/strands";
-import { getKindLabel, type MathEnvKind } from "@/lib/math-env/kinds";
-import {
-	catalogRoute,
-	docsContextRoute,
-	exportGraphRoute,
-	llmsFullRoute,
-} from "@/lib/site/config";
+import { catalogRoute } from "@/lib/course/urls";
+import { ENV, type EnvKind, getKindLabel } from "@/lib/mdx-env/kinds";
 import {
 	type Frontmatter,
 	frontmatter,
@@ -16,7 +12,6 @@ import {
 } from "./format";
 import {
 	bodyRole,
-	COURSE,
 	EXPORT_EDGE_KINDS,
 	type ExportGraph,
 	type ExportKindView,
@@ -27,7 +22,7 @@ import {
 	type Relation,
 } from "./model";
 import {
-	attachedProofs,
+	attachedDerivations,
 	childrenOf,
 	envsOfKind,
 	type Prerequisite,
@@ -38,7 +33,13 @@ import {
 	requireNode,
 	threadsOf,
 } from "./query";
-import { nodeContextUrl, nodeMarkdownUrl } from "./urls";
+import {
+	docsContextRoute,
+	exportGraphRoute,
+	llmsFullRoute,
+	nodeContextUrl,
+	nodeMarkdownUrl,
+} from "./urls";
 
 const PREREQUISITE_LIMIT = 40;
 const CARD_RELATION_LIMIT = 8;
@@ -113,8 +114,11 @@ export function envDocument(node: ExportNode, graph: ExportGraph): string {
 		body: [
 			page === undefined ? "" : `From ${nodeLink(page)}.`,
 			envSections(node, 2),
-			...attachedProofs(graph, node).map((proof) =>
-				joinBlocks(["## Proof", proof.body ?? ""])
+			...attachedDerivations(graph, node).map((derivation) =>
+				joinBlocks([
+					`## ${getKindLabel(derivation.kind)}`,
+					derivation.body ?? "",
+				])
 			),
 		],
 		fields: {
@@ -173,6 +177,9 @@ export function threadDocument(
 }
 
 export function indexDocument(graph: ExportGraph): string {
+	const exampleStrand =
+		STRANDS.find((strand) => strand !== course.home) ?? course.home;
+	const examplePage = `/${exampleStrand}/x`;
 	const pages = pagesOf(graph);
 	const sections = [
 		...STRANDS.map((strand) => ({
@@ -185,16 +192,16 @@ export function indexDocument(graph: ExportGraph): string {
 		},
 	];
 	const lines = [
-		`# ${COURSE}`,
+		`# ${course.title}`,
 		"",
-		"> Lecture notes as a graph of pages and math environments (definitions, theorems, proofs, examples, …) linked by typed relations.",
+		`> ${ENV.pack.summary}`,
 		"",
 		"## Conventions",
 		"",
 		"- Node IDs are site paths: a page is `/strand/page`, an environment is `/strand/page#anchor`. Every link in the exports points at a node ID.",
-		`- Markdown for any node: \`${nodeMarkdownUrl("/algebra/x")}\` for a page, \`${nodeMarkdownUrl("/algebra/x#thm-y")}\` for one environment.`,
-		`- Ranked prompt context (JSON blocks by tier) at the same paths under \`${docsContextRoute}\`, e.g. \`${nodeContextUrl("/algebra/x#thm-y")}\`.`,
-		"- A thread (`/core#thread-<slug>`) is one idea that recurs across the course; its Markdown lists every place it appears, with a role and statement for each.",
+		`- Markdown for any node: \`${nodeMarkdownUrl(examplePage)}\` for a page, \`${nodeMarkdownUrl(`${examplePage}#thm-y`)}\` for one environment.`,
+		`- Ranked prompt context (JSON blocks by tier) at the same paths under \`${docsContextRoute}\`, e.g. \`${nodeContextUrl(`${examplePage}#thm-y`)}\`.`,
+		`- A thread (\`${homeRoute}#thread-<slug>\`) is one idea that recurs across the course; its Markdown lists every place it appears, with a role and statement for each.`,
 		"- Each Markdown export starts with YAML frontmatter (`id`, `type`, `kind`, `strand`, `page`, …), then content, `## Prerequisites` (transitive dependencies from other pages) and `## Relations`.",
 		`- Relations: ${EXPORT_EDGE_KINDS.map((kind) => {
 			const [out, inverse] = RELATION_NAMES[kind];
@@ -229,7 +236,7 @@ export function indexDocument(graph: ExportGraph): string {
 }
 
 function pageIndexLine(page: ExportNode, graph: ExportGraph): string {
-	const counts = new Map<MathEnvKind, number>();
+	const counts = new Map<EnvKind, number>();
 	for (const { kind } of childrenOf(graph, page.id)) {
 		if (kind !== "page") {
 			counts.set(kind, (counts.get(kind) ?? 0) + 1);
@@ -279,7 +286,7 @@ function document(
 	return `${joinBlocks([
 		frontmatter({
 			...parts.fields,
-			course: COURSE,
+			course: course.title,
 			id: parts.id,
 			markdown: nodeMarkdownUrl(parts.id),
 		}),

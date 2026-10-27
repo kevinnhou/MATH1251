@@ -55,13 +55,7 @@ function OutputBody({ output }: { output: TerminalOutput }) {
 		case "message":
 			return (
 				<div className="flex flex-col gap-2">
-					<pre
-						className={
-							output.tone === "muted"
-								? "wrap-break-word whitespace-pre-wrap font-mono text-[12px] text-fd-muted-foreground"
-								: "wrap-break-word whitespace-pre-wrap font-mono text-[12px]"
-						}
-					>
+					<pre className="wrap-break-word whitespace-pre-wrap font-mono text-[12px]">
 						{output.message}
 					</pre>
 					{output.action ? (

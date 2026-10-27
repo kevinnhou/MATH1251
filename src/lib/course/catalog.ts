@@ -1,7 +1,7 @@
-import type { PromptTarget } from "@/lib/export/model";
 import type { MarkdownFragment } from "@/lib/markdown/types";
 import { literalInlineFragment } from "@/lib/markdown/types";
-import { homeRoute } from "@/lib/site/config";
+import type { PromptTarget } from "@/lib/mdx-env/target";
+import { homeRoute } from "./config";
 import type { Strand } from "./strands";
 
 export interface RoutePage {

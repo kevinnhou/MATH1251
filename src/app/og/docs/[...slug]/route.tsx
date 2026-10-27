@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
-import { OgImage, toOgImageProps } from "@/lib/og";
+import { OgImage, toOgImageProps } from "@/components/site/og-image";
 import { docsStaticParams, resolveDocsPage } from "@/lib/site/corpus";
+import { docsImageFile } from "@/lib/site/docs-page";
 
 export const revalidate = false;
 export const dynamicParams = true;
@@ -11,7 +12,7 @@ export async function GET(
 	{ params }: RouteContext<"/og/docs/[...slug]">
 ) {
 	const { slug } = await params;
-	if (slug.at(-1) !== "image.png") {
+	if (slug.at(-1) !== docsImageFile) {
 		notFound();
 	}
 
@@ -27,5 +28,5 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-	return docsStaticParams("image.png");
+	return docsStaticParams(docsImageFile);
 }

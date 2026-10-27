@@ -1,4 +1,6 @@
 import { STRAND_LABELS } from "@/lib/course/strands";
+import { getKindLabel, isDerivation } from "@/lib/mdx-env/kinds";
+import type { PromptTarget } from "@/lib/mdx-env/target";
 import {
 	bodyRole,
 	type ContextBlock,
@@ -8,12 +10,11 @@ import {
 	type ExportNode,
 	type ExportThread,
 	type PromptContext,
-	type PromptTarget,
 	RELATION_LABELS,
 	type RelationName,
 } from "./model";
 import {
-	attachedProofs,
+	attachedDerivations,
 	childrenOf,
 	envsOfKind,
 	pageOf,
@@ -41,7 +42,8 @@ const PREREQUISITE_STATEMENT_LIMIT = 600;
 
 export function envTarget(node: ExportNode, graph: ExportGraph): PromptTarget {
 	return {
-		hasProof: node.kind === "proof" || attachedProofs(graph, node).length > 0,
+		hasDerivation:
+			isDerivation(node.kind) || attachedDerivations(graph, node).length > 0,
 		id: node.id,
 		kind: node.kind,
 		label: node.label,
@@ -51,7 +53,7 @@ export function envTarget(node: ExportNode, graph: ExportGraph): PromptTarget {
 
 export function pageTarget(node: ExportNode): PromptTarget {
 	return {
-		hasProof: false,
+		hasDerivation: false,
 		id: node.id,
 		kind: "page",
 		label: node.label,
@@ -61,7 +63,7 @@ export function pageTarget(node: ExportNode): PromptTarget {
 
 export function kindViewTarget(view: ExportKindView): PromptTarget {
 	return {
-		hasProof: view.kind === "proof",
+		hasDerivation: isDerivation(view.kind),
 		id: view.id,
 		kind: view.kind,
 		label: view.label,
@@ -71,7 +73,7 @@ export function kindViewTarget(view: ExportKindView): PromptTarget {
 
 export function threadTarget(thread: ExportThread): PromptTarget {
 	return {
-		hasProof: false,
+		hasDerivation: false,
 		id: thread.id,
 		kind: "thread",
 		label: thread.label,
@@ -83,13 +85,16 @@ export function envContext(
 	node: ExportNode,
 	graph: ExportGraph
 ): PromptContext {
-	const proofs = attachedProofs(graph, node);
+	const derivations = attachedDerivations(graph, node);
 	const notesLast = bodyRole(node) === "Notes";
 	const core = [
 		heading(node, pageOf(graph, node)),
 		node.statement === undefined ? "" : `Statement:\n${node.statement}`,
 		notesLast ? "" : bodyBlock(node),
-		...proofs.map((proof) => `Proof:\n${proof.body ?? ""}`),
+		...derivations.map(
+			(derivation) =>
+				`${getKindLabel(derivation.kind)}:\n${derivation.body ?? ""}`
+		),
 		notesLast ? bodyBlock(node) : "",
 	];
 

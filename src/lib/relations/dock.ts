@@ -12,9 +12,9 @@ import {
 } from "@/lib/export/query";
 import { compileMarkdownFragment } from "@/lib/markdown/fragment";
 import { type RenderedMarkdown, rendered } from "@/lib/markdown/types";
-import { type PageEnvs, threadId } from "@/lib/math-env/page-envs";
-import { getTenetHref, type TenetIndex } from "@/lib/math-env/tenet";
-import type { Thread, ThreadIndex, ThreadMember } from "@/lib/math-env/thread";
+import { type PageEnvs, threadId } from "@/lib/mdx-env/page-envs";
+import { getTenetHref, type TenetIndex } from "@/lib/mdx-env/tenet";
+import type { Thread, ThreadIndex, ThreadMember } from "@/lib/mdx-env/thread";
 import { chapterOfId, neighbours } from "./query";
 import {
 	byDirection,

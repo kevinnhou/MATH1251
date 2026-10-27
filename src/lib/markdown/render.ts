@@ -3,9 +3,9 @@ import type { Root as MdastRoot } from "mdast";
 import { remember } from "./cache";
 import { toHastRoot, toPhrasingRoot } from "./hast";
 import { highlightHast } from "./highlight";
-import { applyKatex } from "./katex";
 import { parseMarkdown } from "./parse";
 import { sanitizeHast } from "./sanitize";
+import { renderSyntaxes } from "./syntaxes";
 import type { MarkdownMode } from "./types";
 
 type MarkdownRenderMode = MarkdownMode;
@@ -52,7 +52,7 @@ export function renderMarkdownTree(
 		hast = toPhrasingRoot(hast);
 	}
 
-	applyKatex(hast);
+	renderSyntaxes(hast);
 	return toHtml(hast, { allowDangerousHtml: false }).trim();
 }
 

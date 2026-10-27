@@ -1,6 +1,7 @@
 import type { ElementContent, Root, RootContent } from "hast";
-import { elementChildren, elementText, isMathElement, wrapMark } from "./hast";
-import { simplifyTex } from "./plain";
+import { elementChildren, elementText } from "./element";
+import { wrapMark } from "./hast";
+import { atomOf } from "./syntaxes";
 
 const WHITESPACE = /\s+/;
 
@@ -25,10 +26,9 @@ function highlightContent(node: RootContent, terms: string[]): RootContent[] {
 		return [node];
 	}
 
-	if (isMathElement(node)) {
-		return mathMatchesQuery(elementText(node), terms)
-			? [wrapMark(node)]
-			: [node];
+	const atom = atomOf(node);
+	if (atom !== undefined) {
+		return atom.matches(elementText(node), terms) ? [wrapMark(node)] : [node];
 	}
 
 	if (node.tagName === "code") {
@@ -86,21 +86,6 @@ function termPattern(terms: string[]): RegExp | undefined {
 	}
 
 	return new RegExp(`\\b(${terms.map(escapeRegExp).join("|")})\\b`, "gi");
-}
-
-function mathMatchesQuery(tex: string, terms: string[]): boolean {
-	const tokens = new Set(
-		simplifyTex(tex).toLowerCase().split(WHITESPACE).filter(Boolean)
-	);
-
-	return terms.some((term) => {
-		const lower = term.toLowerCase();
-		if (tokens.has(lower)) {
-			return true;
-		}
-
-		return new RegExp(`\\\\${escapeRegExp(lower)}(?![a-zA-Z])`, "i").test(tex);
-	});
 }
 
 function escapeRegExp(value: string): string {

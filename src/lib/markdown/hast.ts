@@ -8,6 +8,8 @@ import type {
 } from "hast";
 import type { Root as MdastRoot } from "mdast";
 import { toHast } from "mdast-util-to-hast";
+import { elementChildren } from "./element";
+import { isAtom } from "./syntaxes";
 
 const WHITESPACE = /\s+/;
 const PHRASING_TAGS = new Set([
@@ -51,44 +53,6 @@ export function wrapMark(node: Element | Text): Element {
 	};
 }
 
-export function elementChildren(node: Element): ElementContent[] {
-	return node.children ?? [];
-}
-
-export function isMathElement(node: Element): boolean {
-	const classes = classList(node);
-	return (
-		classes.includes("language-math") ||
-		classes.includes("math-inline") ||
-		classes.includes("math-display")
-	);
-}
-
-export function classList(node: Element): string[] {
-	const value = node.properties?.className;
-	if (Array.isArray(value)) {
-		return value.map(String);
-	}
-
-	return [];
-}
-
-export function elementText(node: Element): string {
-	return elementChildren(node)
-		.map((child) => {
-			if (child.type === "text") {
-				return child.value;
-			}
-
-			if (child.type === "element") {
-				return elementText(child);
-			}
-
-			return "";
-		})
-		.join("");
-}
-
 function asHastRoot(hast: HastNodes): HastRoot {
 	if (hast.type === "root") {
 		return hast;
@@ -119,7 +83,7 @@ function flattenPhrasing(
 			continue;
 		}
 
-		if (isMathElement(node) || PHRASING_TAGS.has(node.tagName)) {
+		if (isAtom(node) || PHRASING_TAGS.has(node.tagName)) {
 			pushPhrasing(result, node);
 			continue;
 		}

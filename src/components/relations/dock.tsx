@@ -3,6 +3,7 @@
 import { type RefCallback, useEffect, useId, useMemo, useRef } from "react";
 import { InlineHtml } from "@/components/markdown/html";
 import { usePublishDock } from "@/components/relations/provider";
+import { THREAD_COLOR } from "@/components/threads/colors";
 import { focusRouteNav } from "@/components/threads/route-strip";
 import { moveKey } from "@/lib/client/keybinds";
 import { cn } from "@/lib/cn";
@@ -12,7 +13,7 @@ import {
 	type Direction,
 	type PageDock,
 } from "@/lib/relations/types";
-import { DIRECTION_COLORS, THREAD_COLOR } from "./colors";
+import { DIRECTION_COLORS } from "./colors";
 import {
 	type DockState,
 	useActiveAnchor,

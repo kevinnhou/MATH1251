@@ -1,3 +1,5 @@
+export const offlineRoute = "/~offline";
+
 export const pwaCaches = {
 	data: "data",
 	pages: "pages",
