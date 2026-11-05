@@ -19,14 +19,14 @@ They appear in three places:
 - the **threads page** (`/threads`, `/threads/<slug>`): every thread as a line
   through the course, strands side by side and chapters as columns.
 
-All of them read the same graph as the exports (EXPORT.md). `lib/relations`
-builds the views on the server: the course outline and thread map once per
+All of them read the same graph as the exports ([Export](export.md#the-export-graph)).
+`lib/relations` builds the views on the server: the course outline and thread map once per
 process (in production), the dock payload once per page render;
 `components/relations` draws the dock and `components/threads` the thread
 sections, route strips and the threads page. The module sits above
 `export` and `mdx-env` and below `terminal` and `site`.
 
-## Layout
+## Files
 
 ```
 src/lib/relations/
@@ -62,15 +62,15 @@ src/components/threads/
   bracket.tsx              Bracket, ACTION: the site's [LABEL] actions
   colors.ts                THREAD_COLOR, foregroundAt
 src/app/(docs)/threads/    /threads and /threads/[slug]
-src/lib/terminal/relations-command.ts   the `relations` command (TERMINAL.md)
+src/lib/terminal/relations-command.ts   the `relations` command (terminal.md)
 ```
 
 ## The relation model
 
-What an environment's `of` means is set by its component's role (MDX-ENV.md):
-`uses`, `derives` or `practises`. The export graph turns every
-citation into an edge of that kind (EXPORT.md has the full edge table). Two
-sets decide what counts here:
+What an environment's `of` means is set by its component's role ([Roles](../domains.md#roles)):
+`uses`, `derives` or `practises`. The export graph turns every citation into an
+edge of that kind ([Edges and relations](export.md#edges-and-relations)). Two sets
+decide what counts here:
 
 | Set | Edges | Used for |
 |---|---|---|
@@ -100,7 +100,7 @@ Threads do that.
 A **thread** is a named idea with a one-line summary, written where the notes
 explain it as a `<Thread slug summary>` section, and joined by environments
 anywhere in the course with `thread="<slug>: <role>"`; the role says how this
-place uses the idea. The syntax and its rules are in MDX-ENV.md (Authoring).
+place uses the idea. The syntax and its rules are in [Writing notes](../course/writing.md#threads).
 
 ```mdx
 <Thread slug="particular-plus-kernel" summary="Every solution of $T(x)=b$ is one particular solution plus an element of $\ker T$.">
@@ -139,7 +139,7 @@ The walk is depth-first. Every top-level folder is a **strand** (`id` is the
 first URL segment, `title` the folder name from `meta.json`). Each strand gets
 an intro chapter (number 0), and each folder inside it a numbered chapter (1,
 2, …, in `meta.json` order); a folder's index page comes before its children.
-`getCorpus` checks the strands against `course.config.ts` (README.md).
+`getCorpus` checks the strands against `course.config.ts` ([Configuring a course](../course/config.md)).
 
 | Field | Holds |
 |---|---|
@@ -441,7 +441,7 @@ interface DockThread extends ThreadMapThread {
 
 `ReadingDock` publishes its payload to `RelationsProvider` (`usePublishDock`),
 where the terminal's `relations` command reads it, so the command works offline
-and on kind views (TERMINAL.md).
+and on kind views ([Terminal](terminal.md)).
 
 ## Thread sections
 
@@ -484,7 +484,7 @@ spine of every member in course order:
   reduced motion skips the animation.
 - **Ask** (`ThreadFrame`): the whole section is wrapped in `AskShare` like an
   environment (right click, or `[ASK AI]` on touch screens), for the thread's
-  prompt target (EXPORT.md). An environment inside keeps its own menu.
+  prompt target ([Export](export.md)). An environment inside keeps its own menu.
 
 The spine is rendered on the server from the thread index and the course index,
 so statements never travel to the client as data. Each member carries its own
@@ -622,67 +622,67 @@ threads in question, so the diagram never needs one colour per thread.
 
 ## Design decisions
 
-**1. A dock, not a course map.** About 95% of dependencies stay within a
-chapter, so a course-wide map of page dependencies has little shape, and a map
-above the prose scrolls away in seconds and works on whole pages while the
-reader is on one theorem. The dock works on the environment at the reading line
-and stays in view. Threads are the course-wide structure, so they get the
-picture.
+1. **A dock, not a course map.** About 95% of dependencies stay within a
+   chapter, so a course-wide map of page dependencies has little shape, and a map
+   above the prose scrolls away in seconds and works on whole pages while the
+   reader is on one theorem. The dock works on the environment at the reading line
+   and stays in view. Threads are the course-wide structure, so they get the
+   picture.
 
-**2. A cutout in a fixed corner.** An element that moves with scrolling is hard
-to keep calm. The dock's contents change, its position doesn't, and the cutout
-look (no border, shadow or card) keeps it from competing with the page.
+2. **A cutout in a fixed corner.** An element that moves with scrolling is hard
+   to keep calm. The dock's contents change, its position doesn't, and the cutout
+   look (no border, shadow or card) keeps it from competing with the page.
 
-**3. Growing, not overlaying.** Rest and bay are one element changing height,
-with content laid out at its final size and clipped. Nothing reflows during the
-animation, and the bay is always mounted so opening it costs no render.
+3. **Growing, not overlaying.** Rest and bay are one element changing height,
+   with content laid out at its final size and clipped. Nothing reflows during the
+   animation, and the bay is always mounted so opening it costs no render.
 
-**4. The cursor beats the reading line, but expires.** Pointing is the stronger
-signal; a parked mouse must not override scrolling forever. The corridor keeps
-the choice while the reader travels to the dock, so crossing content on the way
-changes nothing.
+4. **The cursor beats the reading line, but expires.** Pointing is the stronger
+   signal; a parked mouse must not override scrolling forever. The corridor keeps
+   the choice while the reader travels to the dock, so crossing content on the way
+   changes nothing.
 
-**5. Geometry, not DOM reads, on every move.** Pointer moves cost arithmetic: a
-cached box, a smoothed velocity and one ray-box test. Only environments in the
-viewport are measured, at most once per frame.
+5. **Geometry, not DOM reads, on every move.** Pointer moves cost arithmetic: a
+   cached box, a smoothed velocity and one ray-box test. Only environments in the
+   viewport are measured, at most once per frame.
 
-**6. Everything is built on the server and travels with the page.** `PageDock`,
-the thread map and the spine's statements are computed in `getCorpus()` or the
-page render and passed as props or server-rendered nodes. Nothing about
-relations is fetched on the client, which is why the dock and the `relations`
-command work offline and on kind views.
+6. **Everything is built on the server and travels with the page.** `PageDock`,
+   the thread map and the spine's statements are computed in `getCorpus()` or the
+   page render and passed as props or server-rendered nodes. Nothing about
+   relations is fetched on the client, which is why the dock and the `relations`
+   command work offline and on kind views.
 
-**7. The page never re-renders for the dock.** The active mark is a DOM
-attribute set directly, not React state on the content.
+7. **The page never re-renders for the dock.** The active mark is a DOM
+   attribute set directly, not React state on the content.
 
-**8. Threads are written, not inferred.** Shared ideas across strands aren't in
-the dependency graph, so a thread is authored where the idea is explained, and
-members say how they use it (the role). That keeps them few and meaningful.
+8. **Threads are written, not inferred.** Shared ideas across strands aren't in
+   the dependency graph, so a thread is authored where the idea is explained, and
+   members say how they use it (the role). That keeps them few and meaningful.
 
-**9. Two orders, on purpose.** Lists read best in course order; routes read
-best in teaching order, which depends on how the course is taught. The
-chapter's `term` is the only place that knows this (`schedule`, set in
-`course.config.ts`).
+9. **Two orders, on purpose.** Lists read best in course order; routes read
+   best in teaching order, which depends on how the course is taught. The
+   chapter's `term` is the only place that knows this (`schedule`, set in
+   `course.config.ts`).
 
-**10. Nothing in the diagram is measured but its width.** Layout is computed
-from the data and one width, so it renders on the server, changes in one render
-when the threads shown change, and never flashes.
+10. **Nothing in the diagram is measured but its width.** Layout is computed
+    from the data and one width, so it renders on the server, changes in one render
+    when the threads shown change, and never flashes.
 
-**11. Nothing moves on the threads page.** Every reading the page can show is
-rendered up front into one grid cell, only the active one visible, so the area
-is as tall as the tallest and the page never reflows under the pointer.
+11. **Nothing moves on the threads page.** Every reading the page can show is
+    rendered up front into one grid cell, only the active one visible, so the area
+    is as tall as the tallest and the page never reflows under the pointer.
 
-**12. Routes are percentages.** A route strip fills whatever width it is given
-(the dock, the `/core` list) without measuring, and the same `RouteTrack` draws
-it everywhere.
+12. **Routes are percentages.** A route strip fills whatever width it is given
+    (the dock, the `/core` list) without measuring, and the same `RouteTrack` draws
+    it everywhere.
 
-**13. One colour carries meaning.** Lines are foreground; aqua marks only the
-threads in question. Two direction colours and one thread colour, each always
-next to a label, are all the dock and the page need.
+13. **One colour carries meaning.** Lines are foreground; aqua marks only the
+    threads in question. Two direction colours and one thread colour, each always
+    next to a label, are all the dock and the page need.
 
-**14. Keys belong to the focused widget.** Route strips, the key and the diagram
-handle their own keys and `preventDefault`, so nothing new listens on the window
-and the terminal's and sidebar's keys are untouched (TERMINAL.md, Keys).
+14. **Keys belong to the focused widget.** Route strips, the key and the diagram
+    handle their own keys and `preventDefault`, so nothing new listens on the window
+    and the terminal's and sidebar's keys are untouched ([Terminal](terminal.md#keys)).
 
 ## Performance
 
@@ -699,38 +699,22 @@ and the terminal's and sidebar's keys are untouched (TERMINAL.md, Keys).
 
 ## Limitations
 
-- Several shown threads in the address: only the first is kept, so a reload
-  drops the others.
-- The diagram on phones scrolls sideways once slots reach 16px; a vertical
-  layout would avoid that.
-- On narrow screens the cutout covers the bottom-right of the prose at rest, and
-  only a tap opens it.
-- Hovering a prose link, footnote or recall doesn't preview its statement in the
-  bay, and "builds on" rows navigate instead of expanding.
-- Environment footnotes repeat what the bay shows.
-- A `<Thread>` section the dock follows gets `data-dock-active`, but nothing
-  styles it yet.
-- A schedule is all-parallel or all-sequential; a course that teaches two
-  strands side by side and a third after them can't say so.
-- The tuning values below have not been checked systematically in browsers.
+In [Limitations](../limitations.md#relations-and-threads).
 
 ## Changing things
 
-**A new kind:** add an environment component with a role to a domain
-(MDX-ENV.md); its citations reach the exports and the dock with no other
-change.
+**A new kind:** a domain change ([Writing a domain](../domains.md#recipes)); its
+citations reach the exports and the dock with no other change.
 
-**A new thread:** wrap the prose that explains it in `<Thread slug summary>` and
-tag each member with `thread="<slug>: <role>"`. It gets a lane on the map, a
-route in the dock and a page at `/threads/<slug>`.
+**A new thread:** [Writing notes](../course/writing.md#threads). It gets a lane on
+the map, a route in the dock and a page at `/threads/<slug>`.
 
-**A new strand:** add the folder and list it in `meta.json` and
-`course.config.ts` (README.md). The course index, the strip, routes and the map
-pick it up.
+**A new strand:** [Configuring a course](../course/config.md#strands-and-chapters).
+The course index, the strip, routes and the map pick it up.
 
-**A new relation:** add it to `ROLES` (`mdx-env/component.ts`), `ROLE_EDGES` and the export model's edge kinds,
-names, labels and order (EXPORT.md); add it to `DEPENDENCY_EDGES` if it is a
-prerequisite, so it joins "builds on" and the page links.
+**A new relation:** [Architecture](architecture.md#changing-things). Add it to
+`DEPENDENCY_EDGES` if it is a prerequisite, so it joins "builds on", and to
+`PAGE_LINK_RELATIONS` if it should link pages.
 
 **A new dock list:** add a `DockList` to `DockEnv`, fill it in `dockEnv`
 (`relations/dock.ts`) from `relationsOf`, and in `envSubject` make it a clause

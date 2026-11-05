@@ -16,10 +16,10 @@ The logic is pure and lives in `lib/terminal` (a reducer, commands, path
 resolution, search projection); the UI is `components/terminal` (provider,
 prompt, output, keys) and `components/sidebar` (the shell, tree, tabs, search
 tree). `lib/terminal` sits above `course`, `export` and `relations` and below
-`site`; it reads the page catalog and route index from COMPILE.md, the reading
-dock from RELATIONS.md and prompt intents from EXPORT.md.
+`site`; it reads the page catalog and route index from [Compile](compile.md), the reading
+dock from [Relations](relations.md) and prompt intents from [Export](export.md).
 
-## Layout
+## Files
 
 ```
 src/lib/terminal/              logic (no React)
@@ -63,11 +63,11 @@ src/app/api/search/route.ts    search endpoint
 `app/(docs)/layout.tsx` mounts `CourseRoutesProvider` › `RelationsProvider` ›
 `TerminalProvider` › `VirtualDocsLayout`. The terminal sits above the Fumadocs
 layout, so it can read the course routes and the page's relations; the sidebar
-lives inside the layout (SITE.md shows how it is mounted).
+lives inside the layout ([Site](site.md) shows how it is mounted).
 
 ## Course data
 
-The terminal works from two sources (COMPILE.md, Client data):
+The terminal works from two sources ([Compile](compile.md#client-data)):
 
 - **`useCourseRoutes()`**: page URLs and kind views, available at first render.
   Enough for the current page (`routes.match`), sidebar sections
@@ -78,7 +78,7 @@ The terminal works from two sources (COMPILE.md, Client data):
   empty until it arrives; `run.ts` awaits `catalogResource.load()` before
   executing and prints an error if it can't load. The resource is a shared
   store, so a load started by `run.ts` also enables completions. Offline it
-  comes from the service worker (PWA.md).
+  comes from the service worker ([PWA](pwa.md)).
 
 ## Commands
 
@@ -103,8 +103,8 @@ list. `open` tries the working directory first.
 The intent words are the intent names in `PROMPT_INTENTS` (`explain`,
 `derive`, `quiz`, `check`; the same in every course) and are parsed back by
 `intentFromWord`; an intent the page doesn't offer is rejected with the ones it
-does. What each intent does is EXPORT.md's; `relations` renders data from
-RELATIONS.md.
+does. What each intent does is in [Export](export.md#intents); `relations` renders data from
+[Relations](relations.md#the-payload).
 
 Each command is a `CommandDescriptor`: `names`, `execute`, `usage`,
 `advertised`, and optional `complete` and `loading`. The registry
@@ -188,7 +188,7 @@ A line that isn't a command is sent to `/api/search?format=terminal`. The
 route uses Fumadocs' Orama index built from the loader's structured data
 (`createFromSource(source)`), asks for at most 24 results, and projects them in
 `search-server.ts`: titles and snippets as Markdown fragments with the query
-highlighted (MARKDOWN.md); page and heading hits are titled by their own text,
+highlighted ([Markdown](markdown.md)); page and heading hits are titled by their own text,
 body-text hits by their page. Requests without
 `format=terminal` get Fumadocs' default response; the Fumadocs search dialog is
 disabled (`RootProvider search={{ enabled: false }}`), so the terminal is the
@@ -241,12 +241,12 @@ pages, led by a `..` row that moves up a directory. `ls` moves focus to the
 first row; scrolling resets when the directory changes. Folders keep their
 open state across routes (`tree-state.tsx`), and a collapsed folder holding the
 current page folds to just the active chain (`[data-tree-pinned]`). Kind views
-appear only while one is open, under their page (MDX-ENV.md, Kind views).
+appear only while one is open, under their page ([Environments](environments.md#kind-views)).
 
 **Rows.** `TreeRow` renders links, buttons and headers with the active marker
 (`>` and a hatched background). While offline, a link row whose page isn't
 saved is `aria-disabled`, titled "Not saved for offline reading", and cancels
-navigation (`useUnsaved`, PWA.md).
+navigation (`useUnsaved`, [PWA](pwa.md)).
 
 **Root selector.** `SidebarTabs` follows `cwd`, not the URL. Picking an unsaved
 root while offline changes directory instead of navigating, so its saved pages
@@ -292,8 +292,8 @@ feature keeps its own window listener and ordering never matters.
 | Space | tree | a link row focused | open |
 | Esc | tree | a tree row focused | leave the tree |
 | Esc | reading dock | bay open (capture phase) | close the bay |
-| ←→ / AD, Home/End, Enter; ↑↓ / WS | dock route strips | a strip focused | move along a thread, open a stop, move between strips (RELATIONS.md) |
-| arrows / WASD, Space; ←→ / AD, Home/End, Enter; Esc | threads page | index or diagram focused | move, show or hide threads, open stops (RELATIONS.md) |
+| ←→ / AD, Home/End, Enter; ↑↓ / WS | dock route strips | a strip focused | move along a thread, open a stop, move between strips ([Relations](relations.md)) |
+| arrows / WASD, Space; ←→ / AD, Home/End, Enter; Esc | threads page | index or diagram focused | move, show or hide threads, open stops ([Relations](relations.md)) |
 
 In the prompt: Tab (Shift+Tab backwards) and ↑/↓ cycle completions (↑/↓ walk
 history instead on an empty prompt), Enter runs (accepting the highlighted
@@ -307,65 +307,65 @@ key never reaches them.
 
 ## Design decisions
 
-**1. The sidebar is the terminal's screen.** One working directory drives the
-prompt, the tree and the root selector, so typing `cd ../eigenvalues` and
-clicking a folder are the same operation, and search results, listings and
-command output share one pane. The cost is coupling: the sidebar imports the
-terminal's provider and directory model, and the two can't be changed
-independently.
+1. **The sidebar is the terminal's screen.** One working directory drives the
+   prompt, the tree and the root selector, so typing `cd ../eigenvalues` and
+   clicking a folder are the same operation, and search results, listings and
+   command output share one pane. The cost is coupling: the sidebar imports the
+   terminal's provider and directory model, and the two can't be changed
+   independently.
 
-**2. The logic is a pure reducer.** Every transition goes through
-`terminalReducer`; side effects (focus, `router.push`, aborts, the live region)
-stay in the provider, `keys.ts` and `run.ts`. Key handlers read a state
-snapshot to decide (for example whether Esc is consumed) and dispatch actions.
-The terminal's window listeners subscribe once and read live state through
-`useEffectEvent`, so nothing mirrors terminal state into refs.
+2. **The logic is a pure reducer.** Every transition goes through
+   `terminalReducer`; side effects (focus, `router.push`, aborts, the live region)
+   stay in the provider, `keys.ts` and `run.ts`. Key handlers read a state
+   snapshot to decide (for example whether Esc is consumed) and dispatch actions.
+   The terminal's window listeners subscribe once and read live state through
+   `useEffectEvent`, so nothing mirrors terminal state into refs.
 
-**3. Three contexts, split by change rate.** A keystroke re-renders the prompt
-and nothing else; the page tree, which is the most expensive part of the
-sidebar, re-renders only when the directory or output changes. New consumers
-must use the narrowest hook: subscribing the tree to `useTerminal()` would
-re-render it on every key.
+3. **Three contexts, split by change rate.** A keystroke re-renders the prompt
+   and nothing else; the page tree, which is the most expensive part of the
+   sidebar, re-renders only when the directory or output changes. New consumers
+   must use the narrowest hook: subscribing the tree to `useTerminal()` would
+   re-render it on every key.
 
-**4. Two data sources, by when they're needed.** The tree must render on the
-first paint, so it works from the small `routes` index; commands need titles
-and aliases, which wait for the catalog. Nothing in the first render depends on
-the 291 KB catalog.
+4. **Two data sources, by when they're needed.** The tree must render on the
+   first paint, so it works from the small `routes` index; commands need titles
+   and aliases, which wait for the catalog. Nothing in the first render depends on
+   the 291 KB catalog.
 
-**5. Every line is a command.** Search is the registry's fallback, not a
-special case in the parser, so typing a word and pressing Enter always does
-something, and adding a command can't accidentally shadow search except by
-name.
+5. **Every line is a command.** Search is the registry's fallback, not a
+   special case in the parser, so typing a word and pressing Enter always does
+   something, and adding a command can't accidentally shadow search except by
+   name.
 
-**6. Async results are dropped, not cancelled.** A new command aborts the
-previous one's signal, and the runner drops any result whose signal was
-aborted. Commands stay simple: none of them checks for cancellation.
+6. **Async results are dropped, not cancelled.** A new command aborts the
+   previous one's signal, and the runner drops any result whose signal was
+   aborted. Commands stay simple: none of them checks for cancellation.
 
-**7. Roots are separate trees.** `cd` stops at the top of a strand; changing
-strand is an explicit `switch`. Relative paths stay short and unambiguous
-(chapter slugs repeat across strands), and the root selector always agrees with
-the tree.
+7. **Roots are separate trees.** `cd` stops at the top of a strand; changing
+   strand is an explicit `switch`. Relative paths stay short and unambiguous
+   (chapter slugs repeat across strands), and the root selector always agrees with
+   the tree.
 
-**8. Escape peels one layer.** Completions, output, edit mode and focus are
-dismissed in that order, so Esc never throws away more than the reader expects
-(a typed draft survives one press).
+8. **Escape peels one layer.** Completions, output, edit mode and focus are
+   dismissed in that order, so Esc never throws away more than the reader expects
+   (a typed draft survives one press).
 
-**9. Arrows are focus-scoped.** Global arrow handlers would take over page
-scrolling. Only a focused widget reads arrows and WASD, and handled keys are
-`preventDefault`ed so the global listeners ignore them.
+9. **Arrows are focus-scoped.** Global arrow handlers would take over page
+   scrolling. Only a focused widget reads arrows and WASD, and handled keys are
+   `preventDefault`ed so the global listeners ignore them.
 
-**10. Tree labels are rendered on the server.** Labels may contain TeX;
-rendering them in the browser would ship KaTeX. `buildSidebarTree` renders
-them once per build, and the client tree receives HTML.
+10. **Tree labels are rendered on the server.** Labels may contain TeX;
+    rendering them in the browser would ship KaTeX. `buildSidebarTree` renders
+    them once per build, and the client tree receives HTML.
 
-**11. Search highlighting doesn't touch the DOM.** The CSS Custom Highlight API
-marks terms in the page without wrapping text in elements, so React's tree and
-KaTeX's markup are left alone, and clearing it is one call.
+11. **Search highlighting doesn't touch the DOM.** The CSS Custom Highlight API
+    marks terms in the page without wrapping text in elements, so React's tree and
+    KaTeX's markup are left alone, and clearing it is one call.
 
-**12. History lives in `sessionStorage`.** It survives reloads and navigation
-within a tab, but not across tabs or sessions, which matches how a shell
-history is used here and avoids a growing store. The key is derived from the
-course code, so two courses on one origin don't share history.
+12. **History lives in `sessionStorage`.** It survives reloads and navigation
+    within a tab, but not across tabs or sessions, which matches how a shell
+    history is used here and avoids a growing store. The key is derived from the
+    course code, so two courses on one origin don't share history.
 
 ## Performance
 
@@ -386,14 +386,7 @@ course code, so two courses on one origin don't share history.
 
 ## Limitations
 
-- Search needs the network; offline it reports that it can't run.
-- The search index lives in the server process, so the first search after a cold
-  start pays for building it.
-- Commands can't be composed (no pipes, no arguments beyond an assistant's
-  intent and one page or directory).
-- Directories are derived from pages: an empty chapter folder doesn't exist for
-  `cd`.
-- History is per tab.
+In [Limitations](../limitations.md#terminal-and-search).
 
 ## Changing things
 

@@ -18,8 +18,9 @@ bun install
 bun dev
 ```
 
-## Limitations
+## Docs
 
-The engine's limits, and the rules for changing anything outside the course
-files, are in [docs/MIGRATION.md](docs/MIGRATION.md) (Limitations, Updating
-courses from the baseline).
+The engine is documented in [docs/](docs/README.md): start with
+[Writing notes](docs/course/writing.md) to write content,
+[Configuring a course](docs/course/config.md) to change the course files, and
+[Limitations](docs/limitations.md) for what the engine deliberately doesn't do.

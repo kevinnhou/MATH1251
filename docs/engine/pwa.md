@@ -13,7 +13,7 @@ connectivity (`components/pwa`). It is a foundation module: `lib/pwa` imports
 nothing, and the worker imports only `lib/pwa/protocol.ts` and
 `lib/course/urls.ts`.
 
-## Layout
+## Files
 
 ```
 src/lib/pwa/protocol.ts            shared with the worker: offlineRoute, cache names, page-request marker,
@@ -125,7 +125,7 @@ sources:
 cache. `useUnsaved(href)` is true for an internal link whose path isn't saved;
 the sidebar marks such rows `aria-disabled` and cancels navigation, while
 folder toggles keep working, and an unsaved strand root in the tabs changes
-directory instead of navigating (TERMINAL.md). Online, nothing is greyed.
+directory instead of navigating ([Terminal](terminal.md)). Online, nothing is greyed.
 
 **What works offline:**
 
@@ -136,61 +136,61 @@ directory instead of navigating (TERMINAL.md). Online, nothing is greyed.
 | reading dock, threads on saved pages | yes (part of the page) |
 | `/threads` | only if visited |
 | search | no; the terminal says it needs the network |
-| Copy Markdown, LLM prompts | no: exports are network only; prompts fall back to a links-only context (EXPORT.md) |
+| Copy Markdown, LLM prompts | no: exports are network only; prompts fall back to a links-only context ([Export](export.md)) |
 | OG images, icons not yet loaded | no |
 
 ## Design decisions
 
-**1. Static assets are runtime-cached, not precached.** Precache deletes entries
-missing from the new manifest on every update, but saved pages from older
-builds still reference those hashed files. The `static` cache keeps them until
-they go unused for 30 days or newer files push them out. Install still warms
-them, so the effect on first-visit offline support is the same.
+1. **Static assets are runtime-cached, not precached.** Precache deletes entries
+   missing from the new manifest on every update, but saved pages from older
+   builds still reference those hashed files. The `static` cache keeps them until
+   they go unused for 30 days or newer files push them out. Install still warms
+   them, so the effect on first-visit offline support is the same.
 
-**2. RSC payloads are never cached.** Their cache keys depend on router state,
-so a cached payload could be served for the wrong tree. When an RSC fetch fails,
-Next falls back to a full navigation, which the `pages` rule answers from
-cache.
+2. **RSC payloads are never cached.** Their cache keys depend on router state,
+   so a cached payload could be served for the wrong tree. When an RSC fetch fails,
+   Next falls back to a full navigation, which the `pages` rule answers from
+   cache.
 
-**3. Pages are saved by marker, not by Serwist's `cacheOnNavigation`.**
-Serwist's own option fetches pages without a marker, so the `pages` rule
-doesn't recognise them and they are never saved where offline navigations
-look. `PageCache` sends `pageRequestHeaders`,
-which `isPageRequest` recognises; both live in `protocol.ts` so they change
-together.
+3. **Pages are saved by marker, not by Serwist's `cacheOnNavigation`.**
+   Serwist's own option fetches pages without a marker, so the `pages` rule
+   doesn't recognise them and they are never saved where offline navigations
+   look. `PageCache` sends `pageRequestHeaders`,
+   which `isPageRequest` recognises; both live in `protocol.ts` so they change
+   together.
 
-**4. Unsaved pages redirect instead of serving a fallback in place.** The
-offline HTML was rendered for `/~offline`; serving it at the original URL would
-hydrate against the wrong route. A redirect keeps hydration consistent and
-carries the origin in `from`.
+4. **Unsaved pages redirect instead of serving a fallback in place.** The
+   offline HTML was rendered for `/~offline`; serving it at the original URL would
+   hydrate against the wrong route. A redirect keeps hydration consistent and
+   carries the origin in `from`.
 
-**5. The offline page is a docs page.** Putting it in the docs layout keeps the
-sidebar, the terminal and the saved pages one click away, instead of a dead end.
+5. **The offline page is a docs page.** Putting it in the docs layout keeps the
+   sidebar, the terminal and the saved pages one click away, instead of a dead end.
 
-**6. The build revision is a UUID per build.** The offline page's precache
-revision can't be the commit SHA (a build with uncommitted changes would keep
-serving the old offline page) and can't come from `.next/BUILD_ID` (route
-modules are first evaluated while collecting page data, before that file is
-written).
+6. **The build revision is a UUID per build.** The offline page's precache
+   revision can't be the commit SHA (a build with uncommitted changes would keep
+   serving the old offline page) and can't come from `.next/BUILD_ID` (route
+   modules are first evaluated while collecting page data, before that file is
+   written).
 
-**7. The worker is built by a route handler.** The worker ships with this
-build's exact list of hashed assets and is rebuilt on every build without a
-separate step.
+7. **The worker is built by a route handler.** The worker ships with this
+   build's exact list of hashed assets and is rebuilt on every build without a
+   separate step.
 
-**8. The worker imports almost nothing.** esbuild bundles whatever `sw.ts`
-imports, so it imports only `lib/pwa/protocol.ts` and `lib/course/urls.ts`, by
-relative path (`tsconfig.sw.json` has no aliases). Both stay free of React, DOM
-and server code.
+8. **The worker imports almost nothing.** esbuild bundles whatever `sw.ts`
+   imports, so it imports only `lib/pwa/protocol.ts` and `lib/course/urls.ts`, by
+   relative path (`tsconfig.sw.json` has no aliases). Both stay free of React, DOM
+   and server code.
 
-**9. Reachability is tracked, not just `navigator.onLine`.** A device can be
-online while the site is down or a captive portal intercepts requests.
-Combining the worker's fetch results with probes catches both; the probe
-targets the manifest, a small static file that no worker rule intercepts, so it
-really reaches the network.
+9. **Reachability is tracked, not just `navigator.onLine`.** A device can be
+   online while the site is down or a captive portal intercepts requests.
+   Combining the worker's fetch results with probes catches both; the probe
+   targets the manifest, a small static file that no worker rule intercepts, so it
+   really reaches the network.
 
-**10. Every owned cache is listed.** Activation deletes any cache not in
-`pwaCaches` or Serwist's namespace, which is what cleans up after renamed or
-removed caches.
+10. **Every owned cache is listed.** Activation deletes any cache not in
+    `pwaCaches` or Serwist's namespace, which is what cleans up after renamed or
+    removed caches.
 
 ## Performance
 
@@ -198,25 +198,13 @@ removed caches.
   worker version.
 - Each in-app navigation costs one extra full-page HTML fetch to save it.
 - Pages are stored decompressed: a typical page is under 1 MB, formula-heavy
-  pages a few MB (the largest is 4.7 MB; COMPILE.md).
+  pages a few MB (the largest is 4.7 MB; [Compile](compile.md)).
 - Network-first rules give up after 3 s (pages, data) or 5 s (RSC), so a slow
   connection falls back to the cache instead of hanging.
 
 ## Limitations
 
-- **Storage:** on a quota error, `purgeOnQuotaError` clears the whole cache, not
-  just the oldest entries.
-- **Safari:** without "Add to Home Screen", Safari deletes site data after 7 days
-  without a visit.
-- **Old builds:** the `static` cache holds a few builds' files; a page saved many
-  deploys ago can lose its JavaScript offline, though its HTML stays readable.
-- **Slow connections:** a request that only times out (rather than failing)
-  isn't counted as unreachable, so greying waits for a real failure or the
-  offline page.
-- **Open tabs across a deploy:** a tab that lazy-loads a chunk removed from the
-  server still fails, as it would without a worker.
-- **Icons are per site, not per course:** the app icons draw the global
-  logomark; only their background comes from the course's `theme` (README.md).
+In [Limitations](../limitations.md#offline).
 
 ## Verifying
 
