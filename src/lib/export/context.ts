@@ -1,6 +1,7 @@
 import { STRAND_LABELS } from "@/lib/course/strands";
 import { getKindLabel, isDerivation } from "@/lib/mdx-env/kinds";
 import type { PromptTarget } from "@/lib/mdx-env/target";
+import { exportRenderer, type Renderer } from "./components";
 import {
 	bodyRole,
 	type ContextBlock,
@@ -10,7 +11,7 @@ import {
 	type ExportNode,
 	type ExportThread,
 	type PromptContext,
-	RELATION_LABELS,
+	RELATION,
 	type RelationName,
 } from "./model";
 import {
@@ -25,25 +26,27 @@ import {
 } from "./query";
 
 const OUTGOING: readonly RelationName[] = [
-	"proves",
-	"uses",
-	"practises",
-	"recalls",
-	"references",
-	"see_also",
+	RELATION.derives,
+	RELATION.uses,
+	RELATION.practises,
+	RELATION.recalls,
+	RELATION.references,
+	RELATION.see_also,
 ];
 const INCOMING: readonly RelationName[] = [
-	"used_by",
-	"practised_by",
-	"recalled_by",
-	"referenced_by",
+	RELATION.used_by,
+	RELATION.practised_by,
+	RELATION.recalled_by,
+	RELATION.referenced_by,
 ];
 const PREREQUISITE_STATEMENT_LIMIT = 600;
 
 export function envTarget(node: ExportNode, graph: ExportGraph): PromptTarget {
+	const derivation = isDerivation(node.kind)
+		? node.kind
+		: attachedDerivations(graph, node)[0]?.kind;
 	return {
-		hasDerivation:
-			isDerivation(node.kind) || attachedDerivations(graph, node).length > 0,
+		...(derivation === undefined ? {} : { derivation }),
 		id: node.id,
 		kind: node.kind,
 		label: node.label,
@@ -53,7 +56,6 @@ export function envTarget(node: ExportNode, graph: ExportGraph): PromptTarget {
 
 export function pageTarget(node: ExportNode): PromptTarget {
 	return {
-		hasDerivation: false,
 		id: node.id,
 		kind: "page",
 		label: node.label,
@@ -63,7 +65,7 @@ export function pageTarget(node: ExportNode): PromptTarget {
 
 export function kindViewTarget(view: ExportKindView): PromptTarget {
 	return {
-		hasDerivation: isDerivation(view.kind),
+		...(isDerivation(view.kind) ? { derivation: view.kind } : {}),
 		id: view.id,
 		kind: view.kind,
 		label: view.label,
@@ -73,7 +75,6 @@ export function kindViewTarget(view: ExportKindView): PromptTarget {
 
 export function threadTarget(thread: ExportThread): PromptTarget {
 	return {
-		hasDerivation: false,
 		id: thread.id,
 		kind: "thread",
 		label: thread.label,
@@ -85,28 +86,30 @@ export function envContext(
 	node: ExportNode,
 	graph: ExportGraph
 ): PromptContext {
-	const derivations = attachedDerivations(graph, node);
-	const notesLast = bodyRole(node) === "Notes";
-	const core = [
-		heading(node, pageOf(graph, node)),
-		node.statement === undefined ? "" : `Statement:\n${node.statement}`,
-		notesLast ? "" : bodyBlock(node),
-		...derivations.map(
-			(derivation) =>
-				`${getKindLabel(derivation.kind)}:\n${derivation.body ?? ""}`
-		),
-		notesLast ? bodyBlock(node) : "",
-	];
+	return promptContext(envTarget(node, graph), graph, (render) => {
+		const notesLast = bodyRole(node) === "Notes";
+		const statement = render.statement(node);
+		const core = [
+			heading(node, pageOf(graph, node)),
+			statement === undefined ? "" : `Statement:\n${statement}`,
+			notesLast ? "" : bodyBlock(node, render),
+			...attachedDerivations(graph, node).map(
+				(derivation) =>
+					`${getKindLabel(derivation.kind)}:\n${render.body(derivation) ?? ""}`
+			),
+			notesLast ? bodyBlock(node, render) : "",
+		];
 
-	return promptContext(envTarget(node, graph), [
-		...tier("core", core),
-		...tier("relations", [
-			...relationSummary(graph, node.id, OUTGOING),
-			...threadSummary(graph, node.id),
-		]),
-		...prerequisiteBlocks(graph, node.id),
-		...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
-	]);
+		return [
+			...tier("core", core),
+			...tier("relations", [
+				...relationSummary(graph, node.id, OUTGOING),
+				...threadSummary(graph, node.id),
+			]),
+			...prerequisiteBlocks(graph, node.id, render),
+			...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
+		];
+	});
 }
 
 export function pageContext(
@@ -114,15 +117,18 @@ export function pageContext(
 	graph: ExportGraph
 ): PromptContext {
 	const envs = childrenOf(graph, node.id);
-	return promptContext(pageTarget(node), [
+	return promptContext(pageTarget(node), graph, (render) => [
 		...tier("core", [
 			heading(node),
 			node.ideas === undefined ? "" : `Key ideas: ${node.ideas.join(", ")}.`,
 			outline(envs),
 		]),
 		...tier("relations", relationSummary(graph, node.id, OUTGOING)),
-		...tier("details", envs.map(statementBlock)),
-		...prerequisiteBlocks(graph, node.id),
+		...tier(
+			"details",
+			envs.map((env) => statementBlock(env, render))
+		),
+		...prerequisiteBlocks(graph, node.id, render),
 		...tier("backlinks", relationSummary(graph, node.id, INCOMING)),
 	]);
 }
@@ -132,8 +138,7 @@ export function kindViewContext(
 	graph: ExportGraph
 ): PromptContext {
 	const envs = envsOfKind(graph, view.parentId, view.kind);
-
-	return promptContext(kindViewTarget(view), [
+	return promptContext(kindViewTarget(view), graph, (render) => [
 		...tier("core", [
 			`${view.label} (${view.parentId}), without the surrounding lecture prose.`,
 			outline(envs),
@@ -141,10 +146,12 @@ export function kindViewContext(
 		...tier(
 			"details",
 			envs.map((env) =>
-				[statementBlock(env), bodyBlock(env)].filter(Boolean).join("\n")
+				[statementBlock(env, render), bodyBlock(env, render)]
+					.filter(Boolean)
+					.join("\n")
 			)
 		),
-		...prerequisiteBlocks(graph, view.parentId),
+		...prerequisiteBlocks(graph, view.parentId, render),
 	]);
 }
 
@@ -162,27 +169,31 @@ export function threadContext(
 		return `${number + 1}. ${node.label}${inParentheses(role)}${where}`;
 	});
 
-	return promptContext(threadTarget(thread), [
+	return promptContext(threadTarget(thread), graph, (render) => [
 		...tier("core", [
 			`Thread "${thread.label}" (${thread.id}): one idea that recurs across the course.\nSummary: ${thread.summary}`,
 			`Places, in reading order:\n${places.join("\n")}`,
 		]),
 		...tier(
 			"details",
-			members.map(({ node, role }) =>
-				node.statement === undefined
+			members.map(({ node, role }) => {
+				const statement = render.statement(node);
+				return statement === undefined
 					? ""
-					: `${node.label}${inParentheses(role)}:\n${node.statement}`
-			)
+					: `${node.label}${inParentheses(role)}:\n${statement}`;
+			})
 		),
 	]);
 }
 
 function promptContext(
 	target: PromptTarget,
-	blocks: ContextBlock[]
+	graph: ExportGraph,
+	build: (render: Renderer) => ContextBlock[]
 ): PromptContext {
-	return { blocks, ...target };
+	const render = exportRenderer(graph, "context");
+	const blocks = build(render);
+	return { blocks: [...blocks, ...render.extraBlocks()], ...target };
 }
 
 function heading(node: ExportNode, page?: ExportNode): string {
@@ -208,14 +219,14 @@ function outline(envs: readonly ExportNode[]): string {
 	return `Contents:\n${envs.map((env) => `- ${env.label}`).join("\n")}`;
 }
 
-function statementBlock(env: ExportNode): string {
-	return env.statement === undefined ? "" : `${env.label}:\n${env.statement}`;
+function statementBlock(env: ExportNode, render: Renderer): string {
+	const statement = render.statement(env);
+	return statement === undefined ? "" : `${env.label}:\n${statement}`;
 }
 
-function bodyBlock(node: ExportNode): string {
-	return node.body === undefined
-		? ""
-		: `${bodyRole(node) ?? "Content"}:\n${node.body}`;
+function bodyBlock(node: ExportNode, render: Renderer): string {
+	const body = render.body(node);
+	return body === undefined ? "" : `${bodyRole(node) ?? "Content"}:\n${body}`;
 }
 
 function relationSummary(
@@ -225,12 +236,12 @@ function relationSummary(
 ): string[] {
 	const groups = Map.groupBy(
 		relationsOf(graph, id, names),
-		(relation) => relation.name
+		(relation) => relation.label
 	);
 
 	return [...groups].map(
-		([name, items]) =>
-			`${RELATION_LABELS[name]}: ${items.map((item) => item.node.label).join("; ")}.`
+		([label, items]) =>
+			`${label}: ${items.map((item) => item.node.label).join("; ")}.`
 	);
 }
 
@@ -245,19 +256,24 @@ function inParentheses(role: string | undefined): string {
 	return role === undefined ? "" : ` (${role})`;
 }
 
-function prerequisiteBlocks(graph: ExportGraph, id: string): ContextBlock[] {
+function prerequisiteBlocks(
+	graph: ExportGraph,
+	id: string,
+	render: Renderer
+): ContextBlock[] {
 	const needs = prerequisites(graph, id).toSorted(
 		(left, right) => left.distance - right.distance
 	);
 
 	return tier(
 		"prerequisites",
-		needs.map(({ node }) =>
-			node.statement !== undefined &&
-			node.statement.length <= PREREQUISITE_STATEMENT_LIMIT
-				? `- ${node.label}: ${node.statement}`
-				: `- ${node.label}`
-		)
+		needs.map(({ node }) => {
+			const statement = render.statement(node);
+			return statement !== undefined &&
+				statement.length <= PREREQUISITE_STATEMENT_LIMIT
+				? `- ${node.label}: ${statement}`
+				: `- ${node.label}`;
+		})
 	);
 }
 

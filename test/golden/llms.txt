@@ -1,0 +1,111 @@
+# MATH1251 Mathematics 1B (UNSW Sydney)
+
+> Lecture notes as a graph of pages and math environments (definitions, theorems, proofs, examples, …) linked by typed relations.
+
+## Conventions
+
+- Node IDs are site paths: a page is `/strand/page`, an environment is `/strand/page#anchor`. Every link in the exports points at a node ID.
+- Markdown for any node: `/llms.mdx/docs/algebra/x/content.md` for a page, `/llms.mdx/docs/algebra/x/corollary-1.md` for one environment.
+- Ranked prompt context (JSON blocks by tier) at the same paths under `/llms.mdx/context`, e.g. `/llms.mdx/context/algebra/x/corollary-1.json`.
+- A thread (`/core#thread-<slug>`) is one idea that recurs across the course; its Markdown lists every place it appears, with a role and statement for each.
+- Each Markdown export starts with YAML frontmatter (`id`, `type`, `kind`, `strand`, `page`, …), then content, `## Prerequisites` (transitive dependencies from other pages) and `## Relations`.
+- Relations: `contains`/`part_of`, `uses`/`used_by`, `derives`/`derived_by`, `practises`/`practised_by`, `see_also`, `references`/`referenced_by`, `recalls`/`recalled_by`.
+
+## Data
+
+- [Knowledge graph](/graph.json): every node and typed edge as JSON
+- [Full notes](/llms-full.txt): every page document concatenated
+- [Catalog](/catalog.json): page and kind-view index used by site search
+
+## Threads
+
+- [Coordinates and linear structure](/llms.mdx/docs/core/thread-coordinates.md): A basis turns vectors and maps into columns and matrices; a good basis makes the calculation simple. (5 places)
+- [Kernels and solution sets](/llms.mdx/docs/core/thread-particular-plus-kernel.md): Every solution of $T(x)=b$ is one particular solution plus an element of $\ker T$. (6 places)
+- [Roots, modes and evolution](/llms.mdx/docs/core/thread-modes.md): A linear evolution splits into modes $r^n$ or $e^{rt}$, and the roots $r$ decide growth, decay and oscillation. (7 places)
+- [Local approximation](/llms.mdx/docs/core/thread-local-approximation.md): Replace a hard object by a simple model that matches it near a point, and bound the error. (7 places)
+- [Accumulation and changes of variables](/llms.mdx/docs/core/thread-change-of-variables.md): A change of variables redescribes the problem so the calculation is simpler, paying a scale factor such as a Jacobian. (5 places)
+
+## CORE
+
+- [Core](/llms.mdx/docs/core/content.md): The ideas Algebra and Calculus share, from linear structure and evolution to approximation and accumulation.
+- [Concept Map](/llms.mdx/docs/core/concept-map/content.md): How the course's ideas depend on one another and where to start reading.
+- [Language](/llms.mdx/docs/core/language/content.md): Foundational words and conventions used throughout the course.
+
+## Algebra
+
+- [Algebra](/llms.mdx/docs/algebra/content.md): Complex numbers, vector spaces, linear transformations and eigenvalues, from arithmetic to the dynamics of linear systems.
+- [Complex numbers](/llms.mdx/docs/algebra/complex-numbers/content.md): Arithmetic and polar form in the complex numbers, polynomial roots and roots as modes of discrete and continuous systems.
+- [Complex arithmetic](/llms.mdx/docs/algebra/complex-numbers/complex-arithmetic/content.md): Cartesian form, conjugation, arithmetic and the Argand plane. — 5 definitions, 1 method, 2 examples, 1 theorem
+- [Complex polynomials](/llms.mdx/docs/algebra/complex-numbers/complex-polynomials/content.md): Complex coefficients, roots, factorisation and real factors. — 5 definitions, 6 examples, 5 theorems, 4 proofs, 1 corollary, 2 propositions
+- [Polar form](/llms.mdx/docs/algebra/complex-numbers/polar-form/content.md): The same complex number written with its modulus and argument. — 3 definitions, 4 examples, 3 theorems, 1 method, 1 proposition
+- [Seen questions](/llms.mdx/docs/algebra/complex-numbers/seen/content.md): Worked solutions on complex roots, polynomial factorisation, conjugate pairs and root counts. — 4 examples
+- [Stability of systems](/llms.mdx/docs/algebra/complex-numbers/stability-of-systems/content.md): Discrete and continuous growth or decay read from characteristic roots. — 5 definitions, 3 examples, 2 methods, 2 theorems
+- [Trigonometric and geometric applications](/llms.mdx/docs/algebra/complex-numbers/trigonometric-and-geometric-applications/content.md): Exponential identities, trigonometric expansions and loci in the complex plane. — 1 proposition, 1 theorem, 1 definition, 2 methods, 2 examples
+- [Eigenvalues](/llms.mdx/docs/algebra/eigenvalues/content.md): Eigenvectors and diagonalisation, applied to matrix powers, linear ODE systems and Markov chains.
+- [Diagonalisation](/llms.mdx/docs/algebra/eigenvalues/diagonalisation/content.md): Eigenbases, diagonal matrices and the criterion for diagonalising a matrix. — 3 theorems, 2 proofs, 2 definitions, 4 examples, 1 proposition
+- [Eigenvalues and eigenvectors](/llms.mdx/docs/algebra/eigenvalues/eigenvalues-and-eigenvectors/content.md): Directions that a linear map scales and the determinant test for finding them. — 4 definitions, 2 examples, 2 theorems, 1 proof, 1 proposition
+- [Linear ODE systems](/llms.mdx/docs/algebra/eigenvalues/linear-ode-systems/content.md): First-order matrix ODEs solved by exponential eigenmodes. — 1 definition, 1 theorem, 1 proof, 1 proposition, 1 method, 4 examples
+- [Markov systems](/llms.mdx/docs/algebra/eigenvalues/markov-systems/content.md): Transition matrices, stationary distributions and long-term behaviour. — 3 definitions, 1 proposition, 3 proofs, 2 theorems, 1 method, 2 examples
+- [Seen Questions](/llms.mdx/docs/algebra/eigenvalues/seen/content.md): Worked solutions on discrete stability, diagonalisation, linear systems, matrix powers and Markov models. — 5 examples
+- [Spectral applications](/llms.mdx/docs/algebra/eigenvalues/spectral-applications/content.md): Matrix powers, independent modes and long-term behaviour through diagonalisation. — 2 definitions, 3 theorems, 3 proofs, 3 examples, 1 proposition, 1 method
+- [Linear transformations](/llms.mdx/docs/algebra/linear-transformations/content.md): From structure-preserving maps to their geometry, kernel, image, rank-nullity and matrix representations.
+- [Geometric examples](/llms.mdx/docs/algebra/linear-transformations/geometric-examples/content.md): Matrix maps, scaling, reflections, rotations, dot products, projections and a translation non-example. — 2 theorems, 2 proofs, 8 examples
+- [Kernel, image and rank](/llms.mdx/docs/algebra/linear-transformations/kernel-image-rank/content.md): The subspaces of inputs sent to zero and outputs that can occur, together with their dimensions. — 4 definitions, 2 examples, 2 theorems, 2 proofs, 1 proposition
+- [Linear transformations](/llms.mdx/docs/algebra/linear-transformations/linear-transformations/content.md): Structure-preserving maps, their linearity tests and values determined by basis data. — 1 definition, 6 examples, 1 proposition, 3 proofs, 3 theorems
+- [Matrix representations](/llms.mdx/docs/algebra/linear-transformations/matrix-representations/content.md): Writing a linear map in coordinates relative to ordered bases. — 3 theorems, 1 proof, 1 method, 3 examples, 2 propositions, 5 definitions, 2 corollaries
+- [Rank-nullity](/llms.mdx/docs/algebra/linear-transformations/rank-nullity/content.md): How the dimensions of the kernel and image account for the dimension of the domain. — 4 examples, 3 theorems, 1 proof, 1 corollary
+- [Seen Questions](/llms.mdx/docs/algebra/linear-transformations/seen/content.md): Worked solutions on linear maps, projections, kernels, images, rank-nullity and linear operators. — 10 examples
+- [Vector spaces](/llms.mdx/docs/algebra/vector-spaces/content.md): From the operations of a vector space to interpolation in a polynomial basis.
+- [Basis and dimension](/llms.mdx/docs/algebra/vector-spaces/basis-and-dimension/content.md): Independent spanning sets, the common size of bases and counting tests. — 2 definitions, 4 theorems, 4 proofs, 5 examples, 1 corollary
+- [Coordinates and bases](/llms.mdx/docs/algebra/vector-spaces/coordinates-and-bases/content.md): Constructing bases and reading coefficients as coordinate vectors. — 3 methods, 5 examples, 3 definitions, 3 theorems, 1 proof, 1 corollary
+- [Data fitting and polynomial interpolation](/llms.mdx/docs/algebra/vector-spaces/data-fitting/content.md): Approximate data with a least-squares line, or fit distinct inputs exactly with polynomial coordinates. — 3 methods, 2 examples, 2 definitions, 2 theorems, 2 proofs
+- [Linear independence](/llms.mdx/docs/algebra/vector-spaces/linear-independence/content.md): When linear combinations have unique coefficients and how to test for redundancy. — 2 definitions, 5 examples, 4 theorems, 2 proofs, 1 corollary
+- [Seen Questions](/llms.mdx/docs/algebra/vector-spaces/seen/content.md): Worked solutions on spans, independence, bases, dimensions, polynomial subspaces and matrix subspaces. — 7 examples
+- [Spans](/llms.mdx/docs/algebra/vector-spaces/spans/content.md): Linear combinations, spans and membership tested by linear systems. — 4 definitions, 2 theorems, 2 proofs, 6 examples, 1 method
+- [Subspaces](/llms.mdx/docs/algebra/vector-spaces/subspaces/content.md): Subspaces inherit vector-space operations and can be tested by closure. — 1 definition, 1 theorem, 1 proof, 1 corollary, 4 examples
+- [Vector spaces](/llms.mdx/docs/algebra/vector-spaces/vector-spaces/content.md): The axioms, consequences and standard examples of vector spaces. — 1 definition, 2 examples, 2 propositions, 2 proofs
+
+## Calculus
+
+- [Calculus](/llms.mdx/docs/calculus/content.md): Integration techniques, differential equations, Taylor series, functions of several variables and double integrals.
+- [Double integrals](/llms.mdx/docs/calculus/double-integrals/content.md): Riemann sums, iterated integrals, coordinate changes and applications of integration over planar regions.
+- [Euler's Basel sum](/llms.mdx/docs/calculus/double-integrals/basel-sum/content.md): Combine a geometric-series integral, a Jacobian and symmetry to prove the Basel sum. — 1 theorem, 1 proof
+- [Change of variables and polar coordinates](/llms.mdx/docs/calculus/double-integrals/change-of-variables-and-polar-coordinates/content.md): Use Jacobians to transform double integrals into coordinates that fit the region or the integrand. — 2 definitions, 2 theorems, 1 method, 6 examples
+- [Double integrals and Riemann sums](/llms.mdx/docs/calculus/double-integrals/double-integrals-and-riemann-sums/content.md): Define double integrals over rectangles using tagged partitions and upper and lower sums. — 3 definitions, 2 theorems, 3 examples
+- [Fubini and iterated integrals](/llms.mdx/docs/calculus/double-integrals/fubini-and-iterated-integrals/content.md): Compute double integrals by adding cross-sections in either order. — 1 definition, 1 theorem, 1 method, 4 examples, 1 proposition
+- [Mass, centroids and probability](/llms.mdx/docs/calculus/double-integrals/mass-centroids-and-probability/content.md): Interpret double integrals as mass, moments, centres of mass, population and expected value. — 1 definition, 1 theorem, 2 examples, 1 proposition
+- [Regions and order of integration](/llms.mdx/docs/calculus/double-integrals/regions-and-order-of-integration/content.md): Describe non-rectangular regions by slices and set up double integrals with the correct bounds. — 1 definition, 2 theorems, 1 method, 3 examples, 1 proposition, 1 corollary
+- [Seen Questions](/llms.mdx/docs/calculus/double-integrals/seen/content.md): Worked solutions on double Riemann sums, integrability, upper sums and changes of variables in elliptical regions. — 2 examples
+- [Functions of several variables](/llms.mdx/docs/calculus/functions-of-several-variables/content.md): Partial derivatives, gradients and tangent planes, then local, global and constrained optimisation with an economic application.
+- [Constrained extrema](/llms.mdx/docs/calculus/functions-of-several-variables/constrained-extrema/content.md): Lagrange multipliers and distance optimisation on curves and surfaces. — 1 definition, 1 theorem, 1 proof, 2 methods, 4 examples
+- [Economic applications](/llms.mdx/docs/calculus/functions-of-several-variables/economic-applications/content.md): Production, budget constraints and optimal input allocation. — 3 definitions, 1 method, 1 example
+- [Derivatives and level-set geometry](/llms.mdx/docs/calculus/functions-of-several-variables/geometry-and-approximation/content.md): Partial derivatives, gradients, level-set normals and tangent planes for functions of several variables. — 4 definitions, 5 examples, 2 theorems, 2 proofs
+- [Global extrema](/llms.mdx/docs/calculus/functions-of-several-variables/global-extrema/content.md): The extreme-value theorem and a complete interior-and-boundary workflow for absolute extrema. — 1 definition, 1 theorem, 2 methods, 2 examples
+- [Local extrema](/llms.mdx/docs/calculus/functions-of-several-variables/local-extrema/content.md): Critical points, stationary points and the Hessian test for local maxima, minima and saddles. — 2 definitions, 2 theorems, 1 proof, 2 methods, 7 examples
+- [Multivariable approximation](/llms.mdx/docs/calculus/functions-of-several-variables/multivariable-approximation/content.md): Read tangent planes as first-order models and construct higher-order Taylor polynomials. — 2 methods, 4 examples, 3 definitions
+- [Seen Questions](/llms.mdx/docs/calculus/functions-of-several-variables/seen/content.md): Worked solutions on composite functions, partial differential equations, critical points and classification of extrema. — 3 examples
+- [Integration techniques](/llms.mdx/docs/calculus/integration-techniques/content.md): Methods for common classes of elementary integrals, each chosen from the structure of the integrand.
+- [Rational functions](/llms.mdx/docs/calculus/integration-techniques/rational-functions/content.md): Proper fractions, partial fractions and the integrals they become. — 2 definitions, 6 examples, 1 theorem, 2 methods
+- [Rationalising substitutions](/llms.mdx/docs/calculus/integration-techniques/rationalising-substitutions/content.md): Changes of variable that turn an integrand with surds into a rational function. — 1 method, 3 examples
+- [Reduction formulae](/llms.mdx/docs/calculus/integration-techniques/reduction-formulae/content.md): Recurrences that replace repeated integration by parts. — 1 definition, 5 theorems, 6 proofs, 5 examples, 1 proposition
+- [Seen questions](/llms.mdx/docs/calculus/integration-techniques/seen/content.md): Worked solutions on trigonometric integrals, average values, reduction formulae, substitutions and partial fractions. — 2 examples
+- [Trigonometric and hyperbolic substitutions](/llms.mdx/docs/calculus/integration-techniques/trigonometric-and-hyperbolic-substitutions/content.md): Substitutions that clear $\sqrt{a^2\pm x^2}$ and $\sqrt{x^2-a^2}$. — 1 method, 4 examples
+- [Trigonometric integrals](/llms.mdx/docs/calculus/integration-techniques/trigonometric-integrals/content.md): Powers and products of sine, cosine, tangent and secant. — 4 methods, 11 examples, 1 definition
+- [Ordinary differential equations](/llms.mdx/docs/calculus/ordinary-differential-equations/content.md): Solving equations that describe a function through its derivatives, by exact methods, models and numerical approximation.
+- [Existence, uniqueness and linear operators](/llms.mdx/docs/calculus/ordinary-differential-equations/existence-uniqueness-and-linear-operators/content.md): What guarantees a local IVP solution and why linear solutions form an affine translate of a kernel. — 3 definitions, 2 theorems, 2 examples, 1 proof
+- [First-order methods](/llms.mdx/docs/calculus/ordinary-differential-equations/first-order-equations/content.md): Separable, linear, exact and transformable first-order ODE methods. — 5 definitions, 5 methods, 10 examples, 1 theorem
+- [Modelling with first-order equations](/llms.mdx/docs/calculus/ordinary-differential-equations/first-order-modelling/content.md): Translating proportional change, relaxation and conservation laws into first-order ODE models. — 1 method, 4 examples, 1 definition
+- [Numerical solutions](/llms.mdx/docs/calculus/ordinary-differential-equations/numerical-solutions/content.md): Direction fields, Euler's method and Heun's improved Euler method. — 1 definition, 4 examples, 2 methods
+- [ODE fundamentals](/llms.mdx/docs/calculus/ordinary-differential-equations/ode-fundamentals/content.md): Differential-equation vocabulary, solution families and the data that select a solution. — 6 definitions, 4 examples
+- [Choosing an ODE method](/llms.mdx/docs/calculus/ordinary-differential-equations/pipeline/content.md): A checklist for classifying a first- or second-order ODE and choosing a method to solve it. — 1 method
+- [Second-order constant-coefficient equations](/llms.mdx/docs/calculus/ordinary-differential-equations/second-order-constant-coefficient-equations/content.md): Characteristic modes, forcing, resonance and mechanical applications. — 3 definitions, 2 theorems, 3 methods, 12 examples, 1 proof
+- [Seen Questions](/llms.mdx/docs/calculus/ordinary-differential-equations/seen/content.md): Worked solutions on exact equations, integrating factors, characteristic roots and first- and second-order models. — 2 examples
+- [Taylor series, sequences and infinite series](/llms.mdx/docs/calculus/taylor-series/content.md): From local polynomial approximation and error bounds to sequences, convergence tests and power-series calculus.
+- [Tests for series convergence](/llms.mdx/docs/calculus/taylor-series/convergence-tests/content.md): Choose and apply the main convergence tests for positive, alternating and power-shaped series. — 9 theorems, 7 examples, 1 definition
+- [Infinite series](/llms.mdx/docs/calculus/taylor-series/infinite-series/content.md): Define infinite sums through partial sums and recognise geometric, telescoping and harmonic behaviour. — 2 definitions, 1 proposition, 2 methods, 4 examples, 1 theorem
+- [Power series](/llms.mdx/docs/calculus/taylor-series/power-series/content.md): Determine where an infinite polynomial converges and use calculus inside its radius. — 2 definitions, 3 theorems, 1 method, 4 examples, 1 proposition
+- [Seen Questions](/llms.mdx/docs/calculus/taylor-series/seen/content.md): Worked solutions on Taylor polynomials, remainder bounds, sequences, convergence tests and power-series endpoints. — 3 examples
+- [Sequences and limits](/llms.mdx/docs/calculus/taylor-series/sequences-and-limits/content.md): Make limits indexed by the integers precise and use them to control approximation and convergence. — 4 definitions, 6 examples, 4 theorems, 2 methods, 1 proof
+- [Taylor polynomials](/llms.mdx/docs/calculus/taylor-series/taylor-polynomials/content.md): Match derivative data at a centre to obtain a local polynomial approximation. — 2 definitions, 1 theorem, 1 proof, 1 method, 4 examples
+- [Taylor series](/llms.mdx/docs/calculus/taylor-series/taylor-series/content.md): Pass from Taylor polynomials to infinite series and prove when the series represents the function. — 1 definition, 1 theorem, 1 proof, 7 examples, 1 proposition, 1 method
+- [Taylor's theorem](/llms.mdx/docs/calculus/taylor-series/taylors-theorem/content.md): Express the exact error of a Taylor polynomial and turn it into an error bound. — 2 theorems, 2 proofs, 1 corollary, 1 method, 4 examples, 1 proposition

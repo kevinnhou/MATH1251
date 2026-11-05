@@ -1,5 +1,5 @@
+import { Logomark } from "course/logomark";
 import { wordmark } from "@/lib/course/config";
-import { Logomark } from "./logomark";
 
 export function Header() {
 	return (

@@ -2,6 +2,7 @@ import {
 	type ExportGraph,
 	type ExportNode,
 	envId,
+	RELATION,
 	type RelationName,
 } from "@/lib/export/model";
 import {
@@ -159,8 +160,8 @@ function dockEnv(
 	const needs = prerequisites(ctx.graph, node.id)
 		.toSorted((left, right) => left.distance - right.distance)
 		.map((prerequisite) => prerequisite.node);
-	const practisedIn = related(ctx, node.id, "practised_by");
-	const leadsTo = related(ctx, node.id, "used_by");
+	const practisedIn = related(ctx, node.id, RELATION.practised_by);
+	const leadsTo = related(ctx, node.id, RELATION.used_by);
 	const ref = (target: ExportNode) => dockRef(ctx, target);
 	const isEnv: MemberTest = (member) => member.href === node.id;
 

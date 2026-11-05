@@ -18,16 +18,14 @@ interface BlockedPrompt {
 function storedPreference<T extends string>(
 	key: string,
 	fallback: T,
-	isValid: (value: unknown) => value is T,
-	aliases: Readonly<Record<string, T>> = {}
+	isValid: (value: unknown) => value is T
 ) {
 	const listeners = new Set<() => void>();
 
 	function read(): T {
 		try {
 			const stored = window.localStorage.getItem(key);
-			const value = stored === null ? stored : (aliases[stored] ?? stored);
-			return isValid(value) ? value : fallback;
+			return isValid(stored) ? stored : fallback;
 		} catch {
 			return fallback;
 		}
@@ -62,8 +60,7 @@ function storedPreference<T extends string>(
 const intentPreference = storedPreference(
 	"export:intent",
 	DEFAULT_INTENT,
-	isPromptIntent,
-	{ proof: "derive" }
+	isPromptIntent
 );
 const providerPreference = storedPreference(
 	"export:provider",

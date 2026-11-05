@@ -1,10 +1,11 @@
 import type { Strand } from "@/lib/course/strands";
 import type { KindViewRef } from "@/lib/mdx-env/kind-view";
-import { getEnvConfig, getKindLabel } from "@/lib/mdx-env/kinds";
+import { getEnvConfig } from "@/lib/mdx-env/kinds";
 import type { PageEnvs } from "@/lib/mdx-env/page-envs";
 import { getTenetHref, type TenetIndex } from "@/lib/mdx-env/tenet";
 import type { ThreadIndex } from "@/lib/mdx-env/thread";
 import {
+	EDGE,
 	type ExportEdge,
 	type ExportGraph,
 	type ExportKindView,
@@ -13,6 +14,7 @@ import {
 	type ExportThread,
 	type ExportThreadMembership,
 	envId,
+	ROLE_EDGES,
 } from "./model";
 
 export interface ExportPageInput {
@@ -54,6 +56,9 @@ export function buildExportGraph(
 	const threads = exportThreads(threadIndex, nodes);
 
 	return {
+		components: new Map(
+			pages.map(({ envs, page }) => [page.url, envs.components])
+		),
 		edges,
 		incoming: Map.groupBy(edges, (edge) => edge.target),
 		kindViews: new Map(
@@ -69,6 +74,20 @@ export function buildExportGraph(
 					(segment) => segment.type === "prose" || nodes.has(segment.id)
 				),
 			])
+		),
+		slugs: new Map(
+			[...nodes.values()].flatMap((node) =>
+				node.slug === undefined ? [] : [[node.slug, node.id] as const]
+			)
+		),
+		templates: new Map(
+			pages.flatMap(({ envs, page }) =>
+				envs.entries.flatMap((entry) =>
+					entry.templates === undefined
+						? []
+						: [[envId(page.url, entry.id), entry.templates] as const]
+				)
+			)
 		),
 		threads: new Map(threads.map((thread) => [thread.id, thread])),
 		threadsOf: threadsByMember(threads),
@@ -96,7 +115,7 @@ function pageNodes({ envs, page, strand }: ExportPageInput): ExportNode[] {
 			(entry): ExportNode => ({
 				id: envId(page.url, entry.id),
 				kind: entry.kind,
-				label: envLabel(getKindLabel(entry.kind), entry.title),
+				label: envLabel(getEnvConfig(entry.kind).label, entry.title),
 				page: page.url,
 				title: entry.title ?? "",
 				type: "env",
@@ -121,7 +140,7 @@ function exportKindViews(
 					{
 						id: view.url,
 						kind: view.kind,
-						label: `${getKindLabel(view.kind, true)} from ${parent.label}`,
+						label: `${getEnvConfig(view.kind).plural} from ${parent.label}`,
 						parentId: parent.id,
 					},
 				]
@@ -172,14 +191,14 @@ function pageEdges(
 
 	for (const entry of envs.entries) {
 		const id = envId(page.url, entry.id);
-		const relation = getEnvConfig(entry.kind).of;
+		const relation = ROLE_EDGES[getEnvConfig(entry.kind).role];
 		edges.push(
-			{ kind: "contains", source: page.url, target: id },
+			{ kind: EDGE.contains, source: page.url, target: id },
 			...tenetHrefs(entry.of, tenets).map(
 				(target): ExportEdge => ({ kind: relation, source: id, target })
 			),
 			...tenetHrefs(entry.see, tenets).map(
-				(target): ExportEdge => ({ kind: "see", source: id, target })
+				(target): ExportEdge => ({ kind: EDGE.see, source: id, target })
 			)
 		);
 	}
@@ -190,7 +209,7 @@ function pageEdges(
 	);
 	for (const target of recalled) {
 		if (!target.startsWith(`${page.url}#`)) {
-			edges.push({ kind: "recalls", source: page.url, target });
+			edges.push({ kind: EDGE.recalls, source: page.url, target });
 		}
 	}
 
@@ -214,7 +233,7 @@ function referenceEdges(
 			const target = resolvePageHref(href, page.path);
 			return target === undefined
 				? []
-				: [{ kind: "references", source: page.url, target }];
+				: [{ kind: EDGE.references, source: page.url, target }];
 		}
 	);
 }
@@ -247,22 +266,31 @@ function envLabel(kind: string, title: string | undefined): string {
 const LABEL_LIST = new Intl.ListFormat("en", { type: "conjunction" });
 
 function labelDerivations(nodes: Map<string, ExportNode>, edges: ExportEdge[]) {
-	const proves = Map.groupBy(
-		edges.filter((edge) => edge.kind === "proves"),
+	const derives = Map.groupBy(
+		edges.filter((edge) => edge.kind === ROLE_EDGES.derives),
 		(edge) => edge.source
 	);
-	for (const [id, proved] of proves) {
+	for (const [id, targets] of derives) {
 		const derivation = nodes.get(id);
-		const labels = proved.flatMap(
+		const labels = targets.flatMap(
 			(edge) => nodes.get(edge.target)?.label ?? []
 		);
 		if (derivation?.title === "" && labels.length > 0) {
 			nodes.set(id, {
 				...derivation,
-				label: `${getKindLabel(derivation.kind)} of ${LABEL_LIST.format(labels)}`,
+				label: untitledLabel(derivation.kind, LABEL_LIST.format(labels)),
 			});
 		}
 	}
+}
+
+const UNTITLED_TITLE = "{label} of {targets}";
+
+function untitledLabel(kind: string, targets: string): string {
+	const { label, untitledTitle = UNTITLED_TITLE } = getEnvConfig(kind);
+	return untitledTitle
+		.replaceAll("{label}", label)
+		.replaceAll("{targets}", targets);
 }
 
 function uniqueEdges(edges: readonly ExportEdge[]): ExportEdge[] {

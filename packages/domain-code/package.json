@@ -1,0 +1,15 @@
+{
+  "name": "@kevinnhou/domain-code",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./server": "./server.ts",
+    "./components": "./components.tsx",
+    "./styles.css": "./styles.css"
+  },
+  "peerDependencies": {
+    "react": "*"
+  }
+}

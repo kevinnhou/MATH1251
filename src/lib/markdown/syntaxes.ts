@@ -1,9 +1,14 @@
-import syntaxes from "course.markdown";
+import courseServers from "course.server";
 import type { Element, Root as HastRoot } from "hast";
 import type { Literal } from "mdast";
 import type { MarkdownSyntax, MdxPlugins } from "./syntax";
 
-const SYNTAXES: readonly MarkdownSyntax[] = syntaxes;
+const servers: readonly { components?: unknown; syntax?: MarkdownSyntax }[] =
+	courseServers;
+
+const SYNTAXES: readonly MarkdownSyntax[] = servers.flatMap((server) =>
+	server.syntax === undefined ? [] : [server.syntax]
+);
 
 export const MICROMARK_EXTENSIONS = SYNTAXES.flatMap(
 	(syntax) => syntax.fromMarkdown?.micromark ?? []

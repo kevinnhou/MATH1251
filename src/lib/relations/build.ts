@@ -1,6 +1,8 @@
 import type { Folder, Node, Root } from "fumadocs-core/page-tree";
+import { schedule } from "@/lib/course/config";
 import {
 	DEPENDENCY_EDGES,
+	EDGE,
 	type ExportEdgeKind,
 	type ExportGraph,
 } from "@/lib/export/model";
@@ -17,7 +19,7 @@ import {
 
 const PAGE_LINK_RELATIONS: readonly ExportEdgeKind[] = [
 	...DEPENDENCY_EDGES,
-	"recalls",
+	EDGE.recalls,
 ];
 
 export interface CourseOrder {
@@ -121,6 +123,7 @@ export function courseOrder(tree: Root): CourseOrder {
 			id: folder.$id ?? strand.id,
 			number: 0,
 			strand: strand.id,
+			term: termOf(0, intro),
 			title: strand.title,
 		});
 		push(folder.index?.url, intro);
@@ -136,6 +139,7 @@ export function courseOrder(tree: Root): CourseOrder {
 					id: child.$id ?? `${strand.id}-${number}`,
 					number,
 					strand: strand.id,
+					term: termOf(number, chapter),
 					title: nameOf(child),
 				});
 				push(child.index?.url, chapter);
@@ -145,6 +149,10 @@ export function courseOrder(tree: Root): CourseOrder {
 	}
 
 	return { chapters, order, strands };
+}
+
+function termOf(number: number, position: number): number {
+	return schedule === "sequential" ? position : number;
 }
 
 function strandOf(folder: Folder): CourseStrand | undefined {

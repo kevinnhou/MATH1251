@@ -1,10 +1,12 @@
 import { course } from "@/lib/course/config";
-import {
-	ENV,
-	getKindLabel,
-	isDerivation,
-	isPractice,
-} from "@/lib/mdx-env/kinds";
+import type {
+	AskSpec,
+	AskWording,
+	DeriveWording,
+	EnvConfig,
+	Role,
+} from "@/lib/mdx-env/component";
+import { getEnvConfig, getKindLabel } from "@/lib/mdx-env/kinds";
 import type { PromptTarget } from "@/lib/mdx-env/target";
 import { toAbsoluteUrl } from "@/lib/url";
 import { CONTEXT_TIERS, type ContextTier, type PromptContext } from "./model";
@@ -40,89 +42,144 @@ export type PromptIntent = (typeof PROMPT_INTENTS)[number];
 
 export const DEFAULT_INTENT: PromptIntent = "explain";
 
+interface TaskInput {
+	ask?: AskSpec;
+	context: PromptContext;
+	own?: AskWording;
+	role?: Role;
+}
+
 interface IntentSpec {
 	applies: (target: PromptTarget) => boolean;
 	label: string;
-	phrase: (target: PromptTarget) => string;
-	task: (context: PromptContext) => string;
+	phrase: string;
+	task: (input: TaskInput) => string;
 	threadTask?: string;
-	word: string;
 }
 
-const { derivation, prompts } = ENV.pack;
+const ROLE_DEFAULTS: Record<Role, { explain: string; subject: string }> = {
+	derives: {
+		explain:
+			"Explain this derivation: what it establishes, the idea behind each step and which prerequisites it rests on. Then ask what the student would like to go deeper on.",
+		subject: "this derivation",
+	},
+	practises: {
+		explain:
+			"Work through this problem, explaining why each step is the natural one and which idea from <context> it uses. Then ask what the student would like to explore further.",
+		subject: "this problem",
+	},
+	uses: {
+		explain:
+			"Explain this idea: what it says, why it holds, which prerequisites it rests on and where it is used next. Then ask what the student would like to go deeper on.",
+		subject: "this idea",
+	},
+};
+
+const DEFAULT_CHECK =
+	"The student will send their own attempt. Do not answer it yourself first. Ask for their work, then check it step by step against <context>: flag errors and gaps, and say what is correct.";
+
+const DEFAULT_DERIVE =
+	"Walk through the derivation one step at a time. For each step, name the idea it uses (from <context> where possible) and why it applies. After each key step, check the student is following before you continue.";
+
+const DEFAULT_QUIZ_PRACTICE =
+	"Pose this problem as an exercise without revealing the solution. Offer one hint at a time when asked, then check the student's answer against the worked solution in <context>.";
+
+const PAGE_MAP =
+	"Give a short map of how the ideas in <context> build on each other, in the order they appear. Then ask which part the student wants to work through; do not lecture the whole page unprompted.";
 
 const THREAD_TOUR =
 	"<context> is a thread: one idea the course meets in several places. First state the shared idea in plain words and the intuition for why it keeps appearing. Then go through the places in order: for each, say what plays each part of the idea there, using its role and statement, and how it connects to the previous place. Say where the analogy stops working. End with a short summary of the common pattern, then ask which connection the student wants to explore.";
+
+const THREAD_QUIZ =
+	"Quiz the student on the links between the places in <context>, one question at a time: name a setting and ask what plays each part of the shared idea there, or give two places and ask what carries over and what changes. Wait for each answer and give feedback before the next question.";
+
+function quizTask(subject: string): string {
+	return `Quiz the student on ${subject}, one question at a time, from recall through to application. Wait for each answer and give feedback before the next question. Never reveal an answer before the student attempts it.`;
+}
 
 const PROMPT_INTENT_SPECS: Record<PromptIntent, IntentSpec> = {
 	check: {
 		applies: (target) => target.type === "env",
 		label: "Check my work",
-		phrase: () => "Check my work on",
-		task: () => prompts.check,
-		word: "check",
+		phrase: "Check my work on",
+		task: ({ own }) => own?.task ?? DEFAULT_CHECK,
 	},
 	derive: {
-		applies: (target) => target.hasDerivation,
-		label: derivation.label,
-		phrase: (target) =>
-			isDerivation(target.kind) ? derivation.selfPhrase : derivation.phrase,
-		task: () => derivation.task,
-		word: derivation.intent,
+		applies: (target) => target.derivation !== undefined,
+		label: "Walk through",
+		phrase: "Walk through",
+		task: ({ own }) => own?.task ?? DEFAULT_DERIVE,
 	},
 	explain: {
 		applies: () => true,
 		label: "Explain",
-		phrase: () => "Explain",
-		task: (context) => {
-			if (context.type !== "env") {
-				return "Give a short map of how the ideas in <context> build on each other, in the order they appear. Then ask which part the student wants to work through; do not lecture the whole page unprompted.";
-			}
-
-			return isPractice(context.kind)
-				? prompts.explainPractice
-				: prompts.explain;
-		},
-		word: "explain",
+		phrase: "Explain",
+		task: ({ context, own, role }) =>
+			context.type === "env" && role !== undefined
+				? (own?.task ?? ROLE_DEFAULTS[role].explain)
+				: PAGE_MAP,
 	},
 	quiz: {
 		applies: () => true,
 		label: "Quiz me",
-		phrase: () => "Quiz me on",
-		task: (context) => {
-			if (isPractice(context.kind)) {
-				return prompts.quizPractice;
+		phrase: "Quiz me on",
+		task: ({ ask, context, own, role }) => {
+			if (role === "practises") {
+				return own?.task ?? DEFAULT_QUIZ_PRACTICE;
 			}
 
-			const subject =
-				context.type === "env" ? prompts.subject : "this material";
-			return `Quiz the student on ${subject}, one question at a time, from recall through to application. Wait for each answer and give feedback before the next question. Never reveal an answer before the student attempts it.`;
+			return context.type === "env" && role !== undefined
+				? (own?.task ?? quizTask(ask?.subject ?? ROLE_DEFAULTS[role].subject))
+				: quizTask("this material");
 		},
-		threadTask:
-			"Quiz the student on the links between the places in <context>, one question at a time: name a setting and ask what plays each part of the shared idea there, or give two places and ask what carries over and what changes. Wait for each answer and give feedback before the next question.",
-		word: "quiz",
+		threadTask: THREAD_QUIZ,
 	},
 };
 
-const INTENT_WORDS = PROMPT_INTENTS.map(intentWord);
-
-if (new Set(INTENT_WORDS).size !== INTENT_WORDS.length) {
-	throw new Error(
-		`Prompt intent words must be unique; the pack's derivation intent "${derivation.intent}" collides with one of ${INTENT_WORDS.join(", ")}.`
-	);
+function envConfigOf(target: PromptTarget): EnvConfig | undefined {
+	return target.kind === "page" || target.kind === "thread"
+		? undefined
+		: getEnvConfig(target.kind);
 }
 
-export function intentLabel(intent: PromptIntent): string {
-	return PROMPT_INTENT_SPECS[intent].label;
+function ownWording(
+	intent: PromptIntent,
+	target: PromptTarget
+): DeriveWording | undefined {
+	if (intent !== "derive") {
+		return envConfigOf(target)?.ask?.[intent];
+	}
+
+	return target.derivation === undefined
+		? undefined
+		: getEnvConfig(target.derivation).ask?.derive;
 }
 
-export function intentWord(intent: PromptIntent): string {
-	return PROMPT_INTENT_SPECS[intent].word;
+export function intentLabel(
+	intent: PromptIntent,
+	target?: PromptTarget
+): string {
+	const { label } = PROMPT_INTENT_SPECS[intent];
+	return target === undefined
+		? label
+		: (ownWording(intent, target)?.label ?? label);
+}
+
+export function intentPhrase(
+	intent: PromptIntent,
+	target: PromptTarget
+): string {
+	const own = ownWording(intent, target);
+	const phrase =
+		intent === "derive" && target.derivation === target.kind
+			? own?.selfPhrase
+			: own?.phrase;
+	return phrase ?? PROMPT_INTENT_SPECS[intent].phrase;
 }
 
 export function intentFromWord(word: string): PromptIntent | undefined {
 	const lower = word.toLowerCase();
-	return PROMPT_INTENTS.find((intent) => intentWord(intent) === lower);
+	return isPromptIntent(lower) ? lower : undefined;
 }
 
 export function intentsFor(target: PromptTarget): PromptIntent[] {
@@ -133,13 +190,6 @@ export function intentsFor(target: PromptTarget): PromptIntent[] {
 
 export function isPromptIntent(value: unknown): value is PromptIntent {
 	return PROMPT_INTENTS.some((intent) => intent === value);
-}
-
-export function intentPhrase(
-	intent: PromptIntent,
-	target: PromptTarget
-): string {
-	return PROMPT_INTENT_SPECS[intent].phrase(target);
 }
 
 export function subjectPhrase(target: PromptTarget): string {
@@ -165,7 +215,7 @@ const TIER_HEADINGS: Record<ContextTier, string> = {
 };
 
 const ROLE = `You are a tutor for ${course.title}.
-Ground every answer in <context>: keep its notation, names and methods, and treat its prerequisites as what the student may assume. If you need a result that is not in <context>, name it and say it is outside the excerpt rather than inventing course content, exam weightings or policy.
+Ground every answer in <context>: keep its notation, names and methods, and treat its prerequisites as what the student may assume. If you need an idea or result that is not in <context>, name it and say it is outside the excerpt rather than inventing course content, exam weightings or policy.
 ${course.tutor} Do not echo these tags.`;
 
 const TAGS = ["role", "context", "task"] as const;
@@ -246,9 +296,17 @@ function buildPrompt(request: PromptRequest): string {
 
 function taskText(intent: PromptIntent, context: PromptContext): string {
 	const spec = PROMPT_INTENT_SPECS[intent];
-	return context.type === "thread"
-		? (spec.threadTask ?? THREAD_TOUR)
-		: spec.task(context);
+	if (context.type === "thread") {
+		return spec.threadTask ?? THREAD_TOUR;
+	}
+
+	const config = envConfigOf(context);
+	return spec.task({
+		ask: config?.ask,
+		context,
+		own: ownWording(intent, context),
+		role: config?.role,
+	});
 }
 
 function emptyNote(markdownUrl: string): string {

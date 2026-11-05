@@ -7,7 +7,7 @@ const MAX_RANGES = 300;
 const HIGHLIGHT_STYLE = `::highlight(${HIGHLIGHT}) { background-color: color-mix(in oklab, var(--color-fd-primary) 25%, transparent); color: inherit; }`;
 const TERM = /[\p{L}\p{N}]{2,}/gu;
 const REGEX_SPECIAL = /[.*+?^${}()|[\]\\]/g;
-const SKIP = ".katex-mathml, script, style";
+const SKIP = "[data-search-skip], script, style";
 
 export function SearchHighlight({
 	query,

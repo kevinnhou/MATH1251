@@ -25,6 +25,7 @@ export interface CourseChapter {
 	id: string;
 	number: number;
 	strand: string;
+	term: number;
 	title: string;
 }
 
@@ -64,6 +65,7 @@ export interface RouteStop {
 	lane: number;
 	role?: RenderedMarkdown<"inline">;
 	station: string;
+	term?: number;
 	title: RenderedMarkdown<"inline">;
 }
 
@@ -94,6 +96,7 @@ export interface ThreadMapCell {
 export interface ThreadMapRow {
 	cells: ThreadMapCell[];
 	number: number;
+	term: number;
 }
 
 export interface ThreadMapThread {

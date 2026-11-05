@@ -1,4 +1,5 @@
 import type { ReactNode, SVGAttributes } from "react";
+import { schedule } from "@/lib/course/config";
 import { foregroundAt, THREAD_COLOR } from "./colors";
 import type { DiagramMark } from "./layout";
 
@@ -84,7 +85,10 @@ function stop(ys: readonly number[], filled = false): ReactNode {
 
 const KEY: readonly [glyph: ReactNode, text: string][] = [
 	[sample(solidStroke(false)), "Within a chapter"],
-	[sample(transitStroke(false)), "Waiting between chapters"],
+	[
+		sample(transitStroke(false)),
+		schedule === "parallel" ? "Waiting between chapters" : "Between chapters",
+	],
 	[stop([8]), "A stop"],
 	[stop([4, 12]), "One stop on two threads"],
 	[stop([8], true), "Pinned"],

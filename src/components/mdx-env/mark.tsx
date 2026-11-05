@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
-import type { EnvKindConfig } from "@/lib/mdx-env/pack";
+import type { EnvConfig } from "@/lib/mdx-env/component";
 import {
 	measureEnvWord,
 	observeEnvironment,
@@ -10,7 +10,7 @@ import {
 } from "./mark-measure";
 
 interface EnvMarkProps {
-	config: EnvKindConfig;
+	config: EnvConfig;
 	href?: string;
 	linkLabel?: string;
 }
@@ -40,7 +40,7 @@ function EnvLabel({
 	inverted,
 	value,
 }: {
-	decoration?: EnvKindConfig["decoration"];
+	decoration?: EnvConfig["decoration"];
 	inverted: boolean;
 	value: string;
 }) {

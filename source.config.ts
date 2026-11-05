@@ -1,4 +1,3 @@
-import { remarkMdxMermaid } from "fumadocs-core/mdx-plugins";
 import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
 import { defineConfig, defineDocs } from "fumadocs-mdx/config";
 import { z } from "zod";
@@ -24,7 +23,7 @@ export const docs = defineDocs({
 export default defineConfig({
 	mdxOptions: {
 		rehypePlugins: (v) => [...REHYPE_PLUGINS, ...v],
-		remarkPlugins: [...REMARK_PLUGINS, remarkMdxMermaid, remarkMdxEnv],
+		remarkPlugins: [...REMARK_PLUGINS, remarkMdxEnv],
 	},
 	plugins: [corpusMeta()],
 });

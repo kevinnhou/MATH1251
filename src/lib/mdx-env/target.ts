@@ -1,7 +1,7 @@
 import type { EnvKind } from "./kinds";
 
 export interface PromptTarget {
-	hasDerivation: boolean;
+	derivation?: EnvKind;
 	id: string;
 	kind: EnvKind | "page" | "thread";
 	label: string;

@@ -21,6 +21,7 @@ import {
 	uniqueTrimmed,
 } from "@/lib/mdx-env/kind-view";
 import {
+	assertComponentSlugs,
 	assertTenetIndex,
 	createTenetIndex,
 	type TenetIndex,
@@ -80,6 +81,7 @@ export const getCorpus = memoInProduction((): Corpus => {
 	const index = getPageIndex();
 	const tenets = createTenetIndex(index.pages);
 	assertTenetIndex(tenets);
+	assertComponentSlugs(index.pages, tenets);
 
 	const order = courseOrder(source.getPageTree());
 	assertStrands(order.strands.map(({ id }) => id));

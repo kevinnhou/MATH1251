@@ -17,8 +17,8 @@
     "postcss.config.mjs": true,
     "proxy.ts": true,
     "source.config.ts": true,
-    "tsconfig.json": true,
-    "README.md": true
+    "tsconfig.json": true
+    // "README.md": true
 
     // "src": true
   },

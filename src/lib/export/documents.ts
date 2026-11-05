@@ -2,6 +2,7 @@ import { course, homeRoute } from "@/lib/course/config";
 import { STRAND_LABELS, STRANDS } from "@/lib/course/strands";
 import { catalogRoute } from "@/lib/course/urls";
 import { ENV, type EnvKind, getKindLabel } from "@/lib/mdx-env/kinds";
+import { exportRenderer, type Renderer } from "./components";
 import {
 	type Frontmatter,
 	frontmatter,
@@ -12,11 +13,13 @@ import {
 } from "./format";
 import {
 	bodyRole,
+	DEPENDENCY_EDGES,
 	EXPORT_EDGE_KINDS,
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
 	type ExportThread,
+	RELATION,
 	RELATION_NAMES,
 	RELATION_ORDER,
 	type Relation,
@@ -44,18 +47,23 @@ import {
 const PREREQUISITE_LIMIT = 40;
 const CARD_RELATION_LIMIT = 8;
 const LISTED_RELATIONS = RELATION_ORDER.filter(
-	(name) => name !== "contains" && name !== "part_of"
+	(name) => name !== RELATION.contains && name !== RELATION.part_of
 );
 
-export function pageDocument(node: ExportNode, graph: ExportGraph): string {
+export function pageDocument(
+	node: ExportNode,
+	graph: ExportGraph,
+	surface: "llms-full" | "page" = "page"
+): string {
+	const render = exportRenderer(graph, surface);
 	const body = (graph.segments.get(node.id) ?? []).map((segment) => {
 		switch (segment.type) {
 			case "prose":
-				return segment.markdown;
+				return render.prose(node.id, segment.markdown);
 			case "env":
-				return envCard(requireNode(graph, segment.id), graph, 3);
+				return envCard(requireNode(graph, segment.id), graph, 3, render);
 			case "recall":
-				return recallCard(requireNode(graph, segment.id), graph);
+				return recallCard(requireNode(graph, segment.id), graph, render);
 			default:
 				return segment satisfies never;
 		}
@@ -83,6 +91,7 @@ export function kindViewDocument(
 	graph: ExportGraph
 ): string {
 	const page = requireNode(graph, view.parentId);
+	const render = exportRenderer(graph, "kind-view");
 	const kindLabel = getKindLabel(view.kind, true);
 	const title = `${kindLabel}: ${page.title}`;
 
@@ -90,7 +99,7 @@ export function kindViewDocument(
 		body: [
 			`${kindLabel} from ${nodeLink(page)}, without the surrounding lecture prose.`,
 			...envsOfKind(graph, page.id, view.kind).map((env) =>
-				envCard(env, graph, 2)
+				envCard(env, graph, 2, render)
 			),
 		],
 		fields: {
@@ -109,15 +118,16 @@ export function kindViewDocument(
 
 export function envDocument(node: ExportNode, graph: ExportGraph): string {
 	const page = pageOf(graph, node);
+	const render = exportRenderer(graph, "env");
 
 	return document(graph, {
 		body: [
 			page === undefined ? "" : `From ${nodeLink(page)}.`,
-			envSections(node, 2),
+			envSections(node, 2, render),
 			...attachedDerivations(graph, node).map((derivation) =>
 				joinBlocks([
 					`## ${getKindLabel(derivation.kind)}`,
-					derivation.body ?? "",
+					render.body(derivation) ?? "",
 				])
 			),
 		],
@@ -143,6 +153,7 @@ export function threadDocument(
 	graph: ExportGraph
 ): string {
 	const page = requireNode(graph, thread.pageId);
+	const render = exportRenderer(graph, "thread");
 	const places = thread.members.map((member) => {
 		const node = requireNode(graph, member.id);
 		return joinBlocks([
@@ -153,7 +164,7 @@ export function threadDocument(
 			]
 				.filter(Boolean)
 				.join(" "),
-			node.statement ?? "",
+			render.statement(node) ?? "",
 		]);
 	});
 
@@ -180,6 +191,7 @@ export function indexDocument(graph: ExportGraph): string {
 	const exampleStrand =
 		STRANDS.find((strand) => strand !== course.home) ?? course.home;
 	const examplePage = `/${exampleStrand}/x`;
+	const exampleEnv = `${examplePage}#${exampleAnchor()}`;
 	const pages = pagesOf(graph);
 	const sections = [
 		...STRANDS.map((strand) => ({
@@ -194,13 +206,13 @@ export function indexDocument(graph: ExportGraph): string {
 	const lines = [
 		`# ${course.title}`,
 		"",
-		`> ${ENV.pack.summary}`,
+		`> ${courseSummary()}`,
 		"",
 		"## Conventions",
 		"",
 		"- Node IDs are site paths: a page is `/strand/page`, an environment is `/strand/page#anchor`. Every link in the exports points at a node ID.",
-		`- Markdown for any node: \`${nodeMarkdownUrl(examplePage)}\` for a page, \`${nodeMarkdownUrl(`${examplePage}#thm-y`)}\` for one environment.`,
-		`- Ranked prompt context (JSON blocks by tier) at the same paths under \`${docsContextRoute}\`, e.g. \`${nodeContextUrl(`${examplePage}#thm-y`)}\`.`,
+		`- Markdown for any node: \`${nodeMarkdownUrl(examplePage)}\` for a page, \`${nodeMarkdownUrl(exampleEnv)}\` for one environment.`,
+		`- Ranked prompt context (JSON blocks by tier) at the same paths under \`${docsContextRoute}\`, e.g. \`${nodeContextUrl(exampleEnv)}\`.`,
 		`- A thread (\`${homeRoute}#thread-<slug>\`) is one idea that recurs across the course; its Markdown lists every place it appears, with a role and statement for each.`,
 		"- Each Markdown export starts with YAML frontmatter (`id`, `type`, `kind`, `strand`, `page`, …), then content, `## Prerequisites` (transitive dependencies from other pages) and `## Relations`.",
 		`- Relations: ${EXPORT_EDGE_KINDS.map((kind) => {
@@ -233,6 +245,26 @@ export function indexDocument(graph: ExportGraph): string {
 	}
 
 	return `${lines.join("\n")}\n`;
+}
+
+const DEPENDENCY_LIST = DEPENDENCY_EDGES.map(
+	(kind) => `\`${RELATION_NAMES[kind][0]}\``
+).join("/");
+
+function exampleAnchor(): string {
+	const env = ENV.envs.find(({ role }) => role === "uses") ?? ENV.envs[0];
+	return `${env?.kind ?? "env"}-1`;
+}
+
+function courseSummary(): string {
+	if (course.summary !== undefined) {
+		return course.summary;
+	}
+
+	const plurals = ENV.envs.map((env) => env.plural.toLowerCase());
+	const sample = plurals.slice(0, 4).join(", ");
+	const more = plurals.length > 4 ? ", …" : "";
+	return `Notes as a graph of pages and environments (${sample}${more}) linked by typed relations.`;
 }
 
 function pageIndexLine(page: ExportNode, graph: ExportGraph): string {
@@ -294,7 +326,7 @@ function document(
 		...parts.body,
 		needsLines.length === 0
 			? ""
-			: `## Prerequisites\n\nTransitive \`uses\`/\`proves\` dependencies defined elsewhere, foundations first.\n\n${needsLines.join("\n")}`,
+			: `## Prerequisites\n\nTransitive ${DEPENDENCY_LIST} dependencies defined elsewhere, foundations first.\n\n${needsLines.join("\n")}`,
 		relations.length === 0 ? "" : `## Relations\n\n${relations.join("\n")}`,
 	])}\n`;
 }
@@ -322,7 +354,12 @@ function nearest(
 	};
 }
 
-function envCard(node: ExportNode, graph: ExportGraph, level: 2 | 3): string {
+function envCard(
+	node: ExportNode,
+	graph: ExportGraph,
+	level: 2 | 3,
+	render: Renderer
+): string {
 	const meta = [
 		`ID: \`${node.id}\``,
 		node.difficulty === undefined ? "" : `Difficulty: ${node.difficulty}`,
@@ -335,30 +372,38 @@ function envCard(node: ExportNode, graph: ExportGraph, level: 2 | 3): string {
 	return joinBlocks([
 		`${"#".repeat(level)} ${node.label}`,
 		meta.join(" · "),
-		envSections(node, level + 1),
+		envSections(node, level + 1, render),
 		relations.join("\n"),
 	]);
 }
 
-function envSections(node: ExportNode, level: number): string {
+function envSections(
+	node: ExportNode,
+	level: number,
+	render: Renderer
+): string {
 	const hashes = "#".repeat(level);
 	const role = bodyRole(node);
+	const statement = render.statement(node);
+	const body = render.body(node);
 
 	return joinBlocks([
-		node.statement === undefined
+		statement === undefined ? "" : `${hashes} Statement\n\n${statement}`,
+		body === undefined
 			? ""
-			: `${hashes} Statement\n\n${node.statement}`,
-		node.body === undefined
-			? ""
-			: joinBlocks([role === undefined ? "" : `${hashes} ${role}`, node.body]),
+			: joinBlocks([role === undefined ? "" : `${hashes} ${role}`, body]),
 	]);
 }
 
-function recallCard(original: ExportNode, graph: ExportGraph): string {
+function recallCard(
+	original: ExportNode,
+	graph: ExportGraph,
+	render: Renderer
+): string {
 	return joinBlocks([
 		`### Recall: ${original.label}`,
 		`Recalls ${nodeLink(original)}${pageSuffix(original, graph)}.`,
-		original.statement ?? "",
+		render.statement(original) ?? "",
 	]);
 }
 

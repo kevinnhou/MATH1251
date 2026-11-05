@@ -41,7 +41,7 @@ export function chapterWidth(
 }
 
 export interface LinePoint {
-	chapter: number | undefined;
+	term: number | undefined;
 	x: number;
 	y: number;
 }
@@ -59,7 +59,7 @@ export function squareLine(
 		}
 
 		const turn = from.y === to.y ? "" : ` H${from.x + slot / 2} V${to.y}`;
-		(from.chapter === to.chapter ? solid : transit).push(
+		(from.term === to.term ? solid : transit).push(
 			`M${from.x} ${from.y}${turn} H${to.x}`
 		);
 	}

@@ -1,0 +1,52 @@
+@import "katex/dist/katex.css";
+
+@source "./";
+
+.md-fragment-chip .katex {
+	font-size: 0.95em;
+}
+
+.katex-display-scroll {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	padding-block: 0.5em;
+	margin-block: -0.5em;
+	overflow-x: auto;
+	overflow-y: clip;
+}
+
+.katex-display-scroll > .katex-display {
+	max-width: none;
+	overflow: visible;
+}
+
+.md-fragment-inline .katex {
+	font-size: 1em;
+}
+
+.md-fragment-inline .katex-display {
+	margin: 0;
+}
+
+.md-fragment-compact .katex {
+	font-size: 0.85em;
+}
+
+.md-fragment-compact .katex-display {
+	margin-block: 0.25rem;
+	margin-inline: 0;
+}
+
+.prose :is(h1, h2, h3, h4, h5, h6) .katex-display {
+	margin: 0;
+}
+
+:is(#nd-toc, [data-toc]) .katex {
+	font-size: 0.85em;
+}
+
+[data-relations-label] .md-fragment-inline .katex,
+[data-sidebar] .md-fragment-inline .katex {
+	font-size: 0.95em;
+}

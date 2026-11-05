@@ -5,7 +5,6 @@ import {
 	intentFromWord,
 	intentLabel,
 	intentsFor,
-	intentWord,
 	LLM_PROVIDER_LABELS,
 	LLM_PROVIDERS,
 	type LlmProvider,
@@ -53,7 +52,7 @@ import type {
 } from "./types";
 import { TERMINAL_COMPLETION_LIMIT } from "./types";
 
-const ASK_USAGE = `[${PROMPT_INTENTS.map(intentWord).join("|")}] <page|.>`;
+const ASK_USAGE = `[${PROMPT_INTENTS.join("|")}] <page|.>`;
 
 const ASK_COMMANDS: Record<LlmProvider, readonly [string, ...string[]]> = {
 	chatgpt: ["gpt", "chatgpt"],
@@ -352,7 +351,7 @@ async function executeAsk(
 	if (!allowed.includes(intent)) {
 		return done(
 			errorOutput(
-				`${name}: "${intentWord(intent)}" is not available here; try ${allowed.map(intentWord).join(", ")}.`
+				`${name}: "${intent}" is not available here; try ${allowed.join(", ")}.`
 			)
 		);
 	}
@@ -362,7 +361,7 @@ async function executeAsk(
 	if (result.status === "opened") {
 		return done(
 			messageOutput(
-				`Opened ${page.title.plain} in ${label} (${intentLabel(intent)}).`
+				`Opened ${page.title.plain} in ${label} (${intentLabel(intent, target)}).`
 			),
 			{ closeDrawer: true }
 		);
@@ -488,13 +487,13 @@ function completeAskArgument(ctx: CompleteContext): Completion[] {
 
 function intentCompletions(partial: string): Completion[] {
 	const needle = partial.toLowerCase();
-	return PROMPT_INTENTS.filter((intent) =>
-		intentWord(intent).startsWith(needle)
-	).map((intent) => ({
-		detail: intentLabel(intent),
-		label: intentWord(intent),
-		replace: intentWord(intent),
-	}));
+	return PROMPT_INTENTS.filter((intent) => intent.startsWith(needle)).map(
+		(intent) => ({
+			detail: intentLabel(intent),
+			label: intent,
+			replace: intent,
+		})
+	);
 }
 
 function pageCompletions(ctx: CompleteContext, partial: string): Completion[] {
