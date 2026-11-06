@@ -185,9 +185,10 @@ top          site
 9. **One concept: the component.** Environments and other components are both
    tags a domain provides; an environment is a component with a graph role.
 10. **Each component brings its own wording and export methods, with engine
-    defaults.** Pack-wide fields (one derive label, one difficulty scale, one
-    set of prompts) can't be merged across two domains; per-component ones need
-    no merge rules. The cost is indirection: wording lives with the component,
+    defaults.** Environments bring wording; plain components bring export
+    methods (an environment always exports as the engine's card). Pack-wide
+    fields (one derive label, one difficulty scale, one set of prompts) can't be
+    merged across two domains; per-component ones need no merge rules. The cost is indirection: wording lives with the component,
     not beside the code that uses it.
 11. **The engine names no kind.** Code asks the registry about roles
     (`isDerivation`, `isPractice`), properties and wording, so a domain with

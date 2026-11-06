@@ -50,7 +50,9 @@ made on purpose; the reasons are in the linked docs' design decisions.
 - **Components can't add nodes or relations**, and a domain can't add a role.
   Anything that must be cited, numbered or listed is an environment.
 - **The frame is the engine's.** A domain can replace an environment's body, not
-  its frame (rail, footnotes, ask menu).
+  its frame (rail, footnotes, ask menu), and can't give an environment an
+  export method: it always exports as the engine's card, and only the
+  components inside it export through their own methods.
 - **No clashes, and no renaming.** Two listed domains can't define the same tag,
   code, label or plural. `domain-math` and `domain-code` both define `Example`
   and the code `PF`, so they can't be listed together today; a rename option in

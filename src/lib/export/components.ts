@@ -13,7 +13,12 @@ import type {
 	GraphReader,
 } from "./domain";
 import { nodeLink } from "./format";
-import type { ContextBlock, ExportGraph, ExportNode } from "./model";
+import type {
+	ContextBlock,
+	ExportGraph,
+	ExportNode,
+	ExportSegment,
+} from "./model";
 import {
 	derivationsOf,
 	pageIdOf,
@@ -30,9 +35,11 @@ const EXPORTS = new Map<string, ComponentExport>(
 
 for (const tag of EXPORTS.keys()) {
 	if (!ENV.components.has(tag)) {
-		throw new Error(
-			`A domain's server.ts exports <${tag}>, which no listed domain's index.ts defines as a component.`
-		);
+		const reason =
+			ENV.envKindFromTag(tag) === undefined
+				? "which no listed domain's index.ts defines as a component"
+				: "which is an environment; only plain components have export methods";
+		throw new Error(`A domain's server.ts exports <${tag}>, ${reason}.`);
 	}
 }
 
@@ -59,19 +66,14 @@ export function exportRenderer(
 			return template;
 		}
 
-		return replaceComponents(template, (index, linePrefix) => {
-			const occurrence = occurrences[index];
-			if (occurrence === undefined) {
-				return "";
-			}
-
+		return fillTemplate(template, occurrences, (occurrence) => {
 			const output = renderOccurrence(graph, surface, pageId, occurrence);
 			if (typeof output === "string") {
-				return indent(output.trim(), linePrefix);
+				return output;
 			}
 
 			extra.push(...(output.blocks ?? []));
-			return indent(output.text.trim(), linePrefix);
+			return output.text;
 		});
 	};
 
@@ -153,7 +155,7 @@ function componentInput(
 			return id === undefined ? undefined : graph.nodes.get(id);
 		},
 		segment: occurrence.segment,
-		segments: graph.segments.get(pageId) ?? [],
+		segments: textSegments(graph, pageId),
 		surface,
 		tag: occurrence.tag,
 		...(env === undefined ? {} : { env }),
@@ -178,6 +180,38 @@ function reader(graph: ExportGraph): GraphReader {
 	}
 
 	return cached;
+}
+
+function textSegments(
+	graph: ExportGraph,
+	pageId: string
+): readonly ExportSegment[] {
+	const occurrences = graph.components.get(pageId) ?? [];
+	return (graph.segments.get(pageId) ?? []).map((segment) =>
+		segment.type === "prose"
+			? {
+					...segment,
+					markdown: fillTemplate(
+						segment.markdown,
+						occurrences,
+						({ children }) => children
+					),
+				}
+			: segment
+	);
+}
+
+function fillTemplate(
+	template: string,
+	occurrences: readonly ComponentOccurrence[],
+	output: (occurrence: ComponentOccurrence) => string
+): string {
+	return replaceComponents(template, (index, linePrefix) => {
+		const occurrence = occurrences[index];
+		return occurrence === undefined
+			? ""
+			: indent(output(occurrence).trim(), linePrefix);
+	});
 }
 
 function indent(text: string, linePrefix: string): string {

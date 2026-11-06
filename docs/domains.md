@@ -207,7 +207,7 @@ const RESULT = {
 ## Export methods (`server.ts`)
 
 `server.ts` default-exports a `DomainServer`: `{ components?, syntax? }`.
-`components` holds export methods by tag:
+`components` holds export methods by tag, for plain components only:
 
 ```ts
 import type { ComponentInput, DomainServer } from "engine";
@@ -235,7 +235,7 @@ Every method gets a `ComponentInput`:
 | `tag`, `props`, `children` | the occurrence: its literal props and its children as Markdown text |
 | `surface` | `page`, `env`, `kind-view`, `thread`, `llms-full` or `context` |
 | `page`, `env` | the page node and, when it sits in one, the enclosing environment node |
-| `segments`, `segment` | the page's segments and this occurrence's index, for its neighbours |
+| `segments`, `segment` | the page's segments (prose with every component as its text content) and this occurrence's index, for its neighbours |
 | `graph` | a read-only `GraphReader`: `node`, `nodes`, `relations`, `prerequisites`, `derivations`, `threads` |
 | `resolve(slug)`, `link(id)` | a slug's node, and a node's Markdown link |
 
@@ -253,8 +253,10 @@ Rules:
 - Multi-line output inside a list item or a quote is indented to fit, when the
   component starts its line.
 - `graph.json` keeps a component's text content, not its method output.
-- A method's tag must be a component that a listed domain's `index.ts`
-  defines, or the build fails.
+- A method's tag must be a plain component that a listed domain's `index.ts`
+  defines, or the build fails. Environments have no export methods: their
+  cards are the engine's, and a component inside one exports through its own
+  method.
 
 Search, previews, dock titles and thread stations always use the text content:
 they are built before the graph exists, and a search method wasn't worth a

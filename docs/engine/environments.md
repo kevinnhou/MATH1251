@@ -96,7 +96,8 @@ serialised twice:**
 
 Each occurrence records the `segment` it sits in (prose run, environment or
 thread) and its enclosing environment, so an export method can see its
-neighbours.
+neighbours. Methods get those segments with every placeholder filled with text
+content, never the raw templates.
 
 ## Course indexes
 

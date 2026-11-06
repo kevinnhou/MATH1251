@@ -113,7 +113,7 @@ a stable tie-breaker for relation lists; it is **not** reading order. Reading
 order lives in `relations` (`courseOrder`) and in each page's `segments`.
 
 `segments` keeps a page's body as it reads: prose (Markdown serialised at
-compile time), its own environments and its recalls, the last two as node IDs
+compile time, with each domain component as a placeholder), its own environments and its recalls, the last two as node IDs
 (a recall's ID is the original environment's). Segments whose node is missing
 are dropped at build time, so a page document can be rendered from the graph
 alone.
@@ -274,8 +274,10 @@ exports the same way on every surface. The method contract (`ComponentInput`,
 - Multi-line output is indented to fit when the component starts a line inside
   a list item or quote (`LINE_PREFIX`); a component mid-line is not.
 - A thrown error fails the build and names the component and page.
-- The renderer checks that every tag with a method is a component a listed
-  domain defines.
+- The renderer checks that every tag with a method is a plain component a
+  listed domain defines, and names environments separately in the error.
+- `ComponentInput.segments` is the page's segments with prose filled with text
+  content, so a method reading its neighbours never sees placeholders.
 
 A real environment document
 (`/llms.mdx/docs/algebra/complex-numbers/complex-polynomials/theorem-1.md`):
