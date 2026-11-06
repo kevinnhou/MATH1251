@@ -1,3 +1,4 @@
+import domainComponents from "course.components";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import {
@@ -8,7 +9,21 @@ import {
 	getThreadMdxComponents,
 	type ThreadMdxOptions,
 } from "@/components/threads/mdx";
-import { Mermaid } from "./mermaid";
+import { envKindFromTag } from "@/lib/mdx-env/kinds";
+
+const DOMAIN_COMPONENTS: MDXComponents = Object.assign({}, ...domainComponents);
+
+const ENV_BODIES = Object.fromEntries(
+	Object.entries(DOMAIN_COMPONENTS).filter(
+		([tag]) => envKindFromTag(tag) !== undefined
+	)
+);
+
+const OTHER_COMPONENTS = Object.fromEntries(
+	Object.entries(DOMAIN_COMPONENTS).filter(
+		([tag]) => envKindFromTag(tag) === undefined
+	)
+);
 
 export function getMDXComponents(
 	components?: MDXComponents,
@@ -16,9 +31,9 @@ export function getMDXComponents(
 ) {
 	return {
 		...defaultMdxComponents,
-		...getEnvMdxComponents(options),
+		...getEnvMdxComponents({ ...options, bodies: ENV_BODIES }),
 		...getThreadMdxComponents(options),
-		Mermaid,
+		...OTHER_COMPONENTS,
 		...components,
 	} satisfies MDXComponents;
 }

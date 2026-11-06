@@ -1,15 +1,19 @@
 import { type EnvKind, isDerivation } from "@/lib/mdx-env/kinds";
 import {
 	DEPENDENCY_EDGES,
+	EDGE,
+	type EdgeDirection,
+	type ExportEdge,
 	type ExportEdgeKind,
 	type ExportGraph,
 	type ExportKindView,
 	type ExportNode,
 	type ExportThreadMembership,
-	RELATION_NAMES,
 	RELATION_ORDER,
 	type Relation,
 	type RelationName,
+	relationLabel,
+	relationName,
 } from "./model";
 
 export function requireNode(graph: ExportGraph, id: string): ExportNode {
@@ -67,7 +71,7 @@ export function pageOf(
 }
 
 export function childrenOf(graph: ExportGraph, id: string): ExportNode[] {
-	return neighbours(graph, id, "outgoing", ["contains"]).map((child) =>
+	return neighbours(graph, id, "outgoing", [EDGE.contains]).map((child) =>
 		requireNode(graph, child)
 	);
 }
@@ -81,7 +85,7 @@ export function envsOfKind(
 }
 
 export function derivationsOf(graph: ExportGraph, id: string): ExportNode[] {
-	return neighbours(graph, id, "incoming", ["proves"]).map((derivation) =>
+	return neighbours(graph, id, "incoming", [EDGE.derives]).map((derivation) =>
 		requireNode(graph, derivation)
 	);
 }
@@ -101,20 +105,26 @@ export function relationsOf(
 	const relations: Relation[] = [];
 	const seen = new Set<string>();
 
-	function push(name: RelationName, other: string) {
+	function push(edge: ExportEdge, direction: EdgeDirection) {
+		const name = relationName(edge.kind, direction);
+		const other = direction === "outgoing" ? edge.target : edge.source;
 		const key = `${name}\0${other}`;
 		if (names.includes(name) && !seen.has(key)) {
 			seen.add(key);
-			relations.push({ name, node: requireNode(graph, other) });
+			relations.push({
+				label: relationLabel(edge, graph.nodes.get(edge.source), direction),
+				name,
+				node: requireNode(graph, other),
+			});
 		}
 	}
 
 	for (const edge of graph.outgoing.get(id) ?? []) {
-		push(RELATION_NAMES[edge.kind][0], edge.target);
+		push(edge, "outgoing");
 	}
 
 	for (const edge of graph.incoming.get(id) ?? []) {
-		push(RELATION_NAMES[edge.kind][1], edge.source);
+		push(edge, "incoming");
 	}
 
 	return relations.toSorted(
@@ -194,7 +204,7 @@ function dependencies(graph: ExportGraph, id: string): string[] {
 function neighbours(
 	graph: ExportGraph,
 	id: string,
-	direction: "incoming" | "outgoing",
+	direction: EdgeDirection,
 	kinds: readonly ExportEdgeKind[]
 ): string[] {
 	return (graph[direction].get(id) ?? []).flatMap((edge) => {

@@ -1,5 +1,5 @@
 import type { MDXComponents } from "mdx/types";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
 	type PromptTargetLookup,
 	pageEnvContext,
@@ -10,14 +10,22 @@ import {
 	getKindViewUrl,
 	type KindViewRenderOptions,
 } from "@/lib/mdx-env/kind-view";
-import { ENV_KINDS, type EnvKind, getKindLabel } from "@/lib/mdx-env/kinds";
+import {
+	ENV_KINDS,
+	type EnvKind,
+	getEnvConfig,
+	getKindLabel,
+} from "@/lib/mdx-env/kinds";
 import type { PageEnvs } from "@/lib/mdx-env/page-envs";
 import type { TenetIndex } from "@/lib/mdx-env/tenet";
 import { Env } from "./env";
 import { Recall } from "./recall";
 import { Statement } from "./statement";
 
+type EnvBody = ComponentType<{ children?: ReactNode }>;
+
 export type EnvMdxOptions = KindViewRenderOptions & {
+	bodies?: MDXComponents;
 	pageEnvs?: PageEnvs;
 	pageTitle?: string;
 	promptTarget?: PromptTargetLookup;
@@ -69,16 +77,15 @@ export function getEnvMdxComponents(
 	};
 
 	for (const kind of ENV_KINDS) {
-		components[getKindLabel(kind)] = (props: {
-			children?: ReactNode;
-			id?: string;
-		}) => (
+		const { tag } = getEnvConfig(kind);
+		const Body = options.bodies?.[tag] as EnvBody | undefined;
+		components[tag] = (props: { children?: ReactNode; id?: string }) => (
 			<Env
 				env={resolveEnv(props.id, kind, context)}
 				markHref={kindViewHref(kind)}
 				markLinkLabel={kindViewLinkLabel(kind)}
 			>
-				{props.children}
+				{Body === undefined ? props.children : <Body>{props.children}</Body>}
 			</Env>
 		);
 	}

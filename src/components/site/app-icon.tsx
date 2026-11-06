@@ -1,4 +1,4 @@
-import { Logomark } from "@/components/site/logomark";
+import { Logomark } from "course/logomark";
 import { course } from "@/lib/course/config";
 
 export function AppIcon({

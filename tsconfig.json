@@ -17,8 +17,12 @@
     "paths": {
       "@/*": ["./src/*"],
       "collections/*": ["./.source/*"],
+      "@kevinnhou/domain-*": ["./packages/domain-*"],
+      "course.components": ["./course.components.ts"],
       "course.config": ["./course.config.ts"],
-      "course.markdown": ["./course.markdown.ts"]
+      "course.server": ["./course.server.ts"],
+      "course/*": ["./course/*"],
+      "engine": ["./src/engine.ts"]
     },
     "plugins": [
       {

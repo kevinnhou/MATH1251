@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "root": true,
+  "files": {
+    "includes": ["!test/golden"]
+  },
   "extends": ["ultracite/biome/core", "ultracite/biome/next"],
   "formatter": {
     "enabled": true,

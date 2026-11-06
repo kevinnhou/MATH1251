@@ -1,7 +1,6 @@
 import { RootProvider } from "fumadocs-ui/provider/next";
 import type { Metadata, Viewport } from "next";
 import { course } from "@/lib/course/config";
-import "katex/dist/katex.css";
 import "./global.css";
 import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";

@@ -1,9 +1,9 @@
+import { Logomark } from "course/logomark";
 import { course, wordmark } from "@/lib/course/config";
 import { STRAND_ACCENTS } from "@/lib/course/strands";
 import { getEnvConfig } from "@/lib/mdx-env/kinds";
 import type { ResolvedDocs } from "@/lib/site/corpus";
 import { describeDocsPage } from "@/lib/site/docs-page";
-import { Logomark } from "./logomark";
 
 const FALLBACK_ACCENT = STRAND_ACCENTS[course.home];
 

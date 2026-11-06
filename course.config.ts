@@ -1,10 +1,11 @@
-import type { CourseConfig } from "@/lib/course/types";
-import { mathEnv } from "./src/lib/packs/math/env";
+import diagrams from "@kevinnhou/domain-diagrams";
+import math from "@kevinnhou/domain-math";
+import type { CourseConfig } from "engine";
 
 export default {
 	code: "MATH1251",
 	description: "Notes, definitions and results for MATH1251.",
-	env: mathEnv,
+	domains: [math, diagrams],
 	home: "core",
 	name: "MATH[1251]",
 	repo: {
@@ -17,6 +18,8 @@ export default {
 		{ accent: "#ffadad", id: "algebra", label: "Algebra" },
 		{ accent: "#a8c7e8", id: "calculus", label: "Calculus" },
 	],
+	summary:
+		"Lecture notes as a graph of pages and math environments (definitions, theorems, proofs, examples, …) linked by typed relations.",
 	theme: {
 		dark: "#121212",
 		light: "#f5f5f5",

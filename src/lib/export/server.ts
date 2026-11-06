@@ -141,7 +141,7 @@ export function llmsIndexText(graph: ExportGraph): string {
 
 export function llmsFullText(graph: ExportGraph): string {
 	return pagesOf(graph)
-		.map((node) => pageDocument(node, graph))
+		.map((node) => pageDocument(node, graph, "llms-full"))
 		.join("\n\n");
 }
 

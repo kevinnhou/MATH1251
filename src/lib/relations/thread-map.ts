@@ -70,8 +70,8 @@ function routeMembers(
 		}))
 		.toSorted(
 			(left, right) =>
-				(left.chapter?.number ?? Number.POSITIVE_INFINITY) -
-					(right.chapter?.number ?? Number.POSITIVE_INFINITY) ||
+				(left.chapter?.term ?? Number.POSITIVE_INFINITY) -
+					(right.chapter?.term ?? Number.POSITIVE_INFINITY) ||
 				strandAt(left.chapter) - strandAt(right.chapter) ||
 				left.at - right.at
 		);
@@ -92,7 +92,7 @@ function threadRoute(index: CourseIndex, thread: Thread): ThreadRoute {
 				0
 			),
 			station: stationId(member.href),
-			...(chapter ? { chapter: chapter.number } : {}),
+			...(chapter ? { chapter: chapter.number, term: chapter.term } : {}),
 			...memberRole(member),
 		})),
 	};
@@ -105,20 +105,26 @@ function alignedRows(
 ): ThreadMapRow[] {
 	const byChapter = Map.groupBy(placed, ({ chapter }) => chapter);
 
-	return span(placed.map(({ chapter }) => chapter.number)).map((number) => ({
-		cells: strands.map((strand): ThreadMapCell => {
-			const chapter = index.chapters.find(
-				(entry) => entry.strand === strand.id && entry.number === number
-			);
-			const here = chapter && byChapter.get(chapter);
-			return {
-				...(chapter ? { chapter } : {}),
-				stations: here?.map(({ station }) => station) ?? [],
-				strand: strand.id,
-			};
-		}),
-		number,
-	}));
+	return span(placed.map(({ chapter }) => chapter.term)).map((term) => {
+		const chapters = strands.map((strand) =>
+			index.chapters.find(
+				(entry) => entry.strand === strand.id && entry.term === term
+			)
+		);
+		return {
+			cells: strands.map((strand, at): ThreadMapCell => {
+				const chapter = chapters[at];
+				const here = chapter && byChapter.get(chapter);
+				return {
+					...(chapter ? { chapter } : {}),
+					stations: here?.map(({ station }) => station) ?? [],
+					strand: strand.id,
+				};
+			}),
+			number: chapters.find(Boolean)?.number ?? term,
+			term,
+		};
+	});
 }
 
 function stationsByHref(

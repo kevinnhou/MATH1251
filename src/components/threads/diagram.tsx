@@ -187,7 +187,7 @@ function Ground({ diagram }: { diagram: Diagram }) {
 				<text
 					className="text-[10px]"
 					fill={chapter.empty ? QUIET : "var(--color-fd-muted-foreground)"}
-					key={chapter.number}
+					key={chapter.term}
 					x={chapter.x0}
 					y={12}
 				>
@@ -211,7 +211,7 @@ function Ground({ diagram }: { diagram: Diagram }) {
 						<rect
 							fill={TINT}
 							height={band.y1 - band.y0}
-							key={segment.number}
+							key={segment.term}
 							width={segment.x1 - segment.x0}
 							x={segment.x0}
 							y={band.y0}

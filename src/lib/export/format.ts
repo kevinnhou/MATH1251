@@ -1,4 +1,4 @@
-import { type ExportNode, RELATION_LABELS, type Relation } from "./model";
+import type { ExportNode, Relation } from "./model";
 
 const FRONTMATTER_KEYS = [
 	"id",
@@ -51,11 +51,11 @@ export function relationLines(
 	relations: readonly Relation[],
 	limit = Number.POSITIVE_INFINITY
 ): string[] {
-	const groups = Map.groupBy(relations, (relation) => relation.name);
-	return [...groups].map(([name, items]) => {
+	const groups = Map.groupBy(relations, (relation) => relation.label);
+	return [...groups].map(([label, items]) => {
 		const links = items.slice(0, limit).map((item) => nodeLink(item.node));
 		const more = items.length > limit ? `, +${items.length - limit} more` : "";
-		return `- ${RELATION_LABELS[name]}: ${links.join(", ")}${more}`;
+		return `- ${label}: ${links.join(", ")}${more}`;
 	});
 }
 

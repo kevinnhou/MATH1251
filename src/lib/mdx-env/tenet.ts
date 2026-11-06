@@ -3,8 +3,8 @@ import {
 	literalInlineFragment,
 	type MarkdownFragment,
 } from "@/lib/markdown/types";
-import { type Difficulty, type EnvKind, getEnvConfig } from "./kinds";
-import type { EnvOccurrence, PageEnvs } from "./page-envs";
+import { type Difficulty, ENV, type EnvKind, getEnvConfig } from "./kinds";
+import type { EnvOccurrence, PageEnvs, PropValue } from "./page-envs";
 import { compileStatement, type StatementView } from "./statement-html";
 
 export interface ResolvedRef {
@@ -193,4 +193,38 @@ function addCitations(
 
 		citedBy.set(slug, [source]);
 	}
+}
+
+export function assertComponentSlugs(
+	pages: readonly TenetSourcePage[],
+	index: TenetIndex
+): void {
+	const problems = pages.flatMap(({ envs, page }) =>
+		envs.components.flatMap(({ props, tag }) =>
+			(ENV.components.get(tag)?.slugProps ?? []).flatMap((prop) =>
+				unknownSlugs(props[prop], index).map(
+					(slug) =>
+						`<${tag}> on ${page.url}: prop "${prop}" names unknown slug ${JSON.stringify(slug)}`
+				)
+			)
+		)
+	);
+
+	if (problems.length > 0) {
+		throw new Error(`${problems.join("; ")}.`);
+	}
+}
+
+function unknownSlugs(
+	value: PropValue | undefined,
+	index: TenetIndex
+): PropValue[] {
+	if (value === undefined) {
+		return [];
+	}
+
+	const slugs: readonly PropValue[] = Array.isArray(value) ? value : [value];
+	return slugs.filter(
+		(slug) => typeof slug !== "string" || !index.bySlug.has(slug)
+	);
 }

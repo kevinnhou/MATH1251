@@ -1,26 +1,28 @@
 import type { Heading, Root, RootContent } from "mdast";
-import { gfmToMarkdown } from "mdast-util-gfm";
 import type { MdxJsxAttribute, MdxJsxFlowElement } from "mdast-util-mdx";
-import { mdxToMarkdown } from "mdast-util-mdx";
-import { toMarkdown } from "mdast-util-to-markdown";
 import type { Node } from "unist";
 import { visit } from "unist-util-visit";
 import type { VFile } from "vfile";
-import { TO_MARKDOWN_EXTENSIONS } from "@/lib/markdown/syntaxes";
 import { isRecord, type ParseResult } from "@/lib/result";
-import { ENV, type EnvKind, type EnvRegistry } from "./kinds";
-import type { EngineTag, EnvKindConfig } from "./pack";
+import type { EngineTag, EnvConfig } from "./component";
+import { type ComponentRegistry, ENV, type EnvKind } from "./kinds";
 import {
-	type EnvHeading,
-	type EnvOccurrence,
-	type PageEnvs,
-	type PageSegment,
-	type RecallOccurrence,
-	recallId,
-	type ThreadOccurrence,
-	type ThreadTag,
-	threadId,
+	collectComponents,
+	type PageComponents,
+	type Serializer,
+} from "./occurrences";
+import type {
+	ComponentOccurrence,
+	EnvHeading,
+	EnvOccurrence,
+	EnvTemplates,
+	PageEnvs,
+	PageSegment,
+	RecallOccurrence,
+	ThreadOccurrence,
+	ThreadTag,
 } from "./page-envs";
+import { recallId, threadId } from "./page-envs";
 import { parseTenetSlug, parseTenetSlugList, parseThreadTags } from "./slug";
 
 const AND_LIST = new Intl.ListFormat("en", { type: "conjunction" });
@@ -38,15 +40,25 @@ type FlowChild = MdxJsxFlowElement["children"][number];
 
 const CHILDREN_ONLY = { _stringify: "children-only" };
 
-export function remarkMdxEnv(options: { env?: EnvRegistry } = {}) {
+export function remarkMdxEnv(options: { env?: ComponentRegistry } = {}) {
 	const env = options.env ?? ENV;
 	return (tree: Root, file: VFile) => {
 		validateRootNesting(tree, file, env);
-		file.data.envs = rewriteDocument(tree, file, env);
+		const components = collectComponents(tree, file, env);
+		file.data.envs = rewriteDocument(tree, file, env, components);
 	};
 }
 
-function rewriteDocument(tree: Root, file: VFile, env: EnvRegistry): PageEnvs {
+function rewriteDocument(
+	tree: Root,
+	file: VFile,
+	env: ComponentRegistry,
+	{ occurrences, serialize }: PageComponents
+): PageEnvs {
+	const placement = new Map<
+		number,
+		Pick<ComponentOccurrence, "env" | "segment">
+	>();
 	const entries: EnvOccurrence[] = [];
 	const recalls: RecallOccurrence[] = [];
 	const segments: PageSegment[] = [];
@@ -57,8 +69,15 @@ function rewriteDocument(tree: Root, file: VFile, env: EnvRegistry): PageEnvs {
 	const slugs = new Set<string>();
 	let prose: MdxJsxFlowElement | undefined;
 
+	const place = (root: number, envId?: string) => {
+		placement.set(root, {
+			segment: segments.length,
+			...(envId === undefined ? {} : { env: envId }),
+		});
+	};
+
 	const pushProse = (node: MdxJsxFlowElement) => {
-		const markdown = serializeMarkdown(node.children as Root["children"]);
+		const markdown = serialize.template(node.children as Root["children"]);
 		if (markdown.length > 0) {
 			segments.push({ markdown, type: "prose" });
 		}
@@ -71,15 +90,17 @@ function rewriteDocument(tree: Root, file: VFile, env: EnvRegistry): PageEnvs {
 		}
 	};
 
-	for (const child of tree.children) {
+	for (const [root, child] of tree.children.entries()) {
 		const kind = envKind(child, env);
 		if (kind !== undefined) {
 			closeProse();
 			const entry = readEnv(child as MdxJsxFlowElement, kind, file, env, {
 				counts,
+				serialize,
 				slugs,
 			});
 			entries.push(entry);
+			place(root, entry.id);
 			segments.push({ id: entry.id, type: "env" });
 			children.push(
 				wrapper("KindFilter", [child as FlowChild], [attribute("kind", kind)])
@@ -89,7 +110,8 @@ function rewriteDocument(tree: Root, file: VFile, env: EnvRegistry): PageEnvs {
 
 		if (isElement(child, "Thread")) {
 			closeProse();
-			threads.push(readThread(child, file, slugs));
+			threads.push(readThread(child, file, slugs, serialize));
+			place(root);
 			pushProse(child);
 			child.data = {
 				...child.data,
@@ -124,20 +146,34 @@ function rewriteDocument(tree: Root, file: VFile, env: EnvRegistry): PageEnvs {
 			prose = wrapper("Prose", []);
 			children.push(prose);
 		}
+		place(root);
 		prose.children.push(child as FlowChild);
 	}
 
 	closeProse();
 	tree.children = children;
-	return { entries, recalls, segments, threads };
+	return {
+		components: occurrences.map(({ root, ...occurrence }) => ({
+			...occurrence,
+			...(placement.get(root) ?? { segment: -1 }),
+		})),
+		entries,
+		recalls,
+		segments,
+		threads,
+	};
 }
 
 function readEnv(
 	node: MdxJsxFlowElement,
 	kind: EnvKind,
 	file: VFile,
-	env: EnvRegistry,
-	state: { counts: Map<EnvKind, number>; slugs: Set<string> }
+	env: ComponentRegistry,
+	state: {
+		counts: Map<EnvKind, number>;
+		serialize: Serializer;
+		slugs: Set<string>;
+	}
 ): EnvOccurrence {
 	assertStaticMetadata(node, file);
 
@@ -146,14 +182,18 @@ function readEnv(
 	const id = `${kind}-${index}`;
 	setAttribute(node, "id", id);
 
-	const headings = envHeadings(node);
+	const headings = envHeadings(node, state.serialize);
 	const title = headings[0]?.title || undefined;
 	const slug = readSlug(node, env.getEnvConfig(kind), file, state.slugs);
 	const of = readSlugList(node, "of", file);
 	const see = readSlugList(node, "see", file);
 	const difficulty = readDifficulty(node, kind, file, env);
 	const threads = readThreadTags(node, file);
-	const { body, statement } = splitEnvMarkdown(node);
+	const { body, statement } = splitEnvMarkdown(node, state.serialize.text);
+	const templates = envTemplates(
+		{ body, statement },
+		splitEnvMarkdown(node, state.serialize.template)
+	);
 
 	return {
 		headings,
@@ -166,13 +206,27 @@ function readEnv(
 		...(difficulty ? { difficulty } : {}),
 		...(slug ? { slug } : {}),
 		...(statement ? { statement } : {}),
+		...(templates ? { templates } : {}),
 		...(title ? { title } : {}),
 	};
 }
 
+function envTemplates(
+	text: EnvTemplates,
+	template: EnvTemplates
+): EnvTemplates | undefined {
+	const templates = {
+		...(template.body === text.body ? {} : { body: template.body }),
+		...(template.statement === text.statement
+			? {}
+			: { statement: template.statement }),
+	};
+	return Object.keys(templates).length > 0 ? templates : undefined;
+}
+
 function readSlug(
 	node: MdxJsxFlowElement,
-	{ label, optionalSlug }: EnvKindConfig,
+	{ optionalSlug, tag }: EnvConfig,
 	file: VFile,
 	seen: Set<string>
 ): string | undefined {
@@ -180,7 +234,7 @@ function readSlug(
 	if (slug === undefined) {
 		return optionalSlug
 			? undefined
-			: requiredAttribute(node, label, "slug", file);
+			: requiredAttribute(node, tag, "slug", file);
 	}
 
 	if (seen.has(slug)) {
@@ -195,7 +249,7 @@ function readDifficulty(
 	node: MdxJsxFlowElement,
 	kind: EnvKind,
 	file: VFile,
-	env: EnvRegistry
+	env: ComponentRegistry
 ): EnvOccurrence["difficulty"] {
 	if (
 		!env.isPractice(kind) &&
@@ -207,7 +261,12 @@ function readDifficulty(
 		);
 	}
 
-	return parseAttribute(node, "difficulty", env.parseDifficulty, file);
+	return parseAttribute(
+		node,
+		"difficulty",
+		(value) => env.parseDifficulty(kind, value),
+		file
+	);
 }
 
 function readSlugList(
@@ -225,7 +284,8 @@ function readThreadTags(node: MdxJsxFlowElement, file: VFile): ThreadTag[] {
 function readThread(
 	node: MdxJsxFlowElement,
 	file: VFile,
-	seen: Set<string>
+	seen: Set<string>,
+	serialize: Serializer
 ): ThreadOccurrence {
 	assertStaticMetadata(node, file);
 
@@ -253,7 +313,7 @@ function readThread(
 		id,
 		slug,
 		summary,
-		title: serializeMarkdown([{ children: first.children, type: "paragraph" }]),
+		title: serialize.text([{ children: first.children, type: "paragraph" }]),
 	};
 }
 
@@ -276,14 +336,17 @@ function readRecall(
 	return { id, of };
 }
 
-function envHeadings(node: MdxJsxFlowElement): EnvHeading[] {
+function envHeadings(
+	node: MdxJsxFlowElement,
+	serialize: Serializer
+): EnvHeading[] {
 	const headings: EnvHeading[] = [];
 
 	visit(node, "heading", (heading: Heading) => {
 		const id = headingId(heading);
 		if (id !== undefined) {
 			headings.push({
-				title: serializeMarkdown([
+				title: serialize.text([
 					{ children: heading.children, type: "paragraph" },
 				]),
 				url: `#${id}`,
@@ -294,7 +357,10 @@ function envHeadings(node: MdxJsxFlowElement): EnvHeading[] {
 	return headings;
 }
 
-function splitEnvMarkdown(node: MdxJsxFlowElement): {
+function splitEnvMarkdown(
+	node: MdxJsxFlowElement,
+	serialize: (children: Root["children"]) => string
+): {
 	body?: string;
 	statement?: string;
 } {
@@ -309,7 +375,7 @@ function splitEnvMarkdown(node: MdxJsxFlowElement): {
 		}
 
 		if (isElement(child, "Statement")) {
-			const markdown = serializeMarkdown(child.children as Root["children"]);
+			const markdown = serialize(child.children as Root["children"]);
 			if (markdown.length > 0) {
 				statement = markdown;
 			}
@@ -319,7 +385,7 @@ function splitEnvMarkdown(node: MdxJsxFlowElement): {
 		bodyChildren.push(child as Root["children"][number]);
 	}
 
-	const body = serializeMarkdown(bodyChildren);
+	const body = serialize(bodyChildren);
 
 	return {
 		...(body.length > 0 ? { body } : {}),
@@ -333,7 +399,7 @@ const ROOT_ELEMENTS = [
 	"ThreadMap",
 ] as const satisfies readonly EngineTag[];
 
-function validateRootNesting(tree: Root, file: VFile, env: EnvRegistry) {
+function validateRootNesting(tree: Root, file: VFile, env: ComponentRegistry) {
 	visit(tree, "mdxJsxFlowElement", (node, _index, parent) => {
 		if (parent?.type === "root") {
 			return;
@@ -366,15 +432,6 @@ function assertStaticMetadata(node: MdxJsxFlowElement, file: VFile) {
 	}
 }
 
-function serializeMarkdown(children: Root["children"]): string {
-	return toMarkdown(
-		{ children, type: "root" },
-		{
-			extensions: [gfmToMarkdown(), ...TO_MARKDOWN_EXTENSIONS, mdxToMarkdown()],
-		}
-	).trim();
-}
-
 function headingId(heading: Heading): string | undefined {
 	const properties = (heading.data as { hProperties?: unknown } | undefined)
 		?.hProperties;
@@ -383,7 +440,7 @@ function headingId(heading: Heading): string | undefined {
 		: undefined;
 }
 
-function envKind(node: Node, env: EnvRegistry): EnvKind | undefined {
+function envKind(node: Node, env: ComponentRegistry): EnvKind | undefined {
 	return node.type === "mdxJsxFlowElement"
 		? env.envKindFromTag((node as MdxJsxFlowElement).name ?? "")
 		: undefined;

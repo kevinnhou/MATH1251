@@ -52,6 +52,7 @@ export interface DiagramStation {
 export interface DiagramChapter {
 	empty: boolean;
 	number: number;
+	term: number;
 	x0: number;
 	x1: number;
 }
@@ -121,6 +122,7 @@ export function layoutDiagram(
 							.map((station) => ({ band, chapter, station }))
 					: [];
 			}),
+			term: row.term,
 		};
 	});
 	const coded = available < DIAGRAM.narrow;
@@ -188,15 +190,17 @@ function nameDepth({ room, station }: DiagramStation): number {
 function chapterOf({
 	number,
 	placed,
+	term,
 	x0,
 	x1,
 }: {
 	number: number;
 	placed: readonly unknown[];
+	term: number;
 	x0: number;
 	x1: number;
 }): DiagramChapter {
-	return { empty: placed.length === 0, number, x0, x1 };
+	return { empty: placed.length === 0, number, term, x0, x1 };
 }
 
 function slotWidth(
@@ -233,7 +237,7 @@ function lineOf(
 ): DiagramLine[] {
 	const points = stations.flatMap(({ chapter, marks, x }) => {
 		const mark = marks.find((each) => each.thread === thread.slug);
-		return mark ? [{ chapter: chapter.number, x, y: mark.y }] : [];
+		return mark ? [{ term: chapter.term, x, y: mark.y }] : [];
 	});
 	const [start] = points;
 	return start

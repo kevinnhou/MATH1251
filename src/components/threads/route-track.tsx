@@ -22,13 +22,13 @@ export interface RouteLayout {
 }
 
 export function routeLayout({ stops }: ThreadRoute): RouteLayout {
-	const runs: { count: number; number?: number }[] = [];
+	const runs: { count: number; number?: number; term?: number }[] = [];
 	for (const stop of stops) {
 		const run = runs.at(-1);
-		if (run && run.number === stop.chapter) {
+		if (run && run.term === stop.term) {
 			run.count += 1;
 		} else {
-			runs.push({ count: 1, number: stop.chapter });
+			runs.push({ count: 1, number: stop.chapter, term: stop.term });
 		}
 	}
 
@@ -83,8 +83,8 @@ export function RouteTrack({
 	const { lanes, stops } = route;
 	const height = bandTop(Math.max(lanes.length, 1)) - BAND_GAP;
 	const points = stops.map((stop, at) => ({
-		chapter: stop.chapter,
 		href: stop.href,
+		term: stop.term,
 		x: layout.xs[at] ?? 50,
 		y: trackY(stop.lane),
 	}));
