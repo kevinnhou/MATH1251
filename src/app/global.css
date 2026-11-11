@@ -150,10 +150,6 @@ html > body[data-scroll-locked] {
 	bottom: 0;
 }
 
-body:has([data-dock]) {
-	padding-bottom: 6rem;
-}
-
 @keyframes dock-swap {
 	from {
 		opacity: 0;
