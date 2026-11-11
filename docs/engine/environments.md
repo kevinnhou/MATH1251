@@ -69,8 +69,7 @@ MDX compile ([Compile](compile.md#two-passes)). It:
 
 Lower-case JSX (HTML tags) is allowed anywhere. Every domain component, not
 only those with export methods, fails inside a table. `remarkMdxEnv({ env })`
-accepts another registry, so the plugin can run against any set of domains
-(`test/components.test.ts` does).
+accepts another registry, so the plugin can run against any set of domains.
 
 ### `PageEnvs`
 

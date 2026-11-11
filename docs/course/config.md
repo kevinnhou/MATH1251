@@ -14,7 +14,6 @@ the baseline ([Starting a course](start.md#take-engine-updates)).
 | `course/logomark.tsx` | the course's mark (SVG); the header, favicon, app icons, PWA icons and OG images are all drawn from it | `course/*` alias |
 | `content/docs/` | the notes ([Writing notes](writing.md)) | the docs collection |
 | `README.md` | the course's own readme | |
-| `test/golden/` | the course's golden outputs ([Starting a course](start.md#golden-outputs)) | `bun run golden` |
 
 The engine reaches these only through the aliases, never by relative path, and
 the files import only domains and engine types (through the `engine` alias):

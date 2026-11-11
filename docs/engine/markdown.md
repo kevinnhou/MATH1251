@@ -180,8 +180,8 @@ CSS classes size fragments by context: `md-fragment-inline`,
 3. **The syntax list is a server binding.** Syntaxes live in each domain's
    `server.ts`, reached through `course.server.ts`, never in `course.config.ts`,
    because client components read the config. If a syntax were reachable from
-   the config, every client bundle would carry KaTeX; the import test checks
-   that no client module reaches a `server.ts`.
+   the config, every client bundle would carry KaTeX, so no client module may
+   reach a `server.ts`.
 4. **A syntax hooks every stage, or it leaks.** Parsing alone isn't enough: a
    formula must also read as words in plain text, count as one unit when
    truncated, stay whole when a title is flattened, match as a unit in search,
