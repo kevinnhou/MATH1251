@@ -7,7 +7,7 @@ import type {
 } from "@/lib/relations/types";
 import { chapterWidth, packChapters, squareLine } from "./geometry";
 
-export const DIAGRAM = {
+const DIAGRAM = {
 	axis: 26,
 	bandGap: 22,
 	bandPad: 11,
@@ -49,7 +49,7 @@ export interface DiagramStation {
 	x: number;
 }
 
-export interface DiagramChapter {
+interface DiagramChapter {
 	empty: boolean;
 	number: number;
 	term: number;
@@ -57,14 +57,14 @@ export interface DiagramChapter {
 	x1: number;
 }
 
-export interface DiagramBand {
+interface DiagramBand {
 	segments: DiagramChapter[];
 	strand: CourseStrand;
 	y0: number;
 	y1: number;
 }
 
-export interface DiagramLine {
+interface DiagramLine {
 	number: number;
 	slug: string;
 	solid: string;

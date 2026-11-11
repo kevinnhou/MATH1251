@@ -15,7 +15,7 @@ const TINT = foregroundAt(6);
 const COLUMN = foregroundAt(12);
 const INK = "var(--route-ink)";
 
-export interface RouteLayout {
+interface RouteLayout {
 	chapters: { number?: number; x0: number; x1: number }[];
 	slot: number;
 	xs: number[];

@@ -39,11 +39,11 @@ const KIND_NAME = /^[a-z][a-z-]*$/;
 const PLURAL_NAME = /^[A-Za-z][A-Za-z-]*$/;
 const WORD_START = /(?<!^)([A-Z])/g;
 
-export function kindOfTag(tag: string): EnvKind {
+function kindOfTag(tag: string): EnvKind {
 	return tag.replace(WORD_START, "-$1").toLowerCase();
 }
 
-export function createComponentRegistry(
+function createComponentRegistry(
 	domains: readonly Domain[]
 ): ComponentRegistry {
 	const tags: string[] = [];

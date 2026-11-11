@@ -68,8 +68,8 @@ MDX compile ([Compile](compile.md#two-passes)). It:
 5. leaves the result on the file as `file.data.envs`.
 
 Lower-case JSX (HTML tags) is allowed anywhere. Every domain component, not
-only those with export methods, fails inside a table. `remarkMdxEnv({ env })`
-accepts another registry, so the plugin can run against any set of domains.
+only those with export methods, fails inside a table. The plugin takes no
+options: it always uses the course's registry (`ENV`).
 
 ### `PageEnvs`
 

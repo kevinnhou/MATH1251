@@ -1,11 +1,11 @@
 import { useEffect, useSyncExternalStore } from "react";
 
-export type ResourceState<T> =
+type ResourceState<T> =
 	| { status: "loading" }
 	| { status: "ready"; value: T }
 	| { status: "error" };
 
-export interface JsonResource<T> {
+interface JsonResource<T> {
 	load: () => Promise<T>;
 	preload: () => void;
 	snapshot: () => ResourceState<T>;

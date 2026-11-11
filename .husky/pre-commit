@@ -1,15 +1,26 @@
 # ultracite
 #!/bin/sh
 # Check if there are any staged files
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+STAGED_FILES=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=ACMR)
 if [ -z "$STAGED_FILES" ]; then
   echo "No staged files to format"
   exit 0
 fi
 
-# Run formatter, capturing the exit code so we can still re-stage and report
+# Run formatter on the staged files only (unstaged files are left untouched),
+# capturing the exit code so we can still re-stage and report. Split the list
+# on newlines only, with globbing off, so paths with spaces or `*` survive.
+# Git still C-quotes names containing `"`, `\`, tab or newline; such files are
+# skipped (Biome reports "No such file" but exits 0) and committed unformatted.
 FORMAT_EXIT_CODE=0
-bun x ultracite fix || FORMAT_EXIT_CODE=$?
+set -f
+OLD_IFS=$IFS
+IFS='
+'
+set -- $STAGED_FILES
+IFS=$OLD_IFS
+set +f
+bun x ultracite fix "$@" || FORMAT_EXIT_CODE=$?
 
 # Re-stage files that were already staged
 echo "$STAGED_FILES" | while IFS= read -r file; do

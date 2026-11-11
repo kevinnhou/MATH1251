@@ -20,7 +20,7 @@ import type {
 	TerminalOutput,
 } from "@/lib/terminal/types";
 
-export interface RunContext
+interface RunContext
 	extends Omit<CompleteContext, "catalog" | "current" | "parsed">,
 		Pick<ExecuteContext, "dock"> {
 	abortRef: RefObject<AbortController | null>;

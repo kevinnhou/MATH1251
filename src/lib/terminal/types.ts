@@ -65,7 +65,7 @@ export interface SearchHit {
 	url: string;
 }
 
-export interface OutputAction {
+interface OutputAction {
 	label: string;
 	url: string;
 }

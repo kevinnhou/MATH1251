@@ -58,8 +58,8 @@ docs/                       these docs
 
 `lib/course/config.ts` and `lib/course/strands.ts` derive what the rest of the
 engine uses: `course`, `homeRoute`, `repoUrl`, `schedule`, `wordmark`,
-`STRANDS`, `STRAND_LABELS`, `STRAND_ACCENTS`, `isStrand`, `getStrand` and the
-`Strand` type (the literal union of the configured ids). `lib/course/config.ts`
+`STRANDS`, `STRAND_LABELS`, `STRAND_ACCENTS`, `getStrand` and the `Strand`
+type (the literal union of the configured ids). `lib/course/config.ts`
 types `schedule` as `Schedule`, and `lib/markdown/syntaxes.ts` reads
 `course.server` through a wide type, so a course's literal config (one schedule,
 domains without syntaxes) still type-checks.

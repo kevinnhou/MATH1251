@@ -45,7 +45,7 @@ interface PageIndex {
 	pages: readonly SourcePage[];
 }
 
-export interface Corpus extends PageIndex {
+interface Corpus extends PageIndex {
 	catalog: PageCatalog;
 	courseIndex: CourseIndex;
 	exportGraph: ExportGraph;
@@ -116,7 +116,7 @@ export function resolveDocsPage(
 	return resolveDocsUrl(slugs.length === 0 ? "/" : `/${slugs.join("/")}`);
 }
 
-export function resolveDocsUrl(url: string): ResolvedDocs | undefined {
+function resolveDocsUrl(url: string): ResolvedDocs | undefined {
 	return getPageIndex().byUrl.get(url);
 }
 

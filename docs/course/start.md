@@ -52,8 +52,9 @@ bun dev
 | `bun run types:check` | route typegen, then `tsc` for the app and for the service worker (`tsconfig.sw.json`) |
 | `bun run check` / `bun run fix` | Ultracite (Biome) lint and format |
 
-- A Husky pre-commit hook runs `ultracite fix` and re-stages the files that
-  were staged.
+- A Husky pre-commit hook runs `ultracite fix` on the staged files only and
+  re-stages them; unstaged files are never touched. A partly staged file is
+  formatted and re-staged whole, so its unstaged hunks are committed too.
 - In dev, a content error (a bad slug, an unknown component) becomes a module
   that throws when imported, so the server stays up and shows the error on the
   next request; save a fix and it recovers. In a production build the same

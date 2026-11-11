@@ -5,7 +5,7 @@ import type { SearchHit, SearchResult } from "./types";
 
 export const SEARCH_LIMIT = 24;
 
-export function terminalSearchUrl(origin: string, query: string): URL {
+function terminalSearchUrl(origin: string, query: string): URL {
 	const url = new URL("/api/search", origin);
 	url.searchParams.set("format", "terminal");
 	url.searchParams.set("limit", String(SEARCH_LIMIT));
@@ -31,7 +31,7 @@ export async function fetchNotesSearch(
 	return data;
 }
 
-export interface SearchHitGroup {
+interface SearchHitGroup {
 	hits: SearchHit[];
 	path: string;
 }

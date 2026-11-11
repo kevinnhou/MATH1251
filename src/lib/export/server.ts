@@ -36,7 +36,7 @@ import {
 	parseNodeFile,
 } from "./urls";
 
-export type ExportTarget = { id: string } & (
+type ExportTarget = { id: string } & (
 	| { node: ExportNode; type: ExportNode["type"] }
 	| { type: "kind-view"; view: ExportKindView }
 	| { thread: ExportThread; type: "thread" }
