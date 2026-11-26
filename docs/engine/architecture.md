@@ -11,7 +11,7 @@ map.
 |---|---|---|
 | **Engine** | the environment engine, compile pipeline, exports and prompts, relations and threads, terminal, site shell, PWA, engine elements, engine prompt texts, fonts | `src/` |
 | **Domains** | a subject's components (environments such as Theorem and Proof, others such as Mermaid) and its notation (TeX) | `packages/domain-*` ([Writing a domain](../domains.md)) |
-| **Course** | config, content, logomark, readme, golden outputs, and the domains it lists | the course files ([Configuring a course](../course/config.md)) |
+| **Course** | config, content, logomark, readme, and the domains it lists | the course files ([Configuring a course](../course/config.md)) |
 
 Dependencies point one way:
 
@@ -38,8 +38,6 @@ src/proxy.ts                Markdown negotiation: rewrites strand URLs to their 
 src/app/                    routes ([Site](site.md#request-map))
 src/components/<module>/    React UI, one folder per module
 src/lib/<module>/           logic, one folder per module
-scripts/golden.ts           the golden-output check
-test/                       bun tests and the golden outputs
 tsconfig.sw.json            separate compile of the service worker
 docs/                       these docs
 ```
@@ -60,8 +58,8 @@ docs/                       these docs
 
 `lib/course/config.ts` and `lib/course/strands.ts` derive what the rest of the
 engine uses: `course`, `homeRoute`, `repoUrl`, `schedule`, `wordmark`,
-`STRANDS`, `STRAND_LABELS`, `STRAND_ACCENTS`, `isStrand`, `getStrand` and the
-`Strand` type (the literal union of the configured ids). `lib/course/config.ts`
+`STRANDS`, `STRAND_LABELS`, `STRAND_ACCENTS`, `getStrand` and the `Strand`
+type (the literal union of the configured ids). `lib/course/config.ts`
 types `schedule` as `Schedule`, and `lib/markdown/syntaxes.ts` reads
 `course.server` through a wide type, so a course's literal config (one schedule,
 domains without syntaxes) still type-checks.
@@ -117,7 +115,7 @@ top          site
   (`export/urls.ts`, `course/urls.ts`, `pwa/protocol.ts`, `relations/urls.ts`,
   `compile/source.ts`, `site/docs-page.ts`).
 
-`test/imports.test.ts` checks all of these except the route-constant rule.
+Nothing enforces these rules automatically; check them when reviewing a change.
 
 ### Foundation helpers
 
@@ -268,10 +266,9 @@ top          site
 |---|---|---|
 | `bun run check` | lint and formatting | |
 | `bun run types:check` | type errors, in the app and the service worker | |
-| `bun test` | broken layering (`imports.test.ts`); the component pass: literal and `export const` props, computed props, unknown JSX, tables, occurrences inside environments, list indentation (`components.test.ts`) | everything else |
-| `bun run golden` | changes to 17 sample exports | prompt text, most documents, HTML |
+| `bun run build` | content errors (bad slugs, unknown components, strand mismatches) | output changes |
 
-For a refactor that must not change behaviour, the golden set isn't enough:
+For a refactor that must not change behaviour:
 
 1. **Snapshot every build output.** Before and after, copy every `*.body` under
    `.next/server/app` (skip `sw.js*`, which carries `BUILD_REVISION`) and
@@ -294,8 +291,7 @@ For a refactor that must not change behaviour, the golden set isn't enough:
 ## Changing things
 
 **A new module:** give it a folder under `src/lib` (and `src/components` if it
-has UI), place it in the layering above everything it imports and in `LAYERS`
-in `test/imports.test.ts`, keep its route constants in its own `urls.ts`, and
+has UI), place it in the layering above everything it imports, keep its route constants in its own `urls.ts`, and
 add a doc under `docs/engine/`.
 
 **A new role or relation:** an engine change across modules: `ROLES`

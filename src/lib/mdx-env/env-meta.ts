@@ -35,7 +35,7 @@ export interface RecallView<
 
 export type PromptTargetLookup = (id: string) => PromptTarget | undefined;
 
-export interface PageEnvContext {
+interface PageEnvContext {
 	entriesById: ReadonlyMap<string, EnvOccurrence>;
 	pageTitle: string;
 	pageUrl: string;

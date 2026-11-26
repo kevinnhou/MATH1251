@@ -181,7 +181,6 @@ the contents change with what is being read, the position doesn't.
 | `--dock-radius` | 14px |
 | `[data-dock-surface]` | `--dock-cut` background, rounded top-left: the notch's inner corner |
 | `[data-dock-corner]` | a `--dock-radius` square of `--dock-cut` with a transparent quarter circle, read as the page's convex corner meeting the notch; `top` above the surface at the right edge, `left` beside it at the bottom edge |
-| `body:has([data-dock])` | `padding-bottom: 6rem`, so the end of a page scrolls clear of the dock |
 | `[data-dock-swap]` | a 180ms fade-in, replayed when the subject changes |
 
 The corners belong to the fixed `<aside data-dock>`, so they follow the surface

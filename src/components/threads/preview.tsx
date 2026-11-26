@@ -8,7 +8,7 @@ import { ACTION, Bracket } from "./bracket";
 import { MONO, placeLabel } from "./format";
 import type { DiagramStation } from "./layout";
 
-export type ThreadLookup = ReadonlyMap<string, ThreadMapThread>;
+type ThreadLookup = ReadonlyMap<string, ThreadMapThread>;
 
 const TITLE = "font-semibold text-[17px] text-fd-foreground leading-snug";
 

@@ -160,8 +160,9 @@ duplicates (same kind, source and target). MATH1251 builds 697 nodes (76 pages,
 `practises`, 363 `uses`, 121 `recalls`, 55 `derives`, 24 `see`.
 
 **Relation IDs are spelled only in `model.ts`**: `EDGE`, `RELATION`,
-`RELATION_NAMES`, `RELATION_LABELS` and `RELATION_ORDER`, read by documents,
-contexts, the dock, `llms.txt` and `graph.json`. IDs are neutral and the same
+`RELATION_NAMES` and `RELATION_ORDER`, read by documents, contexts, the dock,
+`llms.txt` and `graph.json`; the neutral `RELATION_LABELS` are private to
+`model.ts` and reached only through `relationLabel`. IDs are neutral and the same
 in every course. **Labels** are what readers see: `relationLabel(edge, source,
 direction)` takes the source component's `relation` labels for its role's edge
 (maths' Proof: "Proves" / "Proved by"; code's Solution: "Solves" / "Solved by")

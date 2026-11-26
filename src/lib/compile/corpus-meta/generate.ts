@@ -20,7 +20,7 @@ import type {
 } from "./types";
 
 type CollectionItem = ReturnType<Core["getCollections"]>[number];
-export type DocsCollectionItem = Extract<CollectionItem, { type: "docs" }>;
+type DocsCollectionItem = Extract<CollectionItem, { type: "docs" }>;
 
 interface Captured {
 	envs: PageEnvs | undefined;

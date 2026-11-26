@@ -9,7 +9,7 @@ import type { CorpusMetaPage, DocsMeta } from "./corpus-meta/types";
 type PageData = CorpusMetaPage["frontmatter"] &
 	Pick<CorpusMetaPage, "envs" | "extractedReferences" | "structuredData">;
 
-export const docsRoute = "/";
+const docsRoute = "/";
 
 const files: VirtualFile<{ metaData: DocsMeta; pageData: PageData }>[] = [
 	...corpusMeta.pages.map((page) => ({

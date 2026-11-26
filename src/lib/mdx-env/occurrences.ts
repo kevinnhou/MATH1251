@@ -31,8 +31,7 @@ export interface Serializer {
 	text: (children: Children) => string;
 }
 
-export interface FoundOccurrence
-	extends Omit<ComponentOccurrence, "env" | "segment"> {
+interface FoundOccurrence extends Omit<ComponentOccurrence, "env" | "segment"> {
 	root: number;
 }
 

@@ -110,7 +110,7 @@ export const RELATION = {
 	uses: "uses",
 } as const satisfies { [K in RelationName]: K };
 
-export const RELATION_LABELS: Record<RelationName, string> = {
+const RELATION_LABELS: Record<RelationName, string> = {
 	contains: "Contains",
 	derived_by: "Derived by",
 	derives: "Derives",
@@ -191,7 +191,7 @@ export interface ExportKindView {
 	parentId: string;
 }
 
-export interface ExportThreadMember {
+interface ExportThreadMember {
 	id: string;
 	role?: string;
 }

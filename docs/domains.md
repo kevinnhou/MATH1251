@@ -344,7 +344,7 @@ stage it affects; list the domain's `server.ts` and `styles.css` in the course.
 
 - Domains import nothing from the engine but `engine` types.
 - `index.ts` is plain data; `server.ts` and its imports never reach a browser
-  bundle (the import test checks this).
+  bundle.
 - Export methods are deterministic, read the graph only through their
   `GraphReader` and link only through `link(id)`.
 - Tags, kinds, codes, labels and plurals are unique across the domains a course

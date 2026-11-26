@@ -4,7 +4,7 @@ export const PWA_ICON_VARIANTS = {
 	maskable: { maskable: true, size: 512 },
 } as const;
 
-export type PwaIconVariant = keyof typeof PWA_ICON_VARIANTS;
+type PwaIconVariant = keyof typeof PWA_ICON_VARIANTS;
 
 export function isPwaIconVariant(value: string): value is PwaIconVariant {
 	return Object.hasOwn(PWA_ICON_VARIANTS, value);

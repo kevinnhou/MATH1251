@@ -39,7 +39,7 @@ const PROXIMITY = { closeDelay: 320, openDelay: 100, radius: 48 } as const;
 
 export type DockState = "rest" | "bay";
 
-export interface Corridor {
+interface Corridor {
 	apex: Point | null;
 	dock: Box | null;
 }
@@ -325,7 +325,7 @@ function underCursor(rect: DOMRect, cursor: Point): boolean {
 	);
 }
 
-export function useProximity(
+function useProximity(
 	ref: RefObject<HTMLElement | null>,
 	corridor: Corridor
 ): boolean {

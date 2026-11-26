@@ -17,7 +17,7 @@ import {
 	ROLE_EDGES,
 } from "./model";
 
-export interface ExportPageInput {
+interface ExportPageInput {
 	envs: PageEnvs;
 	page: {
 		data: {
@@ -33,10 +33,7 @@ export interface ExportPageInput {
 	strand: Strand | undefined;
 }
 
-export type PageHrefResolver = (
-	href: string,
-	fromPath: string
-) => string | undefined;
+type PageHrefResolver = (href: string, fromPath: string) => string | undefined;
 
 export function buildExportGraph(
 	pages: readonly ExportPageInput[],

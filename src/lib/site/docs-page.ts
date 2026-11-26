@@ -10,7 +10,7 @@ const docsImageRoute = "/og/docs";
 
 export const docsImageFile = "image.png";
 
-export interface DocsImageText {
+interface DocsImageText {
 	chip?: string;
 	description?: string;
 	ideas: string[];
@@ -18,7 +18,7 @@ export interface DocsImageText {
 	title: string;
 }
 
-export interface DocsPageModel {
+interface DocsPageModel {
 	image: DocsImageText;
 	metadata: Metadata;
 }

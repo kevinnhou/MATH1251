@@ -15,7 +15,7 @@ export const STRAND_LABELS = byStrand("label");
 
 export const STRAND_ACCENTS = byStrand("accent");
 
-export function isStrand(value: string): value is Strand {
+function isStrand(value: string): value is Strand {
 	return STRANDS.some((strand) => strand === value);
 }
 

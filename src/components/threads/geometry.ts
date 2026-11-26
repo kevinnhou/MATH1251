@@ -1,11 +1,11 @@
-export interface ChapterSpacing {
+interface ChapterSpacing {
 	empty?: number;
 	gap: number;
 	pad: number;
 	slot: number;
 }
 
-export interface ChapterSpan {
+interface ChapterSpan {
 	x0: number;
 	x1: number;
 	xs: number[];
@@ -40,7 +40,7 @@ export function chapterWidth(
 	return stops === 0 && empty !== undefined ? empty : stops * slot + pad * 2;
 }
 
-export interface LinePoint {
+interface LinePoint {
 	term: number | undefined;
 	x: number;
 	y: number;

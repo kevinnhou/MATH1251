@@ -7,20 +7,15 @@
   },
   "explorer.excludeGitIgnore": true,
   "files.exclude": {
-    ".cursor": true,
     ".husky": true,
     ".next": true,
     "biome.json": true,
     "bun.lock": true,
-    "next.config.mjs": true,
+    "next.config.ts": true,
     "package.json": true,
     "postcss.config.mjs": true,
-    "proxy.ts": true,
     "source.config.ts": true,
     "tsconfig.json": true
-    // "README.md": true
-
-    // "src": true
   },
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,

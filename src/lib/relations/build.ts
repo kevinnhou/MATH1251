@@ -22,7 +22,7 @@ const PAGE_LINK_RELATIONS: readonly ExportEdgeKind[] = [
 	EDGE.recalls,
 ];
 
-export interface CourseOrder {
+interface CourseOrder {
 	chapters: CourseChapter[];
 	order: { chapter: number; url: string }[];
 	strands: CourseStrand[];

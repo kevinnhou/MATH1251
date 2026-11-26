@@ -54,7 +54,7 @@ files and the **domains** it lists. The engine (`src/`) and the domains
 docs/
   README.md              this page
   course/
-    start.md             create a course, run it, scripts, golden outputs, baseline updates
+    start.md             create a course, run it, scripts, baseline updates
     config.md            the course files and every config field; strands, chapters, schedule
     writing.md           authoring: pages, environments, citations, recalls, threads, components
   domains.md             writing a domain: package layout, components, roles, wording,

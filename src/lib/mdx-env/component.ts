@@ -4,7 +4,7 @@ export type Role = (typeof ROLES)[number];
 
 export const ENV_STYLES = ["plain", "emphasis", "subdued"] as const;
 
-export type EnvStyle = (typeof ENV_STYLES)[number];
+type EnvStyle = (typeof ENV_STYLES)[number];
 
 export interface AskWording {
 	label?: string;

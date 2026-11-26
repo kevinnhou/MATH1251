@@ -226,7 +226,7 @@ const PARAGRAPH_BREAK = /\n\s*\n/;
 const TRUNCATION_FLOOR =
 	encodedLength(BLOCK_BREAK) + encodedLength(TRUNCATED) * 2;
 
-export interface PromptRequest {
+interface PromptRequest {
 	context: PromptContext;
 	intent: PromptIntent;
 	origin: string;

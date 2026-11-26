@@ -40,12 +40,11 @@ type FlowChild = MdxJsxFlowElement["children"][number];
 
 const CHILDREN_ONLY = { _stringify: "children-only" };
 
-export function remarkMdxEnv(options: { env?: ComponentRegistry } = {}) {
-	const env = options.env ?? ENV;
+export function remarkMdxEnv() {
 	return (tree: Root, file: VFile) => {
-		validateRootNesting(tree, file, env);
-		const components = collectComponents(tree, file, env);
-		file.data.envs = rewriteDocument(tree, file, env, components);
+		validateRootNesting(tree, file, ENV);
+		const components = collectComponents(tree, file, ENV);
+		file.data.envs = rewriteDocument(tree, file, ENV, components);
 	};
 }
 

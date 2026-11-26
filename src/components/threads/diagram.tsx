@@ -33,7 +33,7 @@ export interface DiagramSpur {
 	pinned: boolean;
 }
 
-export interface DiagramProps {
+interface DiagramProps {
 	cursor: DiagramStation | undefined;
 	diagram: Diagram;
 	highlight: readonly string[];
@@ -380,7 +380,7 @@ function Reading({
 				<span
 					aria-hidden="true"
 					className={cn(
-						"absolute top-2 left-[-4.25px] size-[7px] border-[1.5px]",
+						"absolute top-2 left-[-4.25px] size-1.75 border-[1.5px]",
 						!spur && "invisible"
 					)}
 					style={{
